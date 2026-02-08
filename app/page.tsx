@@ -1,35 +1,64 @@
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center">
+    <main style={{
+      minHeight: "100vh",
+      background: "black",
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <div style={{ maxWidth: 600, width: "100%", padding: 20 }}>
 
-      <div className="max-w-xl w-full px-6">
-
-        {/* Logo / Title */}
-        <h1 className="text-5xl font-bold text-center mb-4">
+        <h1 style={{
+          fontSize: 48,
+          fontWeight: "bold",
+          textAlign: "center"
+        }}>
           ETSYLISTER
         </h1>
 
-        <p className="text-center text-gray-400 mb-10">
-          AI-powered Etsy listing generator based on live competitor analysis.
+        <p style={{
+          textAlign: "center",
+          opacity: 0.7,
+          marginBottom: 40
+        }}>
+          AI-powered Etsy listing generator based on live competitor analysis
         </p>
 
-        {/* Input box */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
+        <div style={{
+          background: "#111",
+          padding: 20,
+          borderRadius: 12
+        }}>
 
           <input
-            type="text"
             placeholder="What are you selling?"
-            className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 outline-none focus:border-white"
+            style={{
+              width: "100%",
+              padding: 12,
+              marginBottom: 12,
+              background: "black",
+              color: "white",
+              border: "1px solid #333",
+              borderRadius: 8
+            }}
           />
 
-          <button className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-200 transition">
+          <button style={{
+            width: "100%",
+            padding: 12,
+            background: "white",
+            color: "black",
+            borderRadius: 8,
+            fontWeight: "bold"
+          }}>
             Generate Listing
           </button>
 
         </div>
 
       </div>
-
     </main>
   )
 }
