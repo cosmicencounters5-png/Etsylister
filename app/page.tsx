@@ -39,64 +39,64 @@ export default function Home() {
     setStep("")
   }
 
+  function copy(text:string) {
+    navigator.clipboard.writeText(text)
+  }
+
+  const cardStyle:any = {
+    background:"#111",
+    border:"1px solid #222",
+    borderRadius:12,
+    padding:16,
+    marginTop:16
+  }
+
   return (
     <main style={{
-      minHeight: "100vh",
-      background: "black",
-      color: "white",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
+      minHeight:"100vh",
+      background:"black",
+      color:"white",
+      display:"flex",
+      alignItems:"center",
+      justifyContent:"center"
     }}>
-      <div style={{ maxWidth: 600, width: "100%", padding: 20 }}>
 
-        <h1 style={{
-          fontSize: 48,
-          fontWeight: "bold",
-          textAlign: "center"
-        }}>
+      <div style={{maxWidth:700,width:"100%",padding:20}}>
+
+        <h1 style={{fontSize:48,fontWeight:"bold",textAlign:"center"}}>
           ETSYLISTER
         </h1>
 
-        <p style={{
-          textAlign: "center",
-          opacity: 0.7,
-          marginBottom: 40
-        }}>
+        <p style={{textAlign:"center",opacity:0.7,marginBottom:40}}>
           AI-powered Etsy listing generator based on live competitor analysis
         </p>
 
-        <div style={{
-          background: "#111",
-          padding: 20,
-          borderRadius: 12
-        }}>
+        <div style={{background:"#111",padding:20,borderRadius:12}}>
 
           <input
             value={product}
             onChange={(e)=>setProduct(e.target.value)}
             placeholder="What are you selling?"
             style={{
-              width: "100%",
-              padding: 12,
-              marginBottom: 12,
-              background: "black",
-              color: "white",
-              border: "1px solid #333",
-              borderRadius: 8
+              width:"100%",
+              padding:12,
+              marginBottom:12,
+              background:"black",
+              color:"white",
+              border:"1px solid #333",
+              borderRadius:8
             }}
           />
 
           <button
             onClick={generate}
             style={{
-              width: "100%",
-              padding: 12,
-              background: "white",
-              color: "black",
-              borderRadius: 8,
-              fontWeight: "bold",
-              cursor: "pointer"
+              width:"100%",
+              padding:12,
+              background:"white",
+              color:"black",
+              borderRadius:8,
+              fontWeight:"bold"
             }}
           >
             {loading ? step : "Generate Listing"}
@@ -105,14 +105,36 @@ export default function Home() {
         </div>
 
         {result && (
-          <div style={{ marginTop: 20 }}>
-            <h2>{result.title}</h2>
-            <p>{result.description}</p>
-            <p>{result.tags}</p>
+
+          <div>
+
+            {/* TITLE */}
+            <div style={cardStyle}>
+              <strong>TITLE</strong>
+              <p>{result.title}</p>
+              <button onClick={()=>copy(result.title)}>Copy</button>
+            </div>
+
+            {/* DESCRIPTION */}
+            <div style={cardStyle}>
+              <strong>DESCRIPTION</strong>
+              <p>{result.description}</p>
+              <button onClick={()=>copy(result.description)}>Copy</button>
+            </div>
+
+            {/* TAGS */}
+            <div style={cardStyle}>
+              <strong>TAGS (comma separated)</strong>
+              <p>{result.tags}</p>
+              <button onClick={()=>copy(result.tags)}>Copy</button>
+            </div>
+
           </div>
+
         )}
 
       </div>
+
     </main>
   )
 }
