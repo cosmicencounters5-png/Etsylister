@@ -1,8 +1,3 @@
----
-
-## 😈 ERSTATT HELE FILEN
-
-```tsx
 "use client"
 
 import { useState } from "react"
@@ -41,10 +36,9 @@ export default function Home(){
       const chunk = decoder.decode(value)
       fullText += chunk
 
-      setRaw(fullText) // show live stream
+      setRaw(fullText)
     }
 
-    // CLEAN markdown formatting
     let cleaned = fullText
       .replace(/```json/g,"")
       .replace(/```/g,"")
@@ -96,14 +90,12 @@ export default function Home(){
 
         </div>
 
-        {/* LIVE STREAM VIEW */}
         {loading && raw && (
           <div style={card}>
             <pre style={{whiteSpace:"pre-wrap"}}>{raw}</pre>
           </div>
         )}
 
-        {/* PARSED CARDS */}
         {parsed && (
           <div>
 
