@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 import { scanEtsy } from "../../../lib/etsyScanner";
 import { analyzeSEO } from "../../../lib/seoAnalyzer";
-import { parseEtsyListing } from "../../../lib/etsyListingParser";
-import { analyzeGaps } from "../../../lib/gapAnalyzer";
 
 const openai=new OpenAI({
   apiKey:process.env.OPENAI_API_KEY
@@ -13,27 +11,14 @@ export async function POST(req:Request){
   const body=await req.json()
 
   const product=body.product
-  const url=body.url
 
-  let existingListing:any=null
-
-  if(url){
-    existingListing=await parseEtsyListing(url)
-  }
-
-  let keyword=product || existingListing?.title
-
-  if(!keyword) keyword="product"
+  const keyword=product || "product"
 
   const competitors=await scanEtsy(keyword)
 
   const titles=competitors.map(c=>c.title)
 
   const seo=analyzeSEO(titles)
-
-  const gaps=analyzeGaps(existingListing,competitors)
-
-  const images=competitors.map(c=>c.image).filter(Boolean).slice(0,3)
 
   const stream=await openai.chat.completions.create({
 
@@ -50,30 +35,27 @@ You are an elite Etsy domination strategist.
 USER PRODUCT:
 ${keyword}
 
-EXISTING LISTING:
-${JSON.stringify(existingListing,null,2)}
-
-COMPETITOR DATA:
-${JSON.stringify(competitors,null,2)}
+COMPETITOR TITLES:
+${titles.join("\n")}
 
 SEO SIGNALS:
 ${JSON.stringify(seo,null,2)}
 
-GAPS:
-${JSON.stringify(gaps,null,2)}
+TASK:
 
-COMPETITOR IMAGE URLS:
-${images.join("\n")}
+1) Generate optimized listing
+2) Calculate domination metrics vs competitors
 
-Analyze visual style from images and include strategy insights.
-
-Return JSON:
+Return ONLY JSON:
 
 {
 "title":"",
 "description":"",
 "tags":"",
-"strategyInsights":""
+"strategyInsights":"",
+"dominationScore":"",
+"seoAdvantage":"",
+"keywordCoverage":""
 }
 `
       }
