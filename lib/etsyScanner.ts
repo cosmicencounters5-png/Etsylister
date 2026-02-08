@@ -4,13 +4,12 @@ export async function scanEtsy(keyword: string) {
 
   const key = keyword.toLowerCase();
 
-  // CACHE HIT
   if (cache[key] && Date.now() - cache[key].time < 1000 * 60 * 30) {
     console.log("CACHE HIT");
     return cache[key].data;
   }
 
-  console.log("LIGHTNING LIVE SCAN");
+  console.log("TREND ENGINE LIVE SCAN");
 
   const searchUrl = `https://www.etsy.com/search?q=${encodeURIComponent(keyword)}`;
 
@@ -26,7 +25,6 @@ export async function scanEtsy(keyword: string) {
     .map(m => m[1].replace(/\\\//g,"/"))
     .slice(0,10);
 
-  // ⚡ PARALLEL SCANNING
   const results = await Promise.all(
 
     links.map(async (link) => {
@@ -56,11 +54,17 @@ export async function scanEtsy(keyword: string) {
             (inCart * 3) +
             Math.log(reviews + 1);
 
+          const trendScore =
+            (inCart * 2) +
+            profitability -
+            Math.log(reviews + 1);
+
           return {
             title,
             inCart,
             reviews,
-            profitability
+            profitability,
+            trendScore
           };
         }
 
@@ -74,7 +78,6 @@ export async function scanEtsy(keyword: string) {
 
   const filtered = results.filter(Boolean);
 
-  // SAVE CACHE
   cache[key] = {
     time: Date.now(),
     data: filtered
