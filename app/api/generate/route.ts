@@ -13,7 +13,9 @@ export async function POST(req: Request) {
 
   const competitors = await scanEtsy(product);
 
-  const seo = analyzeSEO(competitors);
+  const titles = competitors.map(c => c.title);
+
+  const seo = analyzeSEO(titles);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -26,26 +28,21 @@ You are an elite Etsy SEO expert.
 USER PRODUCT:
 ${product}
 
-REAL COMPETITOR TITLES:
-${competitors.join("\n")}
+REAL COMPETITOR DATA:
+${JSON.stringify(competitors,null,2)}
 
-TOP SINGLE KEYWORDS:
+TOP KEYWORDS:
 ${seo.topKeywords.join(", ")}
 
-TOP LONG-TAIL PHRASES:
+LONG TAIL PHRASES:
 ${seo.topPhrases.join(", ")}
-
-PIPE SYMBOL USAGE:
-${seo.pipeUsage}
 
 RULES:
 
 - Title max 140 characters
-- Use proven Etsy structure
-- High converting description
 - EXACTLY 13 tags
-- Each tag MAX 20 characters
-- Tags comma separated
+- each tag max 20 characters
+- comma separated
 
 Return ONLY JSON:
 
@@ -65,5 +62,9 @@ Return ONLY JSON:
 
   const data = JSON.parse(text);
 
-  return Response.json(data);
+  // return competitor data too (for UI later)
+  return Response.json({
+    ...data,
+    competitors
+  });
 }
