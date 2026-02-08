@@ -17,24 +17,20 @@ export default function Home(){
   function analyzeLiveSEO(text:string){
 
     const words=text.toLowerCase().split(" ").filter(Boolean)
-
     const buyerWords=["gift","pattern","template","digital","printable","handmade","diy","custom"]
 
     let intentScore=0
-
     buyerWords.forEach(w=>{
       if(words.includes(w)) intentScore++
     })
 
-    const lengthScore = words.length
-
     const strength =
-      lengthScore>=4 && intentScore>=1 ? "HIGH" :
-      lengthScore>=2 ? "MEDIUM" : "LOW"
+      words.length>=4 && intentScore>=1 ? "HIGH" :
+      words.length>=2 ? "MEDIUM" : "LOW"
 
     const competition =
-      lengthScore>=5 ? "LOW" :
-      lengthScore>=3 ? "MEDIUM" : "HIGH"
+      words.length>=5 ? "LOW" :
+      words.length>=3 ? "MEDIUM" : "HIGH"
 
     const trend =
       intentScore>=2 ? "STRONG" :
@@ -44,12 +40,7 @@ export default function Home(){
       intentScore>=2 ? "EXCELLENT" :
       intentScore>=1 ? "GOOD" : "WEAK"
 
-    return {
-      strength,
-      competition,
-      trend,
-      intent
-    }
+    return {strength,competition,trend,intent}
   }
 
   const liveSEO = analyzeLiveSEO(input)
@@ -135,6 +126,8 @@ export default function Home(){
         }
       `}</style>
 
+      {/* SIDEBAR */}
+
       <div>
 
         <div style={card}>
@@ -145,21 +138,23 @@ export default function Home(){
           <p>Intent: {liveSEO.intent}</p>
         </div>
 
-        {listingScore && (
-          <div style={card}>
-            <strong>👑 LISTING GOD SCORE</strong>
-            <p>Score: {listingScore.score}/100</p>
-            <p>Status: {listingScore.status}</p>
-          </div>
-        )}
+        {trend && <div style={card}><strong>🔥 AI TREND ENGINE</strong>{trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}</div>}
+
+        {dna && <div style={card}><strong>🧬 TITLE DNA ENGINE</strong><p>{dna.structure}</p></div>}
+
+        {killer && <div style={card}><strong>☠️ COMPETITOR KILLER ENGINE</strong>{killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}</div>}
+
+        {profit && <div style={card}><strong>💰 PROFIT GOD ENGINE</strong><p>Profitability: {profit.profitability}</p><p>Difficulty: {profit.difficulty}</p><p>Opportunity: {profit.opportunity}</p></div>}
+
+        {listingScore && <div style={card}><strong>👑 LISTING GOD SCORE</strong><p>{listingScore.score}/100</p><p>{listingScore.status}</p></div>}
 
       </div>
 
+      {/* MAIN PANEL */}
+
       <div>
 
-        <h1 style={{fontSize:48,fontWeight:"bold"}}>
-          ETSYLISTER ⚡
-        </h1>
+        <h1 style={{fontSize:48,fontWeight:"bold"}}>ETSYLISTER ⚡</h1>
 
         <input
           value={input}
@@ -171,6 +166,32 @@ export default function Home(){
         <button onClick={generate} style={{marginTop:12,padding:14,width:"100%"}}>
           {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
+
+        {parsed && (
+
+          <div style={{marginTop:20}}>
+
+            <div style={card}>
+              <strong>TITLE</strong>
+              <p>{parsed.title}</p>
+              <button onClick={()=>copy(parsed.title)}>Copy</button>
+            </div>
+
+            <div style={card}>
+              <strong>DESCRIPTION</strong>
+              <p>{parsed.description}</p>
+              <button onClick={()=>copy(parsed.description)}>Copy</button>
+            </div>
+
+            <div style={card}>
+              <strong>TAGS</strong>
+              <p>{parsed.tags}</p>
+              <button onClick={()=>copy(parsed.tags)}>Copy</button>
+            </div>
+
+          </div>
+
+        )}
 
       </div>
 
