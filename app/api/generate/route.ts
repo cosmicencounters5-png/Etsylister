@@ -21,7 +21,9 @@ export async function POST(req:Request){
     existingListing=await parseEtsyListing(url)
   }
 
-  const keyword=product || existingListing?.title || "product"
+  let keyword=product || existingListing?.title
+
+  if(!keyword) keyword="product"
 
   const competitors=await scanEtsy(keyword)
 
@@ -31,7 +33,6 @@ export async function POST(req:Request){
 
   const gaps=analyzeGaps(existingListing,competitors)
 
-  // VISION ANALYSIS
   const images=competitors.map(c=>c.image).filter(Boolean).slice(0,3)
 
   const stream=await openai.chat.completions.create({
@@ -42,10 +43,7 @@ export async function POST(req:Request){
     messages:[
       {
         role:"user",
-        content:[
-          {
-            type:"text",
-            text:`
+        content:`
 
 You are an elite Etsy domination strategist.
 
@@ -64,6 +62,9 @@ ${JSON.stringify(seo,null,2)}
 GAPS:
 ${JSON.stringify(gaps,null,2)}
 
+COMPETITOR IMAGE URLS:
+${images.join("\n")}
+
 Analyze visual style from images and include strategy insights.
 
 Return JSON:
@@ -75,12 +76,6 @@ Return JSON:
 "strategyInsights":""
 }
 `
-          },
-          ...images.map(img=>({
-            type:"image_url",
-            image_url:{ url:img }
-          }))
-        ]
       }
     ]
   })
@@ -93,9 +88,12 @@ Return JSON:
 
       for await(const chunk of stream){
 
-        const content=chunk.choices[0]?.delta?.content || ""
+        const content=chunk.choices[0]?.delta?.content
 
-        controller.enqueue(encoder.encode(content))
+        if(content){
+          controller.enqueue(encoder.encode(content))
+        }
+
       }
 
       controller.close()
