@@ -77,7 +77,6 @@ export default function Home(){
     if(!input) return
 
     setLoading(true)
-    setRaw("")
     setParsed(null)
 
     const res=await fetch("/api/generate",{
@@ -97,11 +96,7 @@ export default function Home(){
 
       if(done) break
 
-      const chunk=decoder.decode(value)
-
-      fullText+=chunk
-
-      setRaw(fullText)
+      fullText+=decoder.decode(value)
     }
 
     let cleaned=fullText
@@ -109,8 +104,7 @@ export default function Home(){
       .replace(/```/g,"")
 
     try{
-      const json=JSON.parse(cleaned)
-      setParsed(json)
+      setParsed(JSON.parse(cleaned))
     }catch(e){}
 
     setLoading(false)
@@ -120,39 +114,57 @@ export default function Home(){
     navigator.clipboard.writeText(text)
   }
 
-  const glow:any={
+  const card:any={
     background:"#111",
     border:"1px solid #2affff",
-    boxShadow:"0 0 20px rgba(0,255,255,0.2)",
+    boxShadow:"0 0 20px rgba(0,255,255,0.15)",
     borderRadius:12,
     padding:18,
-    marginTop:18
-  }
-
-  const copyBtn:any={
-    marginTop:10,
-    padding:"6px 12px",
-    background:"#2affff",
-    color:"black",
-    border:"none",
-    borderRadius:6,
-    cursor:"pointer",
-    fontWeight:"bold"
+    marginBottom:18
   }
 
   return(
 
     <main style={{
       minHeight:"100vh",
-      background:"#050505",
-      color:"white",
-      display:"flex",
-      justifyContent:"center"
+      display:"grid",
+      gridTemplateColumns:"300px 1fr",
+      gap:24
     }}>
 
-      <div style={{maxWidth:850,width:"100%",padding:24}}>
+      {/* 😈 SIDEBAR */}
 
-        <h1 style={{fontSize:50,fontWeight:"bold",textAlign:"center",letterSpacing:2}}>
+      <div>
+
+        <div style={card}>
+          <strong>⚡ LIVE SEO SCANNER</strong>
+          {input ? (
+            <>
+              <p>Strength: {liveSEO.strength}</p>
+              <p>Competition: {liveSEO.competition}</p>
+              <p>Trend: {liveSEO.trend}</p>
+              <p>Intent: {liveSEO.intent}</p>
+            </>
+          ) : <p>Type product...</p>}
+        </div>
+
+        {radar && (
+          <div style={card}>
+            <strong>🚀 LIVE MARKET RADAR</strong>
+            <p>Demand: {radar.demand}</p>
+            <p>Avg In Cart: {radar.avgInCart}</p>
+            <p>Trend: {radar.trend}</p>
+            <p>Competition: {radar.competition}</p>
+          </div>
+        )}
+
+      </div>
+
+      {/* 😈 MAIN PANEL */}
+
+      <div>
+
+        <h1 style={{fontSize:48,fontWeight:"bold"}}>
           ETSYLISTER ⚡
         </h1>
 
@@ -164,71 +176,54 @@ export default function Home(){
             width:"100%",
             padding:14,
             marginTop:20,
-            fontSize:16   // 🔥 IOS ZOOM FIX
+            fontSize:16
           }}
         />
 
-        {input && (
-          <div style={glow}>
-            <strong>⚡ LIVE SEO SCANNER</strong>
-            <p>Keyword Strength: {liveSEO.strength}</p>
-            <p>Competition Level: {liveSEO.competition}</p>
-            <p>Trend Signal: {liveSEO.trend}</p>
-            <p>Buyer Intent: {liveSEO.intent}</p>
-          </div>
-        )}
-
-        {radar && (
-          <div style={glow}>
-            <strong>🚀 LIVE MARKET RADAR</strong>
-            <p>Demand: {radar.demand}</p>
-            <p>Avg In Cart: {radar.avgInCart}</p>
-            <p>Trend Direction: {radar.trend}</p>
-            <p>Competition Quality: {radar.competition}</p>
-          </div>
-        )}
-
-        <button onClick={generate} style={{marginTop:10,padding:14,width:"100%"}}>
+        <button
+          onClick={generate}
+          style={{marginTop:12,padding:14,width:"100%"}}
+        >
           {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
 
         {parsed && (
 
-          <div>
+          <div style={{marginTop:20}}>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>🔥 WINNING TITLE FORMULA</strong>
               <p>{parsed.titleFormula}</p>
             </div>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>🔥 DOMINATION SCORE</strong>
               <p>{parsed.dominationScore}</p>
               <p>SEO Advantage: {parsed.seoAdvantage}</p>
               <p>Keyword Coverage: {parsed.keywordCoverage}</p>
             </div>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>🧠 WHY COMPETITORS WIN</strong>
               <p>{parsed.competitorInsights}</p>
             </div>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>TITLE</strong>
               <p>{parsed.title}</p>
-              <button style={copyBtn} onClick={()=>copy(parsed.title)}>Copy</button>
+              <button onClick={()=>copy(parsed.title)}>Copy</button>
             </div>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>DESCRIPTION</strong>
               <p>{parsed.description}</p>
-              <button style={copyBtn} onClick={()=>copy(parsed.description)}>Copy</button>
+              <button onClick={()=>copy(parsed.description)}>Copy</button>
             </div>
 
-            <div style={glow}>
+            <div style={card}>
               <strong>TAGS</strong>
               <p>{parsed.tags}</p>
-              <button style={copyBtn} onClick={()=>copy(parsed.tags)}>Copy</button>
+              <button onClick={()=>copy(parsed.tags)}>Copy</button>
             </div>
 
           </div>
@@ -238,6 +233,5 @@ export default function Home(){
       </div>
 
     </main>
-
   )
 }
