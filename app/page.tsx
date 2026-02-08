@@ -7,10 +7,10 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
-  const [radar,setRadar]=useState<any>(null)
   const [trend,setTrend]=useState<any>(null)
   const [dna,setDNA]=useState<any>(null)
   const [killer,setKiller]=useState<any>(null)
+  const [profit,setProfit]=useState<any>(null)
 
   function analyzeLiveSEO(text:string){
 
@@ -58,9 +58,6 @@ export default function Home(){
 
     const timeout = setTimeout(async()=>{
 
-      const radarRes = await fetch("/api/marketRadar",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
-      setRadar(await radarRes.json())
-
       const trendRes = await fetch("/api/trendEngine",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
       setTrend(await trendRes.json())
 
@@ -69,6 +66,9 @@ export default function Home(){
 
       const killerRes = await fetch("/api/killerEngine",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
       setKiller(await killerRes.json())
+
+      const profitRes = await fetch("/api/profitGod",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setProfit(await profitRes.json())
 
     },800)
 
@@ -130,46 +130,32 @@ export default function Home(){
         }
       `}</style>
 
-      {/* SIDEBAR */}
-
       <div>
 
         <div style={card}>
           <strong>⚡ LIVE SEO SCANNER</strong>
-          {input ? (
-            <>
-              <p>Strength: {liveSEO.strength}</p>
-              <p>Competition: {liveSEO.competition}</p>
-              <p>Trend: {liveSEO.trend}</p>
-              <p>Intent: {liveSEO.intent}</p>
-            </>
-          ) : <p>Type product...</p>}
+          <p>Strength: {liveSEO.strength}</p>
+          <p>Competition: {liveSEO.competition}</p>
+          <p>Trend: {liveSEO.trend}</p>
+          <p>Intent: {liveSEO.intent}</p>
         </div>
 
-        {trend && (
-          <div style={card}>
-            <strong>🔥 AI TREND ENGINE</strong>
-            {trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}
-          </div>
-        )}
+        {trend && <div style={card}><strong>🔥 AI TREND ENGINE</strong>{trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}</div>}
 
-        {dna && (
-          <div style={card}>
-            <strong>🧬 TITLE DNA ENGINE</strong>
-            <p>{dna.structure}</p>
-          </div>
-        )}
+        {dna && <div style={card}><strong>🧬 TITLE DNA ENGINE</strong><p>{dna.structure}</p></div>}
 
-        {killer && (
+        {killer && <div style={card}><strong>☠️ COMPETITOR KILLER ENGINE</strong>{killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}</div>}
+
+        {profit && (
           <div style={card}>
-            <strong>☠️ COMPETITOR KILLER ENGINE</strong>
-            {killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}
+            <strong>💰 PROFIT GOD ENGINE</strong>
+            <p>Profitability: {profit.profitability}</p>
+            <p>Ranking Difficulty: {profit.difficulty}</p>
+            <p>Opportunity Level: {profit.opportunity}</p>
           </div>
         )}
 
       </div>
-
-      {/* MAIN PANEL RESTORED */}
 
       <div>
 
@@ -187,32 +173,6 @@ export default function Home(){
         <button onClick={generate} style={{marginTop:12,padding:14,width:"100%"}}>
           {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
-
-        {parsed && (
-
-          <div style={{marginTop:20}}>
-
-            <div style={card}>
-              <strong>TITLE</strong>
-              <p>{parsed.title}</p>
-              <button onClick={()=>copy(parsed.title)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>DESCRIPTION</strong>
-              <p>{parsed.description}</p>
-              <button onClick={()=>copy(parsed.description)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>TAGS</strong>
-              <p>{parsed.tags}</p>
-              <button onClick={()=>copy(parsed.tags)}>Copy</button>
-            </div>
-
-          </div>
-
-        )}
 
       </div>
 
