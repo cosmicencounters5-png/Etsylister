@@ -6,6 +6,7 @@ export async function POST(req: Request) {
   // Etsy rules:
   // - EXACTLY 13 tags
   // - max 20 characters per tag
+  // - comma separated output
 
   function generateTags(base: string) {
 
@@ -25,8 +26,11 @@ export async function POST(req: Request) {
       "must have"
     ];
 
-    // Ensure max 20 chars
-    return rawTags.map(tag => tag.slice(0,20));
+    // enforce max 20 chars
+    const cleaned = rawTags.map(tag => tag.slice(0,20));
+
+    // join with commas for copy-paste
+    return cleaned.join(", ");
   }
 
   const result = {
