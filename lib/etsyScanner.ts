@@ -10,12 +10,11 @@ export async function scanEtsy(keyword: string) {
 
   const html = await res.text();
 
-  // Find listing URLs
   const links = [...html.matchAll(/"url":"(https:\\\/\\\/www\.etsy\.com\\\/listing\\\/.*?)"/g)]
     .map(m => m[1].replace(/\\\//g,"/"))
     .slice(0,10);
 
-  const winners: string[] = [];
+  const results:any[] = [];
 
   for (const link of links) {
 
@@ -29,27 +28,34 @@ export async function scanEtsy(keyword: string) {
 
       const pageHtml = await page.text();
 
-      // Check in-cart signal
-      const match = pageHtml.match(/(\d+)\+?\s+people have this in their cart/i);
+      const titleMatch = pageHtml.match(/<title>(.*?)<\/title>/i);
+      const title = titleMatch ? titleMatch[1] : "";
 
-      if (match) {
+      const cartMatch = pageHtml.match(/(\d+)\+?\s+people have this in their cart/i);
+      const inCart = cartMatch ? parseInt(cartMatch[1]) : 0;
 
-        const count = parseInt(match[1]);
+      // reviews extraction (basic)
+      const reviewMatch = pageHtml.match(/"reviewCount":(\d+)/);
+      const reviews = reviewMatch ? parseInt(reviewMatch[1]) : 0;
 
-        if (count >= 20) {
+      if (inCart >= 20) {
 
-          const titleMatch = pageHtml.match(/<title>(.*?)<\/title>/i);
+        const profitability =
+          (inCart * 3) +
+          Math.log(reviews + 1);
 
-          if (titleMatch) {
-            winners.push(titleMatch[1]);
-          }
-        }
+        results.push({
+          title,
+          inCart,
+          reviews,
+          profitability
+        });
+
       }
 
-    } catch(e) {
-      // skip errors
-    }
+    } catch(e) {}
+
   }
 
-  return winners;
+  return results;
 }
