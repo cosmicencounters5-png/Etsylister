@@ -50,7 +50,6 @@ export default function Home(){
 
   const liveSEO = analyzeLiveSEO(input)
 
-  // 😈 LIVE MARKET RADAR
   useEffect(()=>{
 
     if(input.length < 4) return
@@ -143,7 +142,13 @@ export default function Home(){
 
   return(
 
-    <main style={{minHeight:"100vh",background:"#050505",color:"white",display:"flex",justifyContent:"center"}}>
+    <main style={{
+      minHeight:"100vh",
+      background:"#050505",
+      color:"white",
+      display:"flex",
+      justifyContent:"center"
+    }}>
 
       <div style={{maxWidth:850,width:"100%",padding:24}}>
 
@@ -155,7 +160,12 @@ export default function Home(){
           value={input}
           onChange={(e)=>setInput(e.target.value)}
           placeholder="Describe product..."
-          style={{width:"100%",padding:14,marginTop:20}}
+          style={{
+            width:"100%",
+            padding:14,
+            marginTop:20,
+            fontSize:16   // 🔥 IOS ZOOM FIX
+          }}
         />
 
         {input && (
