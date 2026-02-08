@@ -53,6 +53,10 @@ export default function Home(){
     setLoading(false)
   }
 
+  function copy(text:string){
+    navigator.clipboard.writeText(text)
+  }
+
   const glow:any={
     background:"#111",
     border:"1px solid #2affff",
@@ -60,6 +64,17 @@ export default function Home(){
     borderRadius:12,
     padding:18,
     marginTop:18
+  }
+
+  const copyBtn:any={
+    marginTop:10,
+    padding:"6px 12px",
+    background:"#2affff",
+    color:"black",
+    border:"none",
+    borderRadius:6,
+    cursor:"pointer",
+    fontWeight:"bold"
   }
 
   return(
@@ -107,16 +122,19 @@ export default function Home(){
             <div style={glow}>
               <strong>TITLE</strong>
               <p>{parsed.title}</p>
+              <button style={copyBtn} onClick={()=>copy(parsed.title)}>Copy</button>
             </div>
 
             <div style={glow}>
               <strong>DESCRIPTION</strong>
               <p>{parsed.description}</p>
+              <button style={copyBtn} onClick={()=>copy(parsed.description)}>Copy</button>
             </div>
 
             <div style={glow}>
               <strong>TAGS</strong>
               <p>{parsed.tags}</p>
+              <button style={copyBtn} onClick={()=>copy(parsed.tags)}>Copy</button>
             </div>
 
           </div>
