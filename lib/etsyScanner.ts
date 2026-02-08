@@ -1,4 +1,18 @@
+const cache:any = {};
+
 export async function scanEtsy(keyword: string) {
+
+  const key = keyword.toLowerCase();
+
+  // CACHE HIT
+  if (cache[key] && Date.now() - cache[key].time < 1000 * 60 * 30) {
+
+    console.log("CACHE HIT");
+
+    return cache[key].data;
+  }
+
+  console.log("LIVE SCAN");
 
   const searchUrl = `https://www.etsy.com/search?q=${encodeURIComponent(keyword)}`;
 
@@ -34,7 +48,6 @@ export async function scanEtsy(keyword: string) {
       const cartMatch = pageHtml.match(/(\d+)\+?\s+people have this in their cart/i);
       const inCart = cartMatch ? parseInt(cartMatch[1]) : 0;
 
-      // reviews extraction (basic)
       const reviewMatch = pageHtml.match(/"reviewCount":(\d+)/);
       const reviews = reviewMatch ? parseInt(reviewMatch[1]) : 0;
 
@@ -56,6 +69,12 @@ export async function scanEtsy(keyword: string) {
     } catch(e) {}
 
   }
+
+  // SAVE CACHE
+  cache[key] = {
+    time: Date.now(),
+    data: results
+  };
 
   return results;
 }
