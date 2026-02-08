@@ -77,7 +77,7 @@ export default function Home(){
         />
 
         <button onClick={generate}>
-          {loading ? "🔥 Calculating domination..." : "Generate"}
+          {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
 
         {parsed && (
@@ -89,6 +89,11 @@ export default function Home(){
               <p>{parsed.dominationScore}</p>
               <p>SEO Advantage: {parsed.seoAdvantage}</p>
               <p>Keyword Coverage: {parsed.keywordCoverage}</p>
+            </div>
+
+            <div style={card}>
+              <strong>🧠 WHY COMPETITORS WIN</strong>
+              <p>{parsed.competitorInsights}</p>
             </div>
 
             <div style={card}>
