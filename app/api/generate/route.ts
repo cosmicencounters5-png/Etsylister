@@ -2,19 +2,20 @@ import OpenAI from "openai";
 import { scanEtsy } from "../../../lib/etsyScanner";
 import { analyzeSEO } from "../../../lib/seoAnalyzer";
 import { parseEtsyListing } from "../../../lib/etsyListingParser";
+import { analyzeGaps } from "../../../lib/gapAnalyzer";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function POST(req: Request){
+export async function POST(req:Request){
 
   const body = await req.json()
 
   const product = body.product
   const url = body.url
 
-  let existingListing:any = null
+  let existingListing:any=null
 
   if(url){
     existingListing = await parseEtsyListing(url)
@@ -28,6 +29,8 @@ export async function POST(req: Request){
 
   const seo = analyzeSEO(titles)
 
+  const gaps = analyzeGaps(existingListing,competitors)
+
   const stream = await openai.chat.completions.create({
     model:"gpt-4o-mini",
     stream:true,
@@ -36,7 +39,7 @@ export async function POST(req: Request){
         role:"user",
         content:`
 
-You are an elite Etsy optimization strategist.
+You are an elite Etsy domination strategist.
 
 USER PRODUCT:
 ${keyword}
@@ -47,13 +50,15 @@ ${JSON.stringify(existingListing,null,2)}
 COMPETITOR DATA:
 ${JSON.stringify(competitors,null,2)}
 
-TOP KEYWORDS:
-${seo.topKeywords.join(", ")}
+SEO SIGNALS:
+${JSON.stringify(seo,null,2)}
+
+COMPETITOR GAPS:
+${JSON.stringify(gaps,null,2)}
 
 TASK:
 
-If existing listing exists:
-→ upgrade it to beat competitors.
+Upgrade listing to BEAT competitors.
 
 Return JSON:
 
@@ -68,15 +73,15 @@ Return JSON:
     ]
   })
 
-  const encoder = new TextEncoder()
+  const encoder=new TextEncoder()
 
-  const readable = new ReadableStream({
+  const readable=new ReadableStream({
 
     async start(controller){
 
       for await(const chunk of stream){
 
-        const content = chunk.choices[0]?.delta?.content || ""
+        const content=chunk.choices[0]?.delta?.content || ""
 
         controller.enqueue(encoder.encode(content))
       }
