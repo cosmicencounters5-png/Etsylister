@@ -19,10 +19,10 @@ export default function Home() {
     setStep("🔎 Scanning Etsy competitors...")
     await new Promise(r => setTimeout(r, 1000))
 
-    setStep("📊 Analysing keywords...")
+    setStep("📊 Analysing trends...")
     await new Promise(r => setTimeout(r, 1000))
 
-    setStep("🧠 Generating listing...")
+    setStep("🧠 AI strategist thinking...")
 
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -43,7 +43,7 @@ export default function Home() {
     navigator.clipboard.writeText(text)
   }
 
-  const cardStyle:any = {
+  const card:any = {
     background:"#111",
     border:"1px solid #222",
     borderRadius:12,
@@ -52,20 +52,11 @@ export default function Home() {
   }
 
   return (
-    <main style={{
-      minHeight:"100vh",
-      background:"black",
-      color:"white",
-      display:"flex",
-      alignItems:"center",
-      justifyContent:"center"
-    }}>
+    <main style={{minHeight:"100vh",background:"black",color:"white",display:"flex",justifyContent:"center"}}>
 
       <div style={{maxWidth:800,width:"100%",padding:20}}>
 
-        <h1 style={{fontSize:48,fontWeight:"bold",textAlign:"center"}}>
-          ETSYLISTER
-        </h1>
+        <h1 style={{fontSize:48,fontWeight:"bold",textAlign:"center"}}>ETSYLISTER</h1>
 
         <div style={{background:"#111",padding:20,borderRadius:12}}>
 
@@ -73,28 +64,10 @@ export default function Home() {
             value={product}
             onChange={(e)=>setProduct(e.target.value)}
             placeholder="What are you selling?"
-            style={{
-              width:"100%",
-              padding:12,
-              marginBottom:12,
-              background:"black",
-              color:"white",
-              border:"1px solid #333",
-              borderRadius:8
-            }}
+            style={{width:"100%",padding:12,marginBottom:12,background:"black",color:"white",border:"1px solid #333",borderRadius:8}}
           />
 
-          <button
-            onClick={generate}
-            style={{
-              width:"100%",
-              padding:12,
-              background:"white",
-              color:"black",
-              borderRadius:8,
-              fontWeight:"bold"
-            }}
-          >
+          <button onClick={generate} style={{width:"100%",padding:12,background:"white",color:"black",borderRadius:8,fontWeight:"bold"}}>
             {loading ? step : "Generate Listing"}
           </button>
 
@@ -104,48 +77,28 @@ export default function Home() {
 
           <div>
 
-            {/* TITLE */}
-            <div style={cardStyle}>
+            <div style={card}>
               <strong>TITLE</strong>
               <p>{result.title}</p>
               <button onClick={()=>copy(result.title)}>Copy</button>
             </div>
 
-            {/* DESCRIPTION */}
-            <div style={cardStyle}>
+            <div style={card}>
               <strong>DESCRIPTION</strong>
               <p>{result.description}</p>
               <button onClick={()=>copy(result.description)}>Copy</button>
             </div>
 
-            {/* TAGS */}
-            <div style={cardStyle}>
+            <div style={card}>
               <strong>TAGS</strong>
               <p>{result.tags}</p>
               <button onClick={()=>copy(result.tags)}>Copy</button>
             </div>
 
-            {/* WAR ROOM MARKET DATA */}
-            {result.competitors && (
-
-              <div style={cardStyle}>
-                <strong>🔥 HIGH DEMAND MARKET DATA</strong>
-
-                {result.competitors.map((c:any,i:number)=>(
-                  <div key={i} style={{marginTop:12,borderBottom:"1px solid #222",paddingBottom:8}}>
-
-                    <div>{c.title}</div>
-
-                    <div style={{opacity:0.7,fontSize:14}}>
-                      In cart: {c.inCart} | Reviews: {c.reviews} | Profitability score: {c.profitability.toFixed(2)}
-                    </div>
-
-                  </div>
-                ))}
-
-              </div>
-
-            )}
+            <div style={card}>
+              <strong>🧠 AI STRATEGIST INSIGHTS</strong>
+              <p>{result.strategyInsights}</p>
+            </div>
 
           </div>
 
