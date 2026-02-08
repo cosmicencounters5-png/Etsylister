@@ -130,6 +130,8 @@ export default function Home(){
         }
       `}</style>
 
+      {/* SIDEBAR */}
+
       <div>
 
         <div style={card}>
@@ -143,16 +145,6 @@ export default function Home(){
             </>
           ) : <p>Type product...</p>}
         </div>
-
-        {radar && (
-          <div style={card}>
-            <strong>🚀 LIVE MARKET RADAR</strong>
-            <p>Demand: {radar.demand}</p>
-            <p>Avg In Cart: {radar.avgInCart}</p>
-            <p>Trend: {radar.trend}</p>
-            <p>Competition: {radar.competition}</p>
-          </div>
-        )}
 
         {trend && (
           <div style={card}>
@@ -177,6 +169,8 @@ export default function Home(){
 
       </div>
 
+      {/* MAIN PANEL RESTORED */}
+
       <div>
 
         <h1 style={{fontSize:48,fontWeight:"bold"}}>
@@ -193,6 +187,32 @@ export default function Home(){
         <button onClick={generate} style={{marginTop:12,padding:14,width:"100%"}}>
           {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
+
+        {parsed && (
+
+          <div style={{marginTop:20}}>
+
+            <div style={card}>
+              <strong>TITLE</strong>
+              <p>{parsed.title}</p>
+              <button onClick={()=>copy(parsed.title)}>Copy</button>
+            </div>
+
+            <div style={card}>
+              <strong>DESCRIPTION</strong>
+              <p>{parsed.description}</p>
+              <button onClick={()=>copy(parsed.description)}>Copy</button>
+            </div>
+
+            <div style={card}>
+              <strong>TAGS</strong>
+              <p>{parsed.tags}</p>
+              <button onClick={()=>copy(parsed.tags)}>Copy</button>
+            </div>
+
+          </div>
+
+        )}
 
       </div>
 
