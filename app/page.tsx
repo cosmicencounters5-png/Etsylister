@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Home() {
 
   const [product, setProduct] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
+  const [display, setDisplay] = useState<any>({})
   const [step, setStep] = useState("")
 
   async function generate() {
@@ -15,20 +16,19 @@ export default function Home() {
 
     setLoading(true)
     setResult(null)
+    setDisplay({})
 
     setStep("🔎 Scanning Etsy competitors...")
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 800))
 
     setStep("📊 Analysing trends...")
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 800))
 
     setStep("🧠 AI strategist thinking...")
 
     const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
       body: JSON.stringify({ product })
     })
 
@@ -39,11 +39,40 @@ export default function Home() {
     setStep("")
   }
 
-  function copy(text:string) {
+  // LIVE typing effect
+  useEffect(()=>{
+
+    if(!result) return
+
+    async function reveal(){
+
+      setDisplay({})
+
+      await new Promise(r=>setTimeout(r,300))
+      setDisplay((d:any)=>({...d,title:result.title}))
+
+      await new Promise(r=>setTimeout(r,500))
+      setDisplay((d:any)=>({...d,description:result.description}))
+
+      await new Promise(r=>setTimeout(r,500))
+      setDisplay((d:any)=>({...d,tags:result.tags}))
+
+      await new Promise(r=>setTimeout(r,500))
+      setDisplay((d:any)=>({...d,strategyInsights:result.strategyInsights}))
+
+      setDisplay((d:any)=>({...d,competitors:result.competitors}))
+
+    }
+
+    reveal()
+
+  },[result])
+
+  function copy(text:string){
     navigator.clipboard.writeText(text)
   }
 
-  const card:any = {
+  const card:any={
     background:"#111",
     border:"1px solid #222",
     borderRadius:12,
@@ -73,35 +102,49 @@ export default function Home() {
 
         </div>
 
-        {result && (
-
-          <div>
-
-            <div style={card}>
-              <strong>TITLE</strong>
-              <p>{result.title}</p>
-              <button onClick={()=>copy(result.title)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>DESCRIPTION</strong>
-              <p>{result.description}</p>
-              <button onClick={()=>copy(result.description)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>TAGS</strong>
-              <p>{result.tags}</p>
-              <button onClick={()=>copy(result.tags)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>🧠 AI STRATEGIST INSIGHTS</strong>
-              <p>{result.strategyInsights}</p>
-            </div>
-
+        {display.title && (
+          <div style={card}>
+            <strong>TITLE</strong>
+            <p>{display.title}</p>
+            <button onClick={()=>copy(display.title)}>Copy</button>
           </div>
+        )}
 
+        {display.description && (
+          <div style={card}>
+            <strong>DESCRIPTION</strong>
+            <p>{display.description}</p>
+            <button onClick={()=>copy(display.description)}>Copy</button>
+          </div>
+        )}
+
+        {display.tags && (
+          <div style={card}>
+            <strong>TAGS</strong>
+            <p>{display.tags}</p>
+            <button onClick={()=>copy(display.tags)}>Copy</button>
+          </div>
+        )}
+
+        {display.strategyInsights && (
+          <div style={card}>
+            <strong>🧠 AI STRATEGIST INSIGHTS</strong>
+            <p>{display.strategyInsights}</p>
+          </div>
+        )}
+
+        {display.competitors && (
+          <div style={card}>
+            <strong>🔥 WAR ROOM MARKET DATA</strong>
+            {display.competitors.map((c:any,i:number)=>(
+              <div key={i} style={{marginTop:10}}>
+                <div>{c.title}</div>
+                <div style={{opacity:0.7,fontSize:14}}>
+                  In cart: {c.inCart} | Reviews: {c.reviews} | Profitability: {c.profitability.toFixed(2)} | Trend: {c.trendScore.toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
       </div>
