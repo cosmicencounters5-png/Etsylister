@@ -7,10 +7,12 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
+
   const [trend,setTrend]=useState<any>(null)
   const [dna,setDNA]=useState<any>(null)
   const [killer,setKiller]=useState<any>(null)
   const [profit,setProfit]=useState<any>(null)
+  const [listingScore,setListingScore]=useState<any>(null)
 
   function analyzeLiveSEO(text:string){
 
@@ -69,6 +71,9 @@ export default function Home(){
 
       const profitRes = await fetch("/api/profitGod",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
       setProfit(await profitRes.json())
+
+      const scoreRes = await fetch("/api/listingGod",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setListingScore(await scoreRes.json())
 
     },800)
 
@@ -140,18 +145,11 @@ export default function Home(){
           <p>Intent: {liveSEO.intent}</p>
         </div>
 
-        {trend && <div style={card}><strong>🔥 AI TREND ENGINE</strong>{trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}</div>}
-
-        {dna && <div style={card}><strong>🧬 TITLE DNA ENGINE</strong><p>{dna.structure}</p></div>}
-
-        {killer && <div style={card}><strong>☠️ COMPETITOR KILLER ENGINE</strong>{killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}</div>}
-
-        {profit && (
+        {listingScore && (
           <div style={card}>
-            <strong>💰 PROFIT GOD ENGINE</strong>
-            <p>Profitability: {profit.profitability}</p>
-            <p>Ranking Difficulty: {profit.difficulty}</p>
-            <p>Opportunity Level: {profit.opportunity}</p>
+            <strong>👑 LISTING GOD SCORE</strong>
+            <p>Score: {listingScore.score}/100</p>
+            <p>Status: {listingScore.status}</p>
           </div>
         )}
 
