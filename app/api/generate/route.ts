@@ -30,12 +30,12 @@ export async function POST(req:Request){
         role:"user",
         content:`
 
-You are an elite Etsy domination strategist.
+You are an elite Etsy reverse-engine strategist.
 
 USER PRODUCT:
 ${keyword}
 
-COMPETITOR TITLES:
+TOP COMPETITOR TITLES:
 ${titles.join("\n")}
 
 SEO SIGNALS:
@@ -44,7 +44,8 @@ ${JSON.stringify(seo,null,2)}
 TASK:
 
 1) Generate optimized listing
-2) Calculate domination metrics vs competitors
+2) Calculate domination metrics
+3) Reverse-engine WHY competitors rank higher
 
 Return ONLY JSON:
 
@@ -55,7 +56,8 @@ Return ONLY JSON:
 "strategyInsights":"",
 "dominationScore":"",
 "seoAdvantage":"",
-"keywordCoverage":""
+"keywordCoverage":"",
+"competitorInsights":""
 }
 `
       }
