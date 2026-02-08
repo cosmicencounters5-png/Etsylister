@@ -6,7 +6,6 @@ export default function Home(){
 
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
-  const [raw,setRaw]=useState("")
   const [parsed,setParsed]=useState<any>(null)
   const [radar,setRadar]=useState<any>(null)
 
@@ -50,6 +49,7 @@ export default function Home(){
 
   const liveSEO = analyzeLiveSEO(input)
 
+  // LIVE MARKET RADAR
   useEffect(()=>{
 
     if(input.length < 4) return
@@ -125,14 +125,24 @@ export default function Home(){
 
   return(
 
-    <main style={{
-      minHeight:"100vh",
-      display:"grid",
-      gridTemplateColumns:"300px 1fr",
-      gap:24
-    }}>
+    <main
+      style={{
+        minHeight:"100vh",
+        display:"grid",
+        gap:24,
+        gridTemplateColumns:"1fr"
+      }}
+    >
 
-      {/* 😈 SIDEBAR */}
+      <style>{`
+        @media (min-width: 900px) {
+          main {
+            grid-template-columns: 300px 1fr !important;
+          }
+        }
+      `}</style>
+
+      {/* SIDEBAR */}
 
       <div>
 
@@ -160,7 +170,7 @@ export default function Home(){
 
       </div>
 
-      {/* 😈 MAIN PANEL */}
+      {/* MAIN PANEL */}
 
       <div>
 
