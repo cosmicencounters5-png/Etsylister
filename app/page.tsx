@@ -9,6 +9,7 @@ export default function Home(){
   const [parsed,setParsed]=useState<any>(null)
   const [radar,setRadar]=useState<any>(null)
   const [trend,setTrend]=useState<any>(null)
+  const [dna,setDNA]=useState<any>(null)
 
   function analyzeLiveSEO(text:string){
 
@@ -56,23 +57,14 @@ export default function Home(){
 
     const timeout = setTimeout(async()=>{
 
-      const radarRes = await fetch("/api/marketRadar",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ product:input })
-      })
+      const radarRes = await fetch("/api/marketRadar",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setRadar(await radarRes.json())
 
-      const radarData = await radarRes.json()
-      setRadar(radarData)
+      const trendRes = await fetch("/api/trendEngine",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setTrend(await trendRes.json())
 
-      const trendRes = await fetch("/api/trendEngine",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ product:input })
-      })
-
-      const trendData = await trendRes.json()
-      setTrend(trendData)
+      const dnaRes = await fetch("/api/titleDNA",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setDNA(await dnaRes.json())
 
     },800)
 
@@ -87,11 +79,7 @@ export default function Home(){
     setLoading(true)
     setParsed(null)
 
-    const res=await fetch("/api/generate",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ product:input })
-    })
+    const res=await fetch("/api/generate",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
 
     const reader=res.body?.getReader()
     const decoder=new TextDecoder()
@@ -99,17 +87,12 @@ export default function Home(){
     let fullText=""
 
     while(true){
-
       const {done,value}=await reader!.read()
-
       if(done) break
-
       fullText+=decoder.decode(value)
     }
 
-    let cleaned=fullText
-      .replace(/```json/g,"")
-      .replace(/```/g,"")
+    let cleaned=fullText.replace(/```json/g,"").replace(/```/g,"")
 
     try{
       setParsed(JSON.parse(cleaned))
@@ -170,11 +153,14 @@ export default function Home(){
         {trend && (
           <div style={card}>
             <strong>🔥 AI TREND ENGINE</strong>
-            <p>Trending Keywords:</p>
             {trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}
+          </div>
+        )}
 
-            <p style={{marginTop:10}}>Emerging Terms:</p>
-            {trend.emerging.map((t:any,i:number)=><div key={i}>- {t}</div>)}
+        {dna && (
+          <div style={card}>
+            <strong>🧬 TITLE DNA ENGINE</strong>
+            <p>{dna.structure}</p>
           </div>
         )}
 
@@ -214,26 +200,9 @@ export default function Home(){
             </div>
 
             <div style={card}>
-              <strong>🧠 WHY COMPETITORS WIN</strong>
-              <p>{parsed.competitorInsights}</p>
-            </div>
-
-            <div style={card}>
               <strong>TITLE</strong>
               <p>{parsed.title}</p>
               <button onClick={()=>copy(parsed.title)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>DESCRIPTION</strong>
-              <p>{parsed.description}</p>
-              <button onClick={()=>copy(parsed.description)}>Copy</button>
-            </div>
-
-            <div style={card}>
-              <strong>TAGS</strong>
-              <p>{parsed.tags}</p>
-              <button onClick={()=>copy(parsed.tags)}>Copy</button>
             </div>
 
           </div>
