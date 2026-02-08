@@ -4,40 +4,48 @@ import { analyzeSEO } from "../../../lib/seoAnalyzer";
 import { parseEtsyListing } from "../../../lib/etsyListingParser";
 import { analyzeGaps } from "../../../lib/gapAnalyzer";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai=new OpenAI({
+  apiKey:process.env.OPENAI_API_KEY
+})
 
 export async function POST(req:Request){
 
-  const body = await req.json()
+  const body=await req.json()
 
-  const product = body.product
-  const url = body.url
+  const product=body.product
+  const url=body.url
 
   let existingListing:any=null
 
   if(url){
-    existingListing = await parseEtsyListing(url)
+    existingListing=await parseEtsyListing(url)
   }
 
-  const keyword = product || existingListing?.title || "product"
+  const keyword=product || existingListing?.title || "product"
 
-  const competitors = await scanEtsy(keyword)
+  const competitors=await scanEtsy(keyword)
 
-  const titles = competitors.map(c=>c.title)
+  const titles=competitors.map(c=>c.title)
 
-  const seo = analyzeSEO(titles)
+  const seo=analyzeSEO(titles)
 
-  const gaps = analyzeGaps(existingListing,competitors)
+  const gaps=analyzeGaps(existingListing,competitors)
 
-  const stream = await openai.chat.completions.create({
+  // VISION ANALYSIS
+  const images=competitors.map(c=>c.image).filter(Boolean).slice(0,3)
+
+  const stream=await openai.chat.completions.create({
+
     model:"gpt-4o-mini",
     stream:true,
+
     messages:[
       {
         role:"user",
-        content:`
+        content:[
+          {
+            type:"text",
+            text:`
 
 You are an elite Etsy domination strategist.
 
@@ -53,12 +61,10 @@ ${JSON.stringify(competitors,null,2)}
 SEO SIGNALS:
 ${JSON.stringify(seo,null,2)}
 
-COMPETITOR GAPS:
+GAPS:
 ${JSON.stringify(gaps,null,2)}
 
-TASK:
-
-Upgrade listing to BEAT competitors.
+Analyze visual style from images and include strategy insights.
 
 Return JSON:
 
@@ -69,6 +75,12 @@ Return JSON:
 "strategyInsights":""
 }
 `
+          },
+          ...images.map(img=>({
+            type:"image_url",
+            image_url:{ url:img }
+          }))
+        ]
       }
     ]
   })
@@ -92,6 +104,7 @@ Return JSON:
   })
 
   return new Response(readable,{
-    headers:{ "Content-Type":"text/plain" }
+    headers:{ "Content-Type":"text/plain"}
   })
+
 }
