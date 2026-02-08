@@ -9,47 +9,45 @@ export async function POST(req: Request) {
   const body = await req.json();
   const product = body.product || "product";
 
-  const prompt = `
-You are an Etsy SEO expert.
-
-USER PRODUCT:
-${product}
-
-RULES:
-
-- Generate Etsy listing
-- Title max 140 characters
-- High converting description
-- EXACTLY 13 tags
-- Each tag MAX 20 characters
-- Tags must be comma separated
-
-OUTPUT FORMAT:
-
-TITLE:
-...
-
-DESCRIPTION:
-...
-
-TAGS:
-tag1, tag2, tag3...
-`;
-
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "user",
-        content: prompt
+        content: `
+You are an Etsy SEO expert.
+
+Create an Etsy listing for:
+
+${product}
+
+RULES:
+
+- Title max 140 characters
+- High converting description
+- EXACTLY 13 tags
+- Each tag MAX 20 characters
+- Tags comma separated
+
+Return ONLY JSON:
+
+{
+"title":"",
+"description":"",
+"tags":""
+}
+`
       }
     ]
   });
 
-  const text = completion.choices[0].message.content;
+  let text = completion.choices[0].message.content || "{}";
 
-  return Response.json({
-    raw: text
-  });
+  // Remove potential markdown formatting
+  text = text.replace(/```json/g,"").replace(/```/g,"");
+
+  const data = JSON.parse(text);
+
+  return Response.json(data);
 
 }
