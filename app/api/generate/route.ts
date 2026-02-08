@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { scanEtsy } from "@/lib/etsyScanner";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,6 +10,9 @@ export async function POST(req: Request) {
   const body = await req.json();
   const product = body.product || "product";
 
+  // REAL SCANNING
+  const competitors = await scanEtsy(product);
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
@@ -17,9 +21,11 @@ export async function POST(req: Request) {
         content: `
 You are an Etsy SEO expert.
 
-Create an Etsy listing for:
-
+USER PRODUCT:
 ${product}
+
+REAL COMPETITOR TITLES:
+${competitors.join("\n")}
 
 RULES:
 
@@ -43,11 +49,9 @@ Return ONLY JSON:
 
   let text = completion.choices[0].message.content || "{}";
 
-  // Remove potential markdown formatting
   text = text.replace(/```json/g,"").replace(/```/g,"");
 
   const data = JSON.parse(text);
 
   return Response.json(data);
-
 }
