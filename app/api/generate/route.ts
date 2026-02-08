@@ -45,7 +45,8 @@ TASK:
 
 1) Generate optimized listing
 2) Calculate domination metrics
-3) Reverse-engine WHY competitors rank higher
+3) Reverse engineer WHY competitors win
+4) Extract WINNING TITLE FORMULA pattern
 
 Return ONLY JSON:
 
@@ -57,7 +58,8 @@ Return ONLY JSON:
 "dominationScore":"",
 "seoAdvantage":"",
 "keywordCoverage":"",
-"competitorInsights":""
+"competitorInsights":"",
+"titleFormula":""
 }
 `
       }
