@@ -12,13 +12,12 @@ export async function POST(req: Request) {
   const product = body.product || "product";
 
   const competitors = await scanEtsy(product);
-
   const titles = competitors.map(c => c.title);
-
   const seo = analyzeSEO(titles);
 
-  const completion = await openai.chat.completions.create({
+  const stream = await openai.chat.completions.create({
     model: "gpt-4o-mini",
+    stream: true,
     messages: [
       {
         role: "user",
@@ -37,19 +36,7 @@ ${seo.topKeywords.join(", ")}
 LONG TAIL PHRASES:
 ${seo.topPhrases.join(", ")}
 
-TASK:
-
-1) Generate Etsy listing
-2) Analyze market and explain WHY niche works
-
-RULES:
-
-- Title max 140 characters
-- EXACTLY 13 tags
-- each tag max 20 characters
-- comma separated
-
-Return ONLY JSON:
+Return JSON:
 
 {
 "title":"",
@@ -62,14 +49,23 @@ Return ONLY JSON:
     ]
   });
 
-  let text = completion.choices[0].message.content || "{}";
+  const encoder = new TextEncoder();
 
-  text = text.replace(/```json/g,"").replace(/```/g,"");
+  const readable = new ReadableStream({
+    async start(controller) {
 
-  const data = JSON.parse(text);
+      for await (const chunk of stream) {
 
-  return Response.json({
-    ...data,
-    competitors
+        const content = chunk.choices[0]?.delta?.content || "";
+
+        controller.enqueue(encoder.encode(content));
+      }
+
+      controller.close();
+    }
+  });
+
+  return new Response(readable, {
+    headers: { "Content-Type": "text/plain" }
   });
 }
