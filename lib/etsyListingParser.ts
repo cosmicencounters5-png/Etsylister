@@ -8,14 +8,30 @@ export async function parseEtsyListing(url:string){
 
   const html = await res.text()
 
-  const titleMatch = html.match(/<title>(.*?)<\/title>/i)
-  const title = titleMatch ? titleMatch[1] : ""
+  // FIND JSON-LD structured data
+  const jsonMatch = html.match(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+  )
 
-  const descMatch = html.match(/"description":"(.*?)"/)
-  const description = descMatch ? descMatch[1] : ""
+  if(!jsonMatch){
+    return null
+  }
 
-  return {
-    title,
-    description
+  try{
+
+    const data = JSON.parse(jsonMatch[1])
+
+    const title = data.name || ""
+    const description = data.description || ""
+
+    return {
+      title,
+      description
+    }
+
+  }catch(e){
+
+    return null
+
   }
 }
