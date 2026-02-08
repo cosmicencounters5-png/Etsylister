@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Home(){
 
@@ -8,8 +8,8 @@ export default function Home(){
   const [loading,setLoading]=useState(false)
   const [raw,setRaw]=useState("")
   const [parsed,setParsed]=useState<any>(null)
+  const [radar,setRadar]=useState<any>(null)
 
-  // 🔥 LIVE SEO SCANNER
   function analyzeLiveSEO(text:string){
 
     const words=text.toLowerCase().split(" ").filter(Boolean)
@@ -49,6 +49,29 @@ export default function Home(){
   }
 
   const liveSEO = analyzeLiveSEO(input)
+
+  // 😈 LIVE MARKET RADAR
+  useEffect(()=>{
+
+    if(input.length < 4) return
+
+    const timeout = setTimeout(async()=>{
+
+      const res = await fetch("/api/marketRadar",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ product:input })
+      })
+
+      const data = await res.json()
+
+      setRadar(data)
+
+    },800)
+
+    return ()=>clearTimeout(timeout)
+
+  },[input])
 
   async function generate(){
 
@@ -135,7 +158,6 @@ export default function Home(){
           style={{width:"100%",padding:14,marginTop:20}}
         />
 
-        {/* 🔥 LIVE SEO BOX */}
         {input && (
           <div style={glow}>
             <strong>⚡ LIVE SEO SCANNER</strong>
@@ -143,6 +165,16 @@ export default function Home(){
             <p>Competition Level: {liveSEO.competition}</p>
             <p>Trend Signal: {liveSEO.trend}</p>
             <p>Buyer Intent: {liveSEO.intent}</p>
+          </div>
+        )}
+
+        {radar && (
+          <div style={glow}>
+            <strong>🚀 LIVE MARKET RADAR</strong>
+            <p>Demand: {radar.demand}</p>
+            <p>Avg In Cart: {radar.avgInCart}</p>
+            <p>Trend Direction: {radar.trend}</p>
+            <p>Competition Quality: {radar.competition}</p>
           </div>
         )}
 
