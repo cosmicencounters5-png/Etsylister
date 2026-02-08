@@ -23,12 +23,12 @@ export async function POST(req: Request) {
       {
         role: "user",
         content: `
-You are an elite Etsy SEO expert.
+You are an elite Etsy AI strategist.
 
 USER PRODUCT:
 ${product}
 
-REAL COMPETITOR DATA:
+COMPETITOR DATA:
 ${JSON.stringify(competitors,null,2)}
 
 TOP KEYWORDS:
@@ -36,6 +36,11 @@ ${seo.topKeywords.join(", ")}
 
 LONG TAIL PHRASES:
 ${seo.topPhrases.join(", ")}
+
+TASK:
+
+1) Generate Etsy listing
+2) Analyze market and explain WHY niche works
 
 RULES:
 
@@ -49,7 +54,8 @@ Return ONLY JSON:
 {
 "title":"",
 "description":"",
-"tags":""
+"tags":"",
+"strategyInsights":""
 }
 `
       }
@@ -62,7 +68,6 @@ Return ONLY JSON:
 
   const data = JSON.parse(text);
 
-  // return competitor data too (for UI later)
   return Response.json({
     ...data,
     competitors
