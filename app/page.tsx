@@ -9,6 +9,47 @@ export default function Home(){
   const [raw,setRaw]=useState("")
   const [parsed,setParsed]=useState<any>(null)
 
+  // 🔥 LIVE SEO SCANNER
+  function analyzeLiveSEO(text:string){
+
+    const words=text.toLowerCase().split(" ").filter(Boolean)
+
+    const buyerWords=["gift","pattern","template","digital","printable","handmade","diy","custom"]
+
+    let intentScore=0
+
+    buyerWords.forEach(w=>{
+      if(words.includes(w)) intentScore++
+    })
+
+    const lengthScore = words.length
+
+    const strength =
+      lengthScore>=4 && intentScore>=1 ? "HIGH" :
+      lengthScore>=2 ? "MEDIUM" : "LOW"
+
+    const competition =
+      lengthScore>=5 ? "LOW" :
+      lengthScore>=3 ? "MEDIUM" : "HIGH"
+
+    const trend =
+      intentScore>=2 ? "STRONG" :
+      intentScore>=1 ? "RISING" : "UNKNOWN"
+
+    const intent =
+      intentScore>=2 ? "EXCELLENT" :
+      intentScore>=1 ? "GOOD" : "WEAK"
+
+    return {
+      strength,
+      competition,
+      trend,
+      intent
+    }
+  }
+
+  const liveSEO = analyzeLiveSEO(input)
+
   async function generate(){
 
     if(!input) return
@@ -93,6 +134,17 @@ export default function Home(){
           placeholder="Describe product..."
           style={{width:"100%",padding:14,marginTop:20}}
         />
+
+        {/* 🔥 LIVE SEO BOX */}
+        {input && (
+          <div style={glow}>
+            <strong>⚡ LIVE SEO SCANNER</strong>
+            <p>Keyword Strength: {liveSEO.strength}</p>
+            <p>Competition Level: {liveSEO.competition}</p>
+            <p>Trend Signal: {liveSEO.trend}</p>
+            <p>Buyer Intent: {liveSEO.intent}</p>
+          </div>
+        )}
 
         <button onClick={generate} style={{marginTop:10,padding:14,width:"100%"}}>
           {loading ? "🔥 Reverse engineering..." : "Generate"}
