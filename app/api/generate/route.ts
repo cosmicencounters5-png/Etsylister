@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       {
         role: "user",
         content: `
-You are an Etsy SEO expert.
+You are an elite Etsy SEO expert.
 
 USER PRODUCT:
 ${product}
@@ -29,16 +29,19 @@ ${product}
 REAL COMPETITOR TITLES:
 ${competitors.join("\n")}
 
-TOP KEYWORDS:
+TOP SINGLE KEYWORDS:
 ${seo.topKeywords.join(", ")}
 
-PIPE SYMBOL USAGE COUNT:
+TOP LONG-TAIL PHRASES:
+${seo.topPhrases.join(", ")}
+
+PIPE SYMBOL USAGE:
 ${seo.pipeUsage}
 
 RULES:
 
 - Title max 140 characters
-- Use proven Etsy title structure
+- Use proven Etsy structure
 - High converting description
 - EXACTLY 13 tags
 - Each tag MAX 20 characters
