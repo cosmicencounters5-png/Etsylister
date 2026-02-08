@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { scanEtsy } from "../../../lib/etsyScanner";
+import { analyzeSEO } from "../../../lib/seoAnalyzer";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,8 +11,9 @@ export async function POST(req: Request) {
   const body = await req.json();
   const product = body.product || "product";
 
-  // REAL SCANNING
   const competitors = await scanEtsy(product);
+
+  const seo = analyzeSEO(competitors);
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -27,9 +29,16 @@ ${product}
 REAL COMPETITOR TITLES:
 ${competitors.join("\n")}
 
+TOP KEYWORDS:
+${seo.topKeywords.join(", ")}
+
+PIPE SYMBOL USAGE COUNT:
+${seo.pipeUsage}
+
 RULES:
 
 - Title max 140 characters
+- Use proven Etsy title structure
 - High converting description
 - EXACTLY 13 tags
 - Each tag MAX 20 characters
