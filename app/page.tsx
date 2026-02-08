@@ -7,10 +7,22 @@ export default function Home() {
   const [product, setProduct] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
+  const [step, setStep] = useState("")
 
   async function generate() {
 
+    if (!product) return
+
     setLoading(true)
+    setResult(null)
+
+    setStep("🔎 Scanning Etsy competitors...")
+    await new Promise(r => setTimeout(r, 1000))
+
+    setStep("📊 Analysing keywords...")
+    await new Promise(r => setTimeout(r, 1000))
+
+    setStep("🧠 Generating listing...")
 
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -24,6 +36,7 @@ export default function Home() {
 
     setResult(data)
     setLoading(false)
+    setStep("")
   }
 
   return (
@@ -37,11 +50,27 @@ export default function Home() {
     }}>
       <div style={{ maxWidth: 600, width: "100%", padding: 20 }}>
 
-        <h1 style={{ fontSize: 48, fontWeight: "bold", textAlign: "center" }}>
+        <h1 style={{
+          fontSize: 48,
+          fontWeight: "bold",
+          textAlign: "center"
+        }}>
           ETSYLISTER
         </h1>
 
-        <div style={{ background: "#111", padding: 20, borderRadius: 12 }}>
+        <p style={{
+          textAlign: "center",
+          opacity: 0.7,
+          marginBottom: 40
+        }}>
+          AI-powered Etsy listing generator based on live competitor analysis
+        </p>
+
+        <div style={{
+          background: "#111",
+          padding: 20,
+          borderRadius: 12
+        }}>
 
           <input
             value={product}
@@ -66,10 +95,11 @@ export default function Home() {
               background: "white",
               color: "black",
               borderRadius: 8,
-              fontWeight: "bold"
+              fontWeight: "bold",
+              cursor: "pointer"
             }}
           >
-            {loading ? "Scanning Etsy AI..." : "Generate Listing"}
+            {loading ? step : "Generate Listing"}
           </button>
 
         </div>
