@@ -1,43 +1,55 @@
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(req: Request) {
 
   const body = await req.json();
   const product = body.product || "product";
 
-  // Etsy rules:
-  // - EXACTLY 13 tags
-  // - max 20 characters per tag
-  // - comma separated output
+  const prompt = `
+You are an Etsy SEO expert.
 
-  function generateTags(base: string) {
+USER PRODUCT:
+${product}
 
-    const rawTags = [
-      base,
-      `handmade ${base}`,
-      `gift ${base}`,
-      "etsy bestseller",
-      "trending item",
-      "unique gift",
-      "gift idea",
-      "handmade shop",
-      "popular now",
-      "shop small",
-      "etsy trending",
-      "perfect gift",
-      "must have"
-    ];
+RULES:
 
-    // enforce max 20 chars
-    const cleaned = rawTags.map(tag => tag.slice(0,20));
+- Generate Etsy listing
+- Title max 140 characters
+- High converting description
+- EXACTLY 13 tags
+- Each tag MAX 20 characters
+- Tags must be comma separated
 
-    // join with commas for copy-paste
-    return cleaned.join(", ");
-  }
+OUTPUT FORMAT:
 
-  const result = {
-    title: `Premium ${product} | Handmade Gift Idea | Bestseller Style`,
-    description: `This is a high-converting Etsy listing for ${product}. Generated using AI competitor analysis.`,
-    tags: generateTags(product)
-  };
+TITLE:
+...
 
-  return Response.json(result);
+DESCRIPTION:
+...
+
+TAGS:
+tag1, tag2, tag3...
+`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  });
+
+  const text = completion.choices[0].message.content;
+
+  return Response.json({
+    raw: text
+  });
+
 }
