@@ -10,6 +10,7 @@ export default function Home(){
   const [radar,setRadar]=useState<any>(null)
   const [trend,setTrend]=useState<any>(null)
   const [dna,setDNA]=useState<any>(null)
+  const [killer,setKiller]=useState<any>(null)
 
   function analyzeLiveSEO(text:string){
 
@@ -65,6 +66,9 @@ export default function Home(){
 
       const dnaRes = await fetch("/api/titleDNA",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
       setDNA(await dnaRes.json())
+
+      const killerRes = await fetch("/api/killerEngine",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+      setKiller(await killerRes.json())
 
     },800)
 
@@ -164,6 +168,13 @@ export default function Home(){
           </div>
         )}
 
+        {killer && (
+          <div style={card}>
+            <strong>☠️ COMPETITOR KILLER ENGINE</strong>
+            {killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}
+          </div>
+        )}
+
       </div>
 
       <div>
@@ -182,32 +193,6 @@ export default function Home(){
         <button onClick={generate} style={{marginTop:12,padding:14,width:"100%"}}>
           {loading ? "🔥 Reverse engineering..." : "Generate"}
         </button>
-
-        {parsed && (
-
-          <div style={{marginTop:20}}>
-
-            <div style={card}>
-              <strong>🔥 WINNING TITLE FORMULA</strong>
-              <p>{parsed.titleFormula}</p>
-            </div>
-
-            <div style={card}>
-              <strong>🔥 DOMINATION SCORE</strong>
-              <p>{parsed.dominationScore}</p>
-              <p>SEO Advantage: {parsed.seoAdvantage}</p>
-              <p>Keyword Coverage: {parsed.keywordCoverage}</p>
-            </div>
-
-            <div style={card}>
-              <strong>TITLE</strong>
-              <p>{parsed.title}</p>
-              <button onClick={()=>copy(parsed.title)}>Copy</button>
-            </div>
-
-          </div>
-
-        )}
 
       </div>
 
