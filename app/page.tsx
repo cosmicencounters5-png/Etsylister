@@ -61,15 +61,11 @@ export default function Home() {
       justifyContent:"center"
     }}>
 
-      <div style={{maxWidth:700,width:"100%",padding:20}}>
+      <div style={{maxWidth:800,width:"100%",padding:20}}>
 
         <h1 style={{fontSize:48,fontWeight:"bold",textAlign:"center"}}>
           ETSYLISTER
         </h1>
-
-        <p style={{textAlign:"center",opacity:0.7,marginBottom:40}}>
-          AI-powered Etsy listing generator based on live competitor analysis
-        </p>
 
         <div style={{background:"#111",padding:20,borderRadius:12}}>
 
@@ -124,10 +120,32 @@ export default function Home() {
 
             {/* TAGS */}
             <div style={cardStyle}>
-              <strong>TAGS (comma separated)</strong>
+              <strong>TAGS</strong>
               <p>{result.tags}</p>
               <button onClick={()=>copy(result.tags)}>Copy</button>
             </div>
+
+            {/* WAR ROOM MARKET DATA */}
+            {result.competitors && (
+
+              <div style={cardStyle}>
+                <strong>🔥 HIGH DEMAND MARKET DATA</strong>
+
+                {result.competitors.map((c:any,i:number)=>(
+                  <div key={i} style={{marginTop:12,borderBottom:"1px solid #222",paddingBottom:8}}>
+
+                    <div>{c.title}</div>
+
+                    <div style={{opacity:0.7,fontSize:14}}>
+                      In cart: {c.inCart} | Reviews: {c.reviews} | Profitability score: {c.profitability.toFixed(2)}
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            )}
 
           </div>
 
