@@ -8,30 +8,31 @@ export async function parseEtsyListing(url:string){
 
   const html = await res.text()
 
-  // FIND JSON-LD structured data
-  const jsonMatch = html.match(
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
-  )
+  // find ALL ld+json scripts
+  const matches = [...html.matchAll(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+  )]
 
-  if(!jsonMatch){
-    return null
+  for(const m of matches){
+
+    try{
+
+      const data = JSON.parse(m[1])
+
+      // Etsy product schema
+      if(data["@type"]==="Product"){
+
+        return {
+          title: data.name || "",
+          description: data.description || "",
+          image: data.image || ""
+        }
+
+      }
+
+    }catch(e){}
+
   }
 
-  try{
-
-    const data = JSON.parse(jsonMatch[1])
-
-    const title = data.name || ""
-    const description = data.description || ""
-
-    return {
-      title,
-      description
-    }
-
-  }catch(e){
-
-    return null
-
-  }
+  return null
 }
