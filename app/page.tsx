@@ -4,7 +4,10 @@ import { useState, useEffect } from "react"
 
 export default function Home(){
 
-  const [input,setInput]=useState("")
+  const [chatOpen,setChatOpen]=useState(false)
+const [chatInput,setChatInput]=useState("")
+const [chatMessages,setChatMessages]=useState<any[]>([])
+const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
 
