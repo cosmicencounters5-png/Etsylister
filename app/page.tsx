@@ -63,7 +63,7 @@ export default function Home(){
 
   },[listingScore])
 
-  // 🔥 AI thinking simulation
+  // AI thinking simulation
 
   useEffect(()=>{
 
@@ -116,7 +116,7 @@ export default function Home(){
     setShowResult(true)
   }
 
-  // 🔥 live typing effect
+  // live typing effect
 
   useEffect(()=>{
 
@@ -288,6 +288,7 @@ export default function Home(){
             <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
             <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
+            <StrategyPanel parsed={parsed}/>
 
           </div>
 
@@ -302,31 +303,12 @@ export default function Home(){
 function ResultBlock({title,text,label,copied,copy}:any){
 
   return(
-
-    <div style={{
-      background:"#0f0f0f",
-      padding:24,
-      borderRadius:16,
-      marginBottom:20
-    }}>
-
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>{title}</strong>
-
       <p style={{marginTop:10,opacity:.85}}>{text}</p>
-
-      <button
-        onClick={()=>copy(text,label)}
-        style={{
-          marginTop:12,
-          background:"#222",
-          color:"white",
-          padding:"8px 14px",
-          borderRadius:8
-        }}
-      >
+      <button onClick={()=>copy(text,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
         {copied===label ? "Copied ✓" : "Copy"}
       </button>
-
     </div>
   )
 }
@@ -336,47 +318,33 @@ function TagBlock({tags,label,copied,copy}:any){
   const tagArray = tags.split(",")
 
   return(
-
-    <div style={{
-      background:"#0f0f0f",
-      padding:24,
-      borderRadius:16,
-      marginBottom:20
-    }}>
-
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>TAGS</strong>
-
-      <div style={{
-        display:"flex",
-        flexWrap:"wrap",
-        gap:8,
-        marginTop:12
-      }}>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:12}}>
         {tagArray.map((t:string,i:number)=>(
-          <span key={i} style={{
-            background:"#1a1a1a",
-            padding:"6px 10px",
-            borderRadius:999,
-            fontSize:14
-          }}>
+          <span key={i} style={{background:"#1a1a1a",padding:"6px 10px",borderRadius:999,fontSize:14}}>
             {t.trim()}
           </span>
         ))}
       </div>
-
-      <button
-        onClick={()=>copy(tags,label)}
-        style={{
-          marginTop:12,
-          background:"#222",
-          color:"white",
-          padding:"8px 14px",
-          borderRadius:8
-        }}
-      >
+      <button onClick={()=>copy(tags,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
         {copied===label ? "Copied ✓" : "Copy"}
       </button>
+    </div>
+  )
+}
 
+function StrategyPanel({parsed}:any){
+
+  if(!parsed) return null
+
+  return(
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
+      <strong>🧠 AI Strategy Insights</strong>
+      {parsed.titleFormula && <p style={{marginTop:10}}><b>Winning Title Formula:</b> {parsed.titleFormula}</p>}
+      {parsed.strategyInsights && <p style={{marginTop:10}}>{parsed.strategyInsights}</p>}
+      {parsed.seoAdvantage && <p style={{marginTop:10}}><b>SEO Advantage:</b> {parsed.seoAdvantage}</p>}
+      {parsed.competitorInsights && <p style={{marginTop:10}}><b>Competitor Insights:</b> {parsed.competitorInsights}</p>}
     </div>
   )
 }
