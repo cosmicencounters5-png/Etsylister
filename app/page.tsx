@@ -5,9 +5,10 @@ import { useState, useEffect } from "react"
 export default function Home(){
 
   const [chatOpen,setChatOpen]=useState(false)
-const [chatInput,setChatInput]=useState("")
-const [chatMessages,setChatMessages]=useState<any[]>([])
-const [input,setInput]=useState("")
+  const [chatInput,setChatInput]=useState("")
+  const [chatMessages,setChatMessages]=useState<any[]>([])
+
+  const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
 
@@ -51,8 +52,6 @@ const [input,setInput]=useState("")
 
   const liveSEO = analyzeLiveSEO(input)
 
-  // AI THINKING SIMULATION
-
   useEffect(()=>{
 
     if(!loading) return
@@ -76,8 +75,6 @@ const [input,setInput]=useState("")
     return ()=>clearInterval(interval)
 
   },[loading])
-
-  // DATA FETCH
 
   useEffect(()=>{
 
@@ -105,8 +102,6 @@ const [input,setInput]=useState("")
     return ()=>clearTimeout(timeout)
 
   },[input])
-
-  // SCORE ANIMATION
 
   useEffect(()=>{
 
@@ -150,18 +145,24 @@ const [input,setInput]=useState("")
   }
 
   const card:any={
-    background:"#0d0d0d",
-    borderRadius:14,
+    background:"#0e0e0e",
+    borderRadius:16,
     padding:24,
-    marginBottom:20
+    marginBottom:24
   }
 
   return(
 
-    <main style={{minHeight:"100vh",display:"grid",gap:40,gridTemplateColumns:"1fr"}}>
+    <main style={{
+      minHeight:"100vh",
+      display:"grid",
+      gap:48,
+      padding:40,
+      gridTemplateColumns:"1fr"
+    }}>
 
       <style>{`
-        @media (min-width: 900px) {
+        @media (min-width: 1000px) {
           main {
             grid-template-columns: 320px 1fr !important;
           }
@@ -173,14 +174,14 @@ const [input,setInput]=useState("")
       <div>
 
         <div style={card}>
-          <strong>⚡ LIVE SEO</strong>
+          <strong>LIVE SEO SIGNAL</strong>
           <p>{liveSEO.strength} strength</p>
           <p>{liveSEO.intent} buyer intent</p>
         </div>
 
         {trend && profit && (
           <div style={card}>
-            <strong>📊 MARKET INTELLIGENCE</strong>
+            <strong>MARKET INTELLIGENCE</strong>
             <p>Opportunity: {profit.opportunity}</p>
             {trend.trending.map((t:any,i:number)=><div key={i}>• {t}</div>)}
           </div>
@@ -188,7 +189,7 @@ const [input,setInput]=useState("")
 
         {(dna || killer) && (
           <div style={card}>
-            <strong>🧠 STRATEGY INSIGHTS</strong>
+            <strong>STRATEGY INSIGHTS</strong>
             {dna && <p>{dna.structure}</p>}
             {killer && killer.weaknesses.map((w:any,i:number)=><div key={i}>• {w}</div>)}
           </div>
@@ -196,35 +197,38 @@ const [input,setInput]=useState("")
 
       </div>
 
-      {/* MAIN */}
+      {/* MAIN WORKSPACE */}
 
       <div>
 
-        <h1 style={{fontSize:54,fontWeight:700}}>ETSYLISTER</h1>
+        <h1 style={{fontSize:56,fontWeight:700,marginBottom:30}}>ETSYLISTER</h1>
 
         {listingScore && (
-          <div style={{...card,boxShadow:"0 0 40px rgba(0,255,255,0.2)"}}>
+          <div style={{
+            ...card,
+            boxShadow:"0 0 50px rgba(0,255,255,0.25)"
+          }}>
             <h2>👑 LISTING SCORE {animatedScore}/100</h2>
             <p>{listingScore.status}</p>
           </div>
         )}
 
-        {loading && <p>{aiThinking}</p>}
+        {loading && <p style={{opacity:0.6}}>{aiThinking}</p>}
 
         <input
           value={input}
           onChange={(e)=>setInput(e.target.value)}
           placeholder="Describe product..."
-          style={{width:"100%",padding:16,fontSize:16}}
+          style={{width:"100%",padding:18,fontSize:16}}
         />
 
-        <button onClick={generate} style={{marginTop:14,padding:16,width:"100%"}}>
+        <button onClick={generate} style={{marginTop:16,padding:18,width:"100%"}}>
           {loading ? "Analyzing..." : "Generate Listing"}
         </button>
 
         {parsed && (
 
-          <div style={{marginTop:20}}>
+          <div style={{marginTop:30}}>
 
             <div style={card}>
               <strong>TITLE</strong>
