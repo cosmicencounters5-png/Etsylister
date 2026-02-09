@@ -2,38 +2,33 @@ import { scanEtsy } from "../../../lib/etsyScanner"
 
 export async function POST(req:Request){
 
-  try{
+  const body = await req.json()
+  const product = body.product || ""
 
-    const body = await req.json()
-    const product = body.product || ""
-
-    if(product.length < 3){
-      return Response.json(null)
-    }
-
-    // 🔥 SCAN MARKET
-    const scan = await scanEtsy(product)
-
-    const market = scan?.marketInsights || null
-
-    if(!market){
-      return Response.json(null)
-    }
-
-    // 🔥 SAFE RETURN STRUCTURE
-    return Response.json({
-      avgInCart: market.avgInCart || 0,
-      demand: market.demand || "UNKNOWN",
-      competition: market.competition || "UNKNOWN",
-      trend: market.trend || "UNKNOWN",
-      opportunity: market.opportunity || "NORMAL",
-      leaders: market.leaders || []
-    })
-
-  }catch(e){
-
+  if(product.length < 3){
     return Response.json(null)
-
   }
 
+  // 🔥 NEW STRUCTURE
+  const scan = await scanEtsy(product)
+
+  const competitors = scan.competitors || []
+  const market = scan.marketInsights || null
+
+  if(!competitors.length || !market){
+    return Response.json(null)
+  }
+
+  // 🔥 RETURN EXACT STRUCTURE UI EXPECTS
+
+  const radar = {
+    avgInCart: market.avgInCart,
+    demand: market.demand,
+    competition: market.competition,
+    trend: market.trend,
+    opportunity: market.opportunity,
+    leaders: market.leaders || []
+  }
+
+  return Response.json(radar)
 }
