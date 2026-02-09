@@ -10,6 +10,7 @@ export default function Home(){
   const [loading,setLoading]=useState(false)
 
   const [parsed,setParsed]=useState<any>(null)
+
   const [typed,setTyped]=useState({
     title:"",
     description:"",
@@ -19,11 +20,18 @@ export default function Home(){
   const [liveMarket,setLiveMarket]=useState<any>(null)
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
+  const [copied,setCopied]=useState("")
 
-  // 🔥 LOGOUT
+  // LOGOUT
   async function logout(){
     await supabase.auth.signOut()
     window.location.href="/login"
+  }
+
+  function copy(text:string,label:string){
+    navigator.clipboard.writeText(text)
+    setCopied(label)
+    setTimeout(()=>setCopied(""),1200)
   }
 
   // LIVE DOMINATION ENGINE
@@ -81,7 +89,7 @@ export default function Home(){
 
   },[input])
 
-  // LIVE MARKET SCAN
+  // LIVE MARKET
   useEffect(()=>{
 
     if(input.length < 4){
@@ -103,7 +111,7 @@ export default function Home(){
         setLiveMarket(data)
 
       }catch(e){
-        console.log("LiveMarket error",e)
+        console.log(e)
       }
 
     },900)
@@ -138,7 +146,7 @@ export default function Home(){
       })
 
     }catch(e){
-      console.log("Generate error",e)
+      console.log(e)
     }
 
     setLoading(false)
@@ -154,27 +162,18 @@ export default function Home(){
 
           {/* HEADER */}
 
-          <div style={{
-            display:"flex",
-            justifyContent:"space-between",
-            alignItems:"center",
-            marginBottom:40
-          }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:40}}>
 
             <h1 style={{fontSize:36,fontWeight:600}}>
               ETSY LISTER
             </h1>
 
-            <button
-              onClick={logout}
-              style={{
-                background:"#111",
-                border:"1px solid #222",
-                padding:"8px 14px",
-                borderRadius:10,
-                cursor:"pointer"
-              }}
-            >
+            <button onClick={logout} style={{
+              background:"#111",
+              border:"1px solid #222",
+              padding:"8px 14px",
+              borderRadius:10
+            }}>
               Logout
             </button>
 
@@ -199,53 +198,51 @@ export default function Home(){
               }}
             />
 
-            <button
-              onClick={generate}
-              style={{
-                width:"100%",
-                padding:18,
-                marginTop:16,
-                borderRadius:12,
-                background:"white",
-                color:"black",
-                fontWeight:600
-              }}
-            >
+            <button onClick={generate} style={{
+              width:"100%",
+              padding:18,
+              marginTop:16,
+              borderRadius:12,
+              background:"white",
+              color:"black",
+              fontWeight:600
+            }}>
               {loading ? "AI thinking..." : "Generate Listing"}
             </button>
 
           </div>
 
+          {/* LIVE DOMINATION BOX */}
+
+          <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
+            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
+          </div>
+
           {/* AI THOUGHTS */}
 
-          {aiThoughts.length>0 && (
-            <div style={{marginTop:20}}>
-              {aiThoughts.map((t,i)=>(
-                <div key={i}>⚡ {t}</div>
-              ))}
-            </div>
-          )}
+          {aiThoughts.map((t,i)=><div key={i}>⚡ {t}</div>)}
 
-          {/* LIVE MARKET */}
-
-          {liveMarket && (
-            <div style={{marginTop:20}}>
-              <strong>📊 Market:</strong>
-              <div>Demand: {liveMarket.demand}</div>
-              <div>Competition: {liveMarket.competition}</div>
-            </div>
-          )}
-
-          {/* RESULT */}
+          {/* RESULTS */}
 
           {parsed && (
+
             <div style={{marginTop:30}}>
+
+              <div style={{background:"#0f0f0f",padding:18,borderRadius:14}}>
+                🔥 Profitability: {parsed.dominationScore}
+              </div>
 
               <h3>TITLE</h3>
               <p>{typed.title}</p>
+              <button onClick={()=>copy(typed.title,"title")}>
+                {copied==="title"?"Copied ✓":"Copy"}
+              </button>
 
               <h3>DESCRIPTION</h3>
               <p>{typed.description}</p>
+              <button onClick={()=>copy(typed.description,"desc")}>
+                {copied==="desc"?"Copied ✓":"Copy"}
+              </button>
 
               <h3>TAGS</h3>
 
@@ -264,6 +261,7 @@ export default function Home(){
               </div>
 
             </div>
+
           )}
 
         </div>
