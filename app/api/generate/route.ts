@@ -8,37 +8,40 @@ const openai = new OpenAI({
 
 export async function POST(req:Request){
 
-  const body = await req.json()
+  try{
 
-  const product = body.product
-  const keyword = product || "product"
+    const body = await req.json()
 
-  const scan = await scanEtsy(keyword)
+    const product = body.product
+    const keyword = product || "product"
 
-  const competitors = scan.competitors || []
-  const market = scan.marketInsights || {}
+    // 🔥 LIVE MARKET SCAN
+    const scan = await scanEtsy(keyword)
 
-  const titles = competitors.map((c:any)=>c.title)
+    const competitors = scan?.competitors || []
+    const market = scan?.marketInsights || {}
 
-  const seo = analyzeSEO(titles)
+    const titles = competitors.map((c:any)=>c.title || "")
 
-  const competitorData = competitors.map((c:any)=>({
-    title:c.title,
-    inCart:c.inCart,
-    reviews:c.reviews,
-    profitability:c.profitability,
-    trendScore:c.trendScore,
-    dominationScore:c.dominationScore
-  }))
+    const seo = analyzeSEO(titles)
 
-  const completion = await openai.chat.completions.create({
+    const competitorData = competitors.map((c:any)=>({
+      title:c.title,
+      inCart:c.inCart,
+      reviews:c.reviews,
+      profitability:c.profitability,
+      trendScore:c.trendScore,
+      dominationScore:c.dominationScore
+    }))
 
-    model:"gpt-4o-mini",
+    const completion = await openai.chat.completions.create({
 
-    messages:[
-      {
-        role:"user",
-        content:`
+      model:"gpt-4o-mini",
+
+      messages:[
+        {
+          role:"user",
+          content:`
 You are an ELITE Etsy domination strategist.
 
 USER PRODUCT:
@@ -67,33 +70,71 @@ Return ONLY JSON:
 "titleFormula":""
 }
 `
-      }
-    ]
-  })
+        }
+      ]
+    })
 
-  let text = completion.choices[0].message.content || "{}"
+    let text = completion.choices?.[0]?.message?.content || "{}"
 
-  text = text.replace(/```json/g,"").replace(/```/g,"")
+    // 🔥 CLEAN AI OUTPUT
+    text = text.replace(/```json/g,"").replace(/```/g,"").trim()
 
-  let data:any = {}
+    let data:any = {}
 
-  try{
-    data = JSON.parse(text)
-  }catch(e){
-    return Response.json({ error:"Invalid AI response"})
+    try{
+      data = JSON.parse(text)
+    }catch(e){
+      console.log("AI JSON parse failed:", text)
+
+      // 🔥 NEVER BREAK FRONTEND
+      data = {}
+    }
+
+    // 🔥 SAFETY DEFAULTS (prevents UI freeze)
+    data.title = data.title || ""
+    data.description = data.description || ""
+    data.tags = data.tags || ""
+    data.strategyInsights = data.strategyInsights || ""
+    data.dominationScore = data.dominationScore || ""
+    data.seoAdvantage = data.seoAdvantage || ""
+    data.keywordCoverage = data.keywordCoverage || ""
+    data.competitorInsights = data.competitorInsights || ""
+    data.titleFormula = data.titleFormula || ""
+
+    // 🔥 ETSY TAG ENFORCER
+    let tags = data.tags
+      .split(",")
+      .map((t:string)=>t.trim())
+      .filter(Boolean)
+
+    tags = tags.map((t:string)=> t.slice(0,20))
+    tags = tags.slice(0,13)
+
+    data.tags = tags.join(", ")
+
+    // 🔥 SEND MARKET DATA TO FRONTEND
+    data.marketInsights = market
+
+    return Response.json(data)
+
+  }catch(error){
+
+    console.log("Generate API error:", error)
+
+    // 🔥 HARD FAIL SAFE
+    return Response.json({
+      title:"",
+      description:"",
+      tags:"",
+      strategyInsights:"",
+      dominationScore:"",
+      seoAdvantage:"",
+      keywordCoverage:"",
+      competitorInsights:"",
+      titleFormula:"",
+      marketInsights:{}
+    })
+
   }
 
-  let tags = (data.tags || "")
-    .split(",")
-    .map((t:string)=>t.trim())
-    .filter(Boolean)
-
-  tags = tags.map((t:string)=> t.slice(0,20))
-  tags = tags.slice(0,13)
-
-  data.tags = tags.join(", ")
-
-  data.marketInsights = market
-
-  return Response.json(data)
 }
