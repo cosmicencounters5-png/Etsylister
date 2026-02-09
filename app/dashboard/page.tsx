@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { supabase } from "../../lib/supabaseClient"
+import AuthGuard from "../../components/AuthGuard"
 
 export default function Home(){
 
