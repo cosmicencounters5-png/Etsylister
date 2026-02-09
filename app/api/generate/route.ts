@@ -1,53 +1,53 @@
-import OpenAI from "openai";
-import { scanEtsy } from "../../../lib/etsyScanner";
-import { analyzeSEO } from "../../../lib/seoAnalyzer";
+messages:[
+{
+role:"user",
+content:`
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+You are an EXTREME Etsy SEO domination AI.
 
-export async function POST(req:Request){
+You DO NOT write generic marketing text.
 
-  try{
+You:
 
-    const body = await req.json()
-
-    const keyword = body.product || "product"
-
-    const scan = await scanEtsy(keyword)
-
-    const competitors = scan?.competitors || []
-    const market = scan?.marketInsights || {}
-
-    const titles = competitors.map((c:any)=>c.title || "")
-
-    const seo = analyzeSEO(titles)
-
-    const completion = await openai.chat.completions.create({
-
-      model:"gpt-4o-mini",
-
-      messages:[
-        {
-          role:"user",
-          content:`
-
-You are an ELITE Etsy SEO strategist.
-
-CRITICAL RULES:
-
-- EXACTLY 13 tags
-- tags must be comma separated
-- NO hashtags (#)
-- MAX 20 characters per tag
-- Etsy SEO optimized
-- realistic high converting listing
+- Reverse engineer high-ranking Etsy listings
+- Stack long-tail keywords aggressively
+- Increase buyer intent signals
+- Optimize for Etsy search algorithm, not humans.
 
 USER PRODUCT:
 ${keyword}
 
+REAL COMPETITOR DATA:
+${JSON.stringify(competitorData,null,2)}
+
+LIVE MARKET SUMMARY:
+${JSON.stringify(market,null,2)}
+
 SEO SIGNALS:
-${JSON.stringify(seo)}
+${JSON.stringify(seo,null,2)}
+
+RULES:
+
+1) TITLE:
+- Must contain multiple keyword segments
+- Use "|" or "-" separators
+- Include buyer intent phrases
+- Maximize search coverage
+
+2) DESCRIPTION:
+- First paragraph SEO-heavy
+- Include keyword variations naturally
+- Focus on conversion psychology
+
+3) TAGS:
+- EXACT Etsy-style keywords
+- NO hashtags
+- comma separated
+- high-volume search terms
+- long-tail preferred
+
+4) STRATEGY:
+Explain WHY this listing will outperform competitors.
 
 Return ONLY JSON:
 
@@ -55,66 +55,14 @@ Return ONLY JSON:
 "title":"",
 "description":"",
 "tags":"",
-"dominationScore":""
+"strategyInsights":"",
+"dominationScore":"",
+"seoAdvantage":"",
+"keywordCoverage":"",
+"competitorInsights":"",
+"titleFormula":""
 }
+
 `
-        }
-      ]
-    })
-
-    let text = completion.choices?.[0]?.message?.content || "{}"
-
-    text = text.replace(/```json/g,"").replace(/```/g,"").trim()
-
-    let data:any = {}
-
-    try{
-      data = JSON.parse(text)
-    }catch{
-      data = {}
-    }
-
-    // HARD SAFETY
-    data.title ??= ""
-    data.description ??= ""
-    data.tags ??= ""
-    data.dominationScore ??= "7.5/10"
-
-    // 🔥 TAG ENFORCER
-
-    let tags = data.tags
-      .replace(/#/g,"") // remove hashtags
-      .split(",")
-      .map((t:string)=>t.trim())
-      .filter(Boolean)
-
-    // ensure 13 tags
-    if(tags.length < 13){
-
-      const filler = seo.opportunityKeywords || []
-
-      for(let i=0;i<filler.length && tags.length<13;i++){
-        tags.push(filler[i])
-      }
-    }
-
-    tags = tags.slice(0,13).map((t:string)=>t.slice(0,20))
-
-    data.tags = tags.join(", ")
-
-    data.marketInsights = market
-
-    return Response.json(data)
-
-  }catch(error){
-
-    console.log("Generate error:",error)
-
-    return Response.json({
-      title:"",
-      description:"",
-      tags:"",
-      dominationScore:""
-    })
-  }
 }
+]
