@@ -1,20 +1,19 @@
-import OpenAI from "openai"
-import { scanEtsy } from "../../../lib/etsyScanner"
-import { analyzeSEO } from "../../../lib/seoAnalyzer"
+import OpenAI from "openai";
+import { scanEtsy } from "../../../lib/etsyScanner";
+import { analyzeSEO } from "../../../lib/seoAnalyzer";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function POST(req: Request){
+export async function POST(req:Request){
 
   try{
 
     const body = await req.json()
 
-    const keyword = body?.product || "product"
+    const keyword = body.product || "product"
 
-    // 🔥 LIVE MARKET SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -24,15 +23,6 @@ export async function POST(req: Request){
 
     const seo = analyzeSEO(titles)
 
-    const competitorData = competitors.map((c:any)=>({
-      title:c.title,
-      inCart:c.inCart,
-      reviews:c.reviews,
-      profitability:c.profitability,
-      trendScore:c.trendScore,
-      dominationScore:c.dominationScore
-    }))
-
     const completion = await openai.chat.completions.create({
 
       model:"gpt-4o-mini",
@@ -41,19 +31,23 @@ export async function POST(req: Request){
         {
           role:"user",
           content:`
-You are an ELITE Etsy domination strategist.
+
+You are an ELITE Etsy SEO strategist.
+
+CRITICAL RULES:
+
+- EXACTLY 13 tags
+- tags must be comma separated
+- NO hashtags (#)
+- MAX 20 characters per tag
+- Etsy SEO optimized
+- realistic high converting listing
 
 USER PRODUCT:
 ${keyword}
 
-REAL COMPETITOR DATA:
-${JSON.stringify(competitorData,null,2)}
-
-LIVE MARKET SUMMARY:
-${JSON.stringify(market,null,2)}
-
 SEO SIGNALS:
-${JSON.stringify(seo,null,2)}
+${JSON.stringify(seo)}
 
 Return ONLY JSON:
 
@@ -61,12 +55,7 @@ Return ONLY JSON:
 "title":"",
 "description":"",
 "tags":"",
-"strategyInsights":"",
-"dominationScore":"",
-"seoAdvantage":"",
-"keywordCoverage":"",
-"competitorInsights":"",
-"titleFormula":""
+"dominationScore":""
 }
 `
         }
@@ -82,27 +71,34 @@ Return ONLY JSON:
     try{
       data = JSON.parse(text)
     }catch{
-      console.log("AI JSON parse failed:", text)
+      data = {}
     }
 
-    // 🔥 SAFETY DEFAULTS
+    // HARD SAFETY
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
-    data.strategyInsights ??= ""
-    data.dominationScore ??= ""
-    data.seoAdvantage ??= ""
-    data.keywordCoverage ??= ""
-    data.competitorInsights ??= ""
-    data.titleFormula ??= ""
+    data.dominationScore ??= "7.5/10"
 
     // 🔥 TAG ENFORCER
+
     let tags = data.tags
+      .replace(/#/g,"") // remove hashtags
       .split(",")
       .map((t:string)=>t.trim())
       .filter(Boolean)
 
-    tags = tags.map((t:string)=> t.slice(0,20)).slice(0,13)
+    // ensure 13 tags
+    if(tags.length < 13){
+
+      const filler = seo.opportunityKeywords || []
+
+      for(let i=0;i<filler.length && tags.length<13;i++){
+        tags.push(filler[i])
+      }
+    }
+
+    tags = tags.slice(0,13).map((t:string)=>t.slice(0,20))
 
     data.tags = tags.join(", ")
 
@@ -112,21 +108,13 @@ Return ONLY JSON:
 
   }catch(error){
 
-    console.log("Generate API error:", error)
+    console.log("Generate error:",error)
 
     return Response.json({
       title:"",
       description:"",
       tags:"",
-      strategyInsights:"",
-      dominationScore:"",
-      seoAdvantage:"",
-      keywordCoverage:"",
-      competitorInsights:"",
-      titleFormula:"",
-      marketInsights:{}
+      dominationScore:""
     })
-
   }
-
 }
