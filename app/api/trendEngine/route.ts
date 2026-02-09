@@ -9,11 +9,11 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  // 🔥 NEW STRUCTURE
+  // 🔥 NEW STRUCTURE (SAFE)
   const scan = await scanEtsy(product)
 
-  const competitors = scan.competitors || []
-  const market = scan.marketInsights || {}
+  const competitors = scan?.competitors || []
+  const market = scan?.marketInsights || null
 
   if(!competitors.length){
     return Response.json(null)
@@ -23,15 +23,20 @@ export async function POST(req:Request){
 
   const words:Record<string,number> = {}
 
-  const ignore = ["with","for","and","the","etsy","gift","digital","download"]
+  const ignore = [
+    "with","for","and","the","etsy","gift",
+    "digital","download","pattern","crochet"
+  ]
 
   competitors.forEach((c:any)=>{
 
-    const title = (c.title || "").toLowerCase()
+    const title = (c?.title || "").toLowerCase()
+
+    if(!title) return
 
     const weight =
-      (c.dominationScore || 1) * 0.5 +
-      (c.trendScore || 1)
+      ((c?.dominationScore || 1) * 0.5) +
+      (c?.trendScore || 1)
 
     title.split(" ").forEach(word=>{
 
@@ -49,7 +54,9 @@ export async function POST(req:Request){
   const sorted = Object.entries(words)
     .sort((a,b)=>b[1]-a[1])
 
-  const trending = sorted.slice(0,6).map(w=>w[0])
+  const trending = sorted
+    .slice(0,6)
+    .map(w=>w[0])
 
   const emerging = sorted
     .filter(w=>w[1] < 5)
@@ -59,7 +66,7 @@ export async function POST(req:Request){
   return Response.json({
     trending,
     emerging,
-    market // 🔥 allows UI expansion later
+    market
   })
 
 }
