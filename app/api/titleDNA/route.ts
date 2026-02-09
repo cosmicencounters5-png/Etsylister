@@ -9,7 +9,7 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  // 🔥 NEW STRUCTURE
+  // 🔥 SAFE SCAN STRUCTURE
   const scan = await scanEtsy(product)
 
   const competitors = scan?.competitors || []
@@ -18,25 +18,48 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  const titles = competitors
-    .map((c:any)=>c.title || "")
+  // 🔥 SAFE TITLE EXTRACTION
+  const titles:string[] = competitors
+    .map((c:any)=> (c?.title || "").toLowerCase())
     .filter(Boolean)
 
-  const patterns = {
-    pipes: titles.filter((t:string)=>t.includes("|")).length,
-    commas: titles.filter((t:string)=>t.includes(",")).length,
-    longTitles: titles.filter((t:string)=>t.length > 80).length,
-    giftWords: titles.filter((t:string)=>t.toLowerCase().includes("gift")).length
+  if(!titles.length){
+    return Response.json(null)
   }
+
+  // 🔥 TITLE PATTERN ANALYSIS
+
+  const patterns = {
+
+    pipes: titles.filter(t=>t.includes("|")).length,
+
+    commas: titles.filter(t=>t.includes(",")).length,
+
+    longTitles: titles.filter(t=>t.length > 80).length,
+
+    giftWords: titles.filter(t=>t.includes("gift")).length
+
+  }
+
+  // 🔥 STRUCTURE LOGIC (SMARTER)
 
   let structure = "[Primary Keyword] + [Niche/Style] + [Use Case]"
 
-  if(patterns.giftWords > 2){
+  if(patterns.longTitles >= 3){
+    structure += " + [Keyword Stacking]"
+  }
+
+  if(patterns.giftWords >= 2){
     structure += " + [Gift Intent]"
+  }
+
+  if(patterns.pipes >= 2){
+    structure += " | [Separator Strategy]"
   }
 
   return Response.json({
     structure,
     patterns
   })
+
 }
