@@ -17,11 +17,8 @@ export default function Home(){
     tags:""
   })
 
-  const [brainStep,setBrainStep]=useState("")
-  const [autonomousSignals,setAutonomousSignals]=useState<string[]>([])
   const [liveMarket,setLiveMarket]=useState<any>(null)
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
-  const [copied,setCopied]=useState("")
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
 
   // 🔥 LOGOUT
@@ -30,9 +27,11 @@ export default function Home(){
     window.location.href="/login"
   }
 
+  // LIVE DOMINATION ENGINE
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
+
     let score=0
 
     if(words.includes("pattern") || words.includes("template")) score+=20
@@ -56,7 +55,7 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // 🔥 AI THOUGHT STREAM
+  // AI THOUGHT STREAM
   useEffect(()=>{
 
     if(input.length < 3){
@@ -84,7 +83,7 @@ export default function Home(){
 
   },[input])
 
-  // LIVE MARKET
+  // LIVE MARKET SCAN
   useEffect(()=>{
 
     if(input.length < 4){
@@ -95,6 +94,7 @@ export default function Home(){
     const timeout=setTimeout(async()=>{
 
       try{
+
         const res=await fetch("/api/liveMarket",{
           method:"POST",
           headers:{ "Content-Type":"application/json"},
@@ -102,6 +102,7 @@ export default function Home(){
         })
 
         const data=await res.json()
+
         setLiveMarket(data)
 
       }catch(e){}
@@ -128,7 +129,11 @@ export default function Home(){
     const data=await res.json()
 
     setParsed(data)
-    setTyped({title:"",description:"",tags:""})
+    setTyped({
+      title:data.title || "",
+      description:data.description || "",
+      tags:data.tags || ""
+    })
 
     setLoading(false)
     setShowResult(true)
@@ -136,79 +141,100 @@ export default function Home(){
 
   return(
 
-    <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
+    <AuthGuard>
 
-      <div style={{width:"100%",maxWidth:620}}>
+      <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
 
-        {/* 🔥 NEW HEADER WITH LOGOUT */}
+        <div style={{width:"100%",maxWidth:620}}>
 
-        <div style={{
-          display:"flex",
-          justifyContent:"space-between",
-          alignItems:"center",
-          marginBottom:40
-        }}>
+          {/* HEADER */}
 
-          <h1 style={{
-            fontSize:36,
-            fontWeight:600
+          <div style={{
+            display:"flex",
+            justifyContent:"space-between",
+            alignItems:"center",
+            marginBottom:40
           }}>
-            ETSY LISTER
-          </h1>
 
-          <button
-            onClick={logout}
-            style={{
-              background:"#111",
-              border:"1px solid #222",
-              padding:"8px 14px",
-              borderRadius:10,
-              cursor:"pointer"
-            }}
-          >
-            Logout
-          </button>
+            <h1 style={{fontSize:36,fontWeight:600}}>
+              ETSY LISTER
+            </h1>
+
+            <button
+              onClick={logout}
+              style={{
+                background:"#111",
+                border:"1px solid #222",
+                padding:"8px 14px",
+                borderRadius:10,
+                cursor:"pointer"
+              }}
+            >
+              Logout
+            </button>
+
+          </div>
+
+          {/* INPUT */}
+
+          <div style={{background:"#0f0f0f",borderRadius:18,padding:24}}>
+
+            <input
+              value={input}
+              onChange={(e)=>setInput(e.target.value)}
+              placeholder="Describe your product..."
+              style={{
+                width:"100%",
+                padding:20,
+                fontSize:18,
+                borderRadius:12,
+                border:"1px solid #222",
+                background:"#111",
+                color:"white"
+              }}
+            />
+
+            <button
+              onClick={generate}
+              style={{
+                width:"100%",
+                padding:18,
+                marginTop:16,
+                borderRadius:12,
+                background:"white",
+                color:"black",
+                fontWeight:600
+              }}
+            >
+              {loading ? "AI thinking..." : "Generate Listing"}
+            </button>
+
+          </div>
+
+          {/* AI FEELS ALIVE */}
+
+          {aiThoughts.length>0 && (
+            <div style={{marginTop:20}}>
+              {aiThoughts.map((t,i)=>(
+                <div key={i}>⚡ {t}</div>
+              ))}
+            </div>
+          )}
+
+          {/* LIVE MARKET */}
+
+          {liveMarket && (
+            <div style={{marginTop:20}}>
+              <strong>📊 Market:</strong>
+              <div>Demand: {liveMarket.demand}</div>
+              <div>Competition: {liveMarket.competition}</div>
+            </div>
+          )}
 
         </div>
 
-        {/* INPUT */}
+      </main>
 
-        <div style={{background:"#0f0f0f",borderRadius:18,padding:24}}>
-
-          <input
-            value={input}
-            onChange={(e)=>setInput(e.target.value)}
-            placeholder="Describe your product..."
-            style={{
-              width:"100%",
-              padding:20,
-              fontSize:18,
-              borderRadius:12,
-              border:"1px solid #222",
-              background:"#111",
-              color:"white"
-            }}
-          />
-
-          <button
-            onClick={generate}
-            style={{
-              width:"100%",
-              padding:18,
-              marginTop:16,
-              borderRadius:12,
-              background:"white",
-              color:"black",
-              fontWeight:600
-            }}
-          >
-            {loading ? "AI thinking..." : "Generate Listing"}
-          </button>
-
-        </div>
-
-      </div>
-
-    </main>
+    </AuthGuard>
   )
 }
