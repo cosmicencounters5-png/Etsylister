@@ -26,7 +26,7 @@ export default function Home(){
           fontWeight:700,
           marginBottom:20
         }}>
-          ETSYLISTER AI
+          ETSY LISTER AI
         </h1>
 
         <p style={{opacity:.7,marginBottom:40}}>
