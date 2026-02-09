@@ -16,10 +16,8 @@ export default function Home(){
   })
 
   const [brainStep,setBrainStep]=useState("")
-
   const [listingScore,setListingScore]=useState<any>(null)
   const [animatedScore,setAnimatedScore]=useState(0)
-
   const [copied,setCopied]=useState("")
 
   useEffect(()=>{
@@ -65,7 +63,7 @@ export default function Home(){
 
   },[listingScore])
 
-  // 🔥 AI BRAIN THINKING STEPS
+  // 🔥 AI thinking simulation
 
   useEffect(()=>{
 
@@ -84,7 +82,6 @@ export default function Home(){
     const interval = setInterval(()=>{
 
       setBrainStep(steps[i])
-
       i++
 
       if(i >= steps.length){
@@ -119,7 +116,7 @@ export default function Home(){
     setShowResult(true)
   }
 
-  // 🔥 FAKE STREAM TYPING EFFECT
+  // 🔥 live typing effect
 
   useEffect(()=>{
 
@@ -228,8 +225,6 @@ export default function Home(){
 
         </div>
 
-        {/* 🔥 AI BRAIN PANEL */}
-
         {loading && (
 
           <div style={{
@@ -301,5 +296,87 @@ export default function Home(){
       </div>
 
     </main>
+  )
+}
+
+function ResultBlock({title,text,label,copied,copy}:any){
+
+  return(
+
+    <div style={{
+      background:"#0f0f0f",
+      padding:24,
+      borderRadius:16,
+      marginBottom:20
+    }}>
+
+      <strong>{title}</strong>
+
+      <p style={{marginTop:10,opacity:.85}}>{text}</p>
+
+      <button
+        onClick={()=>copy(text,label)}
+        style={{
+          marginTop:12,
+          background:"#222",
+          color:"white",
+          padding:"8px 14px",
+          borderRadius:8
+        }}
+      >
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+
+    </div>
+  )
+}
+
+function TagBlock({tags,label,copied,copy}:any){
+
+  const tagArray = tags.split(",")
+
+  return(
+
+    <div style={{
+      background:"#0f0f0f",
+      padding:24,
+      borderRadius:16,
+      marginBottom:20
+    }}>
+
+      <strong>TAGS</strong>
+
+      <div style={{
+        display:"flex",
+        flexWrap:"wrap",
+        gap:8,
+        marginTop:12
+      }}>
+        {tagArray.map((t:string,i:number)=>(
+          <span key={i} style={{
+            background:"#1a1a1a",
+            padding:"6px 10px",
+            borderRadius:999,
+            fontSize:14
+          }}>
+            {t.trim()}
+          </span>
+        ))}
+      </div>
+
+      <button
+        onClick={()=>copy(tags,label)}
+        style={{
+          marginTop:12,
+          background:"#222",
+          color:"white",
+          padding:"8px 14px",
+          borderRadius:8
+        }}
+      >
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+
+    </div>
   )
 }
