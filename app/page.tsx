@@ -22,7 +22,7 @@ export default function Home(){
   const [animatedScore,setAnimatedScore]=useState(0)
   const [copied,setCopied]=useState("")
 
-  // 🔥 AUTONOMOUS AI ANALYZER
+  // AUTONOMOUS ANALYZER
 
   useEffect(()=>{
 
@@ -100,6 +100,8 @@ export default function Home(){
 
   },[listingScore])
 
+  // AI THINKING
+
   useEffect(()=>{
 
     if(!loading) return
@@ -108,8 +110,8 @@ export default function Home(){
       "Scanning Etsy competitors...",
       "Analyzing SEO patterns...",
       "Detecting buyer intent...",
-      "Optimizing title structure...",
-      "Generating high-conversion listing..."
+      "Calculating profitability...",
+      "Generating domination listing..."
     ]
 
     let i = 0
@@ -151,6 +153,8 @@ export default function Home(){
     setShowResult(true)
   }
 
+  // typing effect
+
   useEffect(()=>{
 
     if(!parsed) return
@@ -178,13 +182,8 @@ export default function Home(){
 
     typeField("title",parsed.title,10)
 
-    setTimeout(()=>{
-      typeField("description",parsed.description,2)
-    },400)
-
-    setTimeout(()=>{
-      typeField("tags",parsed.tags,8)
-    },800)
+    setTimeout(()=>typeField("description",parsed.description,2),400)
+    setTimeout(()=>typeField("tags",parsed.tags,8),800)
 
   },[parsed])
 
@@ -226,8 +225,6 @@ export default function Home(){
 
         </div>
 
-        {/* AUTONOMOUS AI PANEL */}
-
         {autonomousSignals.length>0 && !loading && (
           <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
             🤖 Live AI Analysis:
@@ -241,21 +238,12 @@ export default function Home(){
           </div>
         )}
 
+        {parsed?.marketInsights && (
+          <MarketPanel market={parsed.marketInsights}/>
+        )}
+
         {listingScore && (
-          <div style={{display:"flex",justifyContent:"center",marginBottom:40}}>
-            <svg width="200" height="200">
-              <circle cx="100" cy="100" r={radius} stroke="#222" strokeWidth="8" fill="transparent"/>
-              <circle cx="100" cy="100" r={radius} stroke="white" strokeWidth="8" fill="transparent"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference-progress}
-                strokeLinecap="round"
-                transform="rotate(-90 100 100)"
-              />
-              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="36" fill="white">
-                {animatedScore}
-              </text>
-            </svg>
-          </div>
+          <ScoreDial animatedScore={animatedScore} progress={progress} radius={radius}/>
         )}
 
         {showResult && (
@@ -273,6 +261,41 @@ export default function Home(){
   )
 }
 
+function MarketPanel({market}:any){
+
+  return(
+    <div style={{background:"#0f0f0f",padding:20,borderRadius:14,marginBottom:20}}>
+      <strong>📊 LIVE MARKET INTELLIGENCE</strong>
+      <p>Avg In Cart: {market.avgInCart}</p>
+      <p>Competition: {market.competitionDensity}</p>
+      <p>Trend: {market.trendDirection}</p>
+      <p>Profit Signal: {market.profitSignal}</p>
+    </div>
+  )
+}
+
+function ScoreDial({animatedScore,progress,radius}:any){
+
+  const circumference=2*Math.PI*radius
+
+  return(
+    <div style={{display:"flex",justifyContent:"center",marginBottom:40}}>
+      <svg width="200" height="200">
+        <circle cx="100" cy="100" r={radius} stroke="#222" strokeWidth="8" fill="transparent"/>
+        <circle cx="100" cy="100" r={radius} stroke="white" strokeWidth="8" fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference-progress}
+          strokeLinecap="round"
+          transform="rotate(-90 100 100)"
+        />
+        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="36" fill="white">
+          {animatedScore}
+        </text>
+      </svg>
+    </div>
+  )
+}
+
 function ResultBlock({title,text,label,copied,copy}:any){
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
@@ -286,7 +309,9 @@ function ResultBlock({title,text,label,copied,copy}:any){
 }
 
 function TagBlock({tags,label,copied,copy}:any){
+
   const tagArray = tags.split(",")
+
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>TAGS</strong>
@@ -305,7 +330,9 @@ function TagBlock({tags,label,copied,copy}:any){
 }
 
 function StrategyPanel({parsed}:any){
+
   if(!parsed) return null
+
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
       <strong>🧠 AI Strategy Insights</strong>
