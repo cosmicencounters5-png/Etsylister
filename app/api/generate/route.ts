@@ -1,7 +1,46 @@
-messages:[
-{
-role:"user",
-content:`
+import OpenAI from "openai"
+import { scanEtsy } from "../../../lib/etsyScanner"
+import { analyzeSEO } from "../../../lib/seoAnalyzer"
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
+
+export async function POST(req: Request) {
+
+  try {
+
+    const body = await req.json()
+
+    const keyword = body.product || "product"
+
+    // LIVE SCAN
+    const scan = await scanEtsy(keyword)
+
+    const competitors = scan?.competitors || []
+    const market = scan?.marketInsights || {}
+
+    const titles = competitors.map((c:any)=>c.title || "")
+
+    const seo = analyzeSEO(titles)
+
+    const competitorData = competitors.map((c:any)=>({
+      title:c.title,
+      inCart:c.inCart,
+      reviews:c.reviews,
+      profitability:c.profitability,
+      trendScore:c.trendScore,
+      dominationScore:c.dominationScore
+    }))
+
+    const completion = await openai.chat.completions.create({
+
+      model:"gpt-4o-mini",
+
+      messages:[
+        {
+          role:"user",
+          content:`
 
 You are an EXTREME Etsy SEO domination AI.
 
@@ -28,26 +67,20 @@ ${JSON.stringify(seo,null,2)}
 
 RULES:
 
-1) TITLE:
-- Must contain multiple keyword segments
-- Use "|" or "-" separators
-- Include buyer intent phrases
-- Maximize search coverage
+TITLE:
+- multiple keyword segments
+- "|" or "-" separators
+- buyer intent phrases
+- maximize search coverage
 
-2) DESCRIPTION:
-- First paragraph SEO-heavy
-- Include keyword variations naturally
-- Focus on conversion psychology
+DESCRIPTION:
+- SEO heavy opening
+- conversion psychology
 
-3) TAGS:
-- EXACT Etsy-style keywords
-- NO hashtags
+TAGS:
 - comma separated
-- high-volume search terms
-- long-tail preferred
-
-4) STRATEGY:
-Explain WHY this listing will outperform competitors.
+- NO hashtags
+- long-tail Etsy keywords
 
 Return ONLY JSON:
 
@@ -64,5 +97,65 @@ Return ONLY JSON:
 }
 
 `
+        }
+      ]
+    })
+
+    let text = completion.choices?.[0]?.message?.content || "{}"
+
+    text = text.replace(/```json/g,"").replace(/```/g,"").trim()
+
+    let data:any = {}
+
+    try{
+      data = JSON.parse(text)
+    }catch{
+      data = {}
+    }
+
+    // SAFETY DEFAULTS
+    data.title ??= ""
+    data.description ??= ""
+    data.tags ??= ""
+    data.strategyInsights ??= ""
+    data.dominationScore ??= ""
+    data.seoAdvantage ??= ""
+    data.keywordCoverage ??= ""
+    data.competitorInsights ??= ""
+    data.titleFormula ??= ""
+
+    // ETSY TAG FORMAT
+    let tags = data.tags
+      .split(",")
+      .map((t:string)=>t.trim())
+      .filter(Boolean)
+
+    tags = tags.map((t:string)=> t.replace("#","").slice(0,20))
+    tags = tags.slice(0,13)
+
+    data.tags = tags.join(", ")
+
+    data.marketInsights = market
+
+    return Response.json(data)
+
+  } catch (error) {
+
+    console.log("Generate API error:", error)
+
+    return Response.json({
+      title:"",
+      description:"",
+      tags:"",
+      strategyInsights:"",
+      dominationScore:"",
+      seoAdvantage:"",
+      keywordCoverage:"",
+      competitorInsights:"",
+      titleFormula:"",
+      marketInsights:{}
+    })
+
+  }
+
 }
-]
