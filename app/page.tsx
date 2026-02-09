@@ -1,187 +1,175 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabaseClient"
-import { useRouter } from "next/navigation"
-import AiLogo from "../components/AiLogo"
 
-export default function LandingPage(){
+export default function Landing(){
 
-  const router = useRouter()
+  const [loading,setLoading]=useState(false)
 
-  async function startNow(){
+  // AUTO REDIRECT IF LOGGED IN
+  useEffect(()=>{
 
-    const { data } = await supabase.auth.getSession()
+    async function check(){
 
-    if(data.session){
-      router.push("/dashboard")
-    }else{
-      router.push("/login")
+      const { data } = await supabase.auth.getSession()
+
+      if(data.session){
+        window.location.href="/dashboard"
+      }
+
     }
 
+    check()
+
+  },[])
+
+  function goLogin(){
+    window.location.href="/login"
   }
 
   return(
 
     <main style={{
       minHeight:"100vh",
-      background:"#050505",
-      color:"white",
       display:"flex",
       justifyContent:"center",
-      padding:"80px 20px"
+      paddingTop:80
     }}>
 
-      <div style={{maxWidth:900,width:"100%"}}>
-
-        {/* HEADER */}
-
-        <header style={{
-          display:"flex",
-          justifyContent:"space-between",
-          alignItems:"center",
-          marginBottom:80
-        }}>
-
-          {/* 🔥 LOGO ENGINE */}
-
-          <div style={{
-            fontSize:22,
-            fontWeight:700,
-            letterSpacing:1
-          }}>
-            ETSY <span style={{opacity:.6}}>LISTER</span>
-          </div>
-
-          <div style={{display:"flex",gap:12}}>
-
-            <button
-              onClick={()=>router.push("/login")}
-              style={{
-                background:"transparent",
-                border:"1px solid #222",
-                padding:"8px 16px",
-                borderRadius:10,
-                color:"white"
-              }}
-            >
-              Login
-            </button>
-
-            <button
-              onClick={startNow}
-              style={{
-                background:"white",
-                color:"black",
-                padding:"8px 16px",
-                borderRadius:10,
-                fontWeight:600
-              }}
-            >
-              Get Started
-            </button>
-
-          </div>
-
-        </header>
+      <div style={{
+        maxWidth:900,
+        width:"100%",
+        padding:"0 20px"
+      }}>
 
         {/* HERO */}
 
         <section style={{textAlign:"center"}}>
 
           <h1 style={{
-            fontSize:56,
+            fontSize:52,
             fontWeight:700,
-            letterSpacing:-1,
             lineHeight:1.1
           }}>
-            Outsmart Etsy SEO<br/>with Live AI Strategy
+            ETSY LISTER
           </h1>
 
           <p style={{
+            opacity:.8,
             marginTop:20,
-            opacity:.7,
-            fontSize:18
+            fontSize:20
           }}>
-            Reverse engineer top listings, detect hidden opportunities,
-            and generate domination-level listings instantly.
+            AI that reverse engineers winning Etsy listings
+            and generates domination-ready titles, tags and descriptions.
           </p>
 
           <button
-            onClick={startNow}
+            onClick={goLogin}
             style={{
-              marginTop:40,
+              marginTop:30,
+              padding:"18px 28px",
+              fontSize:18,
+              borderRadius:14,
               background:"white",
               color:"black",
-              padding:"18px 28px",
-              borderRadius:14,
-              fontSize:18,
-              fontWeight:600
+              fontWeight:600,
+              border:"none",
+              cursor:"pointer"
             }}
           >
-            Start Generating Listings →
+            Start Free →
           </button>
 
         </section>
 
-        {/* FEATURES */}
+        {/* FEATURE GRID */}
 
         <section style={{
-          marginTop:120,
+          marginTop:80,
           display:"grid",
-          gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",
           gap:20
         }}>
 
           <Feature
             title="Live Market Intelligence"
-            text="Scan real Etsy listings and analyze demand signals in real-time."
+            desc="Analyzes real competitor data and ranking signals before generating your listing."
           />
 
           <Feature
-            title="AI Domination Strategy"
-            text="Reverse engineer competitors and find ranking gaps instantly."
+            title="AI Domination Engine"
+            desc="Detects buyer intent, keyword gaps and hidden opportunity niches."
           />
 
           <Feature
-            title="Conversion Optimized Titles"
-            text="Generate listings engineered for clicks and buyer intent."
+            title="Instant Listing Generator"
+            desc="Create high-converting titles, descriptions and tags in seconds."
           />
 
         </section>
 
-        {/* FOOTER */}
+        {/* SOCIAL PROOF STYLE BLOCK */}
 
-        <footer style={{
-          marginTop:120,
-          opacity:.4,
-          textAlign:"center",
-          fontSize:14
+        <section style={{
+          marginTop:80,
+          background:"#0f0f0f",
+          padding:30,
+          borderRadius:18
         }}>
-          © {new Date().getFullYear()} ETSY LISTER
-        </footer>
+
+          <h2 style={{fontSize:28}}>
+            Stop guessing Etsy SEO.
+          </h2>
+
+          <p style={{opacity:.8,marginTop:10}}>
+            ETSY LISTER scans real listing structures, detects ranking DNA,
+            and builds optimized listings designed to outrank competitors.
+          </p>
+
+        </section>
+
+        {/* FINAL CTA */}
+
+        <section style={{
+          marginTop:80,
+          textAlign:"center"
+        }}>
+
+          <button
+            onClick={goLogin}
+            style={{
+              padding:"20px 32px",
+              fontSize:20,
+              borderRadius:14,
+              background:"white",
+              color:"black",
+              fontWeight:700
+            }}
+          >
+            Launch AI Strategist 🚀
+          </button>
+
+        </section>
 
       </div>
 
     </main>
+
   )
 }
 
-function Feature({title,text}:{title:string,text:string}){
+function Feature({title,desc}:any){
 
   return(
+
     <div style={{
       background:"#0f0f0f",
       padding:24,
-      borderRadius:16,
-      border:"1px solid #111"
+      borderRadius:16
     }}>
-
-      <strong>{title}</strong>
-
-      <p style={{marginTop:10,opacity:.7}}>
-        {text}
-      </p>
-
+      <h3>{title}</h3>
+      <p style={{opacity:.8,marginTop:8}}>{desc}</p>
     </div>
+
   )
 }
