@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/react"
+
 export default function RootLayout({
   children,
 }: {
@@ -15,7 +17,7 @@ export default function RootLayout({
 
         <meta name="theme-color" content="#050505" />
 
-        {/* Apple font smoothing */}
+        {/* Apple font smoothing + global styles */}
         <style>{`
           html, body {
             margin:0;
@@ -33,7 +35,7 @@ export default function RootLayout({
 
           input, button {
             font-family:inherit;
-            font-size:16px; /* prevent iOS zoom */
+            font-size:16px; /* prevents iOS zoom */
           }
         `}</style>
 
@@ -51,6 +53,9 @@ export default function RootLayout({
         >
           {children}
         </div>
+
+        {/* 🔥 VERCEL ANALYTICS */}
+        <Analytics />
 
       </body>
     </html>
