@@ -20,10 +20,7 @@ export default function Home(){
   const [liveMarket,setLiveMarket]=useState<any>(null)
 
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
-
   const [copied,setCopied]=useState("")
-
-  // 🔥 LIVE DOMINATION ENGINE
 
   function calculateLiveDomination(text:string){
 
@@ -52,7 +49,7 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // 🔥 LIVE MARKET SCAN
+  // LIVE MARKET SCAN
 
   useEffect(()=>{
 
@@ -83,7 +80,7 @@ export default function Home(){
 
   },[input])
 
-  // 🔥 AUTONOMOUS ANALYZER
+  // AUTONOMOUS ANALYZER
 
   useEffect(()=>{
 
@@ -93,7 +90,6 @@ export default function Home(){
     }
 
     const words=input.toLowerCase()
-
     const signals=[]
 
     if(words.includes("pattern") || words.includes("template")){
@@ -238,8 +234,6 @@ export default function Home(){
 
         </div>
 
-        {/* LIVE DOMINATION */}
-
         {input.length>0 && (
           <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
             👑 LIVE DOMINATION ENGINE
@@ -247,8 +241,6 @@ export default function Home(){
             <p>Level: {liveDomination.level}</p>
           </div>
         )}
-
-        {/* LIVE MARKET */}
 
         {liveMarket && (
           <>
@@ -285,6 +277,7 @@ export default function Home(){
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
             <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
             <StrategyPanel parsed={parsed}/>
+            <UltraStrategistPanel parsed={parsed}/>
           </div>
         )}
 
@@ -294,36 +287,13 @@ export default function Home(){
   )
 }
 
-// 🔥 LEADER PANEL
-
 function LeaderPanel({leaders}:any){
-
   return(
     <div style={{background:"#0f0f0f",padding:20,borderRadius:14,marginBottom:20}}>
       <strong>🔥 MARKET DOMINATION LEADERS</strong>
-
-      <div style={{display:"flex",flexDirection:"column",gap:12,marginTop:14}}>
-
-        {leaders.map((l:any,i:number)=>(
-          <div key={i} style={{display:"flex",gap:12,alignItems:"center",background:"#111",padding:10,borderRadius:10}}>
-
-            {l.image && (
-              <img src={l.image} style={{width:60,height:60,objectFit:"cover",borderRadius:8}}/>
-            )}
-
-            <div style={{fontSize:14}}>
-              <div style={{fontWeight:600}}>
-                {l.title}
-              </div>
-              <div style={{opacity:.6}}>
-                👥 {l.inCart} in cart
-              </div>
-            </div>
-
-          </div>
-        ))}
-
-      </div>
+      {leaders.map((l:any,i:number)=>(
+        <div key={i}>{l.title}</div>
+      ))}
     </div>
   )
 }
@@ -333,45 +303,29 @@ function ResultBlock({title,text,label,copied,copy}:any){
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>{title}</strong>
       <p style={{marginTop:10,opacity:.85}}>{text}</p>
-      <button onClick={()=>copy(text,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
+      <button onClick={()=>copy(text,label)}>
         {copied===label ? "Copied ✓" : "Copy"}
       </button>
     </div>
   )
 }
 
-function TagBlock({tags,label,copied,copy}:any){
-
-  const tagArray = tags.split(",")
-
-  return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
-      <strong>TAGS</strong>
-      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:12}}>
-        {tagArray.map((t:string,i:number)=>(
-          <span key={i} style={{background:"#1a1a1a",padding:"6px 10px",borderRadius:999,fontSize:14}}>
-            {t.trim()}
-          </span>
-        ))}
-      </div>
-      <button onClick={()=>copy(tags,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
-        {copied===label ? "Copied ✓" : "Copy"}
-      </button>
-    </div>
-  )
+function TagBlock({tags}:any){
+  return <div>{tags}</div>
 }
 
 function StrategyPanel({parsed}:any){
-
   if(!parsed) return null
+  return <div>{parsed.strategyInsights}</div>
+}
 
+function UltraStrategistPanel({parsed}:any){
+  if(!parsed) return null
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
-      <strong>🧠 AI Strategy Insights</strong>
-      {parsed.titleFormula && <p style={{marginTop:10}}><b>Winning Title Formula:</b> {parsed.titleFormula}</p>}
-      {parsed.strategyInsights && <p style={{marginTop:10}}>{parsed.strategyInsights}</p>}
-      {parsed.seoAdvantage && <p style={{marginTop:10}}><b>SEO Advantage:</b> {parsed.seoAdvantage}</p>}
-      {parsed.competitorInsights && <p style={{marginTop:10}}><b>Competitor Insights:</b> {parsed.competitorInsights}</p>}
+      <strong>🔥 ULTRA STRATEGIST AI</strong>
+      <p>{parsed.titleFormula}</p>
+      <p>{parsed.dominationScore}</p>
     </div>
   )
 }
