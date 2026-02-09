@@ -9,32 +9,57 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  const competitors = await scanEtsy(product)
+  // 🔥 NEW STRUCTURE
+  const scan = await scanEtsy(product)
 
-  const titles = competitors.map(c => c.title.toLowerCase())
+  const competitors = scan.competitors || []
+  const market = scan.marketInsights || {}
+
+  if(!competitors.length){
+    return Response.json(null)
+  }
+
+  // 🔥 WORD WEIGHTING SYSTEM
 
   const words:Record<string,number> = {}
 
-  titles.forEach(t=>{
-    t.split(" ").forEach(word=>{
-      if(word.length < 4) return
-      words[word] = (words[word] || 0) + 1
+  const ignore = ["with","for","and","the","etsy","gift","digital","download"]
+
+  competitors.forEach((c:any)=>{
+
+    const title = (c.title || "").toLowerCase()
+
+    const weight =
+      (c.dominationScore || 1) * 0.5 +
+      (c.trendScore || 1)
+
+    title.split(" ").forEach(word=>{
+
+      const clean = word.replace(/[^\w]/g,"")
+
+      if(clean.length < 4) return
+      if(ignore.includes(clean)) return
+
+      words[clean] = (words[clean] || 0) + weight
+
     })
+
   })
 
-  const trending = Object.entries(words)
+  const sorted = Object.entries(words)
     .sort((a,b)=>b[1]-a[1])
-    .slice(0,6)
-    .map(w=>w[0])
 
-  const emerging = Object.entries(words)
-    .filter(w=>w[1] === 1)
+  const trending = sorted.slice(0,6).map(w=>w[0])
+
+  const emerging = sorted
+    .filter(w=>w[1] < 5)
     .slice(0,5)
     .map(w=>w[0])
 
   return Response.json({
     trending,
-    emerging
+    emerging,
+    market // 🔥 allows UI expansion later
   })
 
 }
