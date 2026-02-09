@@ -31,8 +31,6 @@ export default function Home(){
 
   },[input])
 
-  // smooth animation
-
   useEffect(()=>{
 
     if(!listingScore) return
@@ -88,57 +86,92 @@ export default function Home(){
       minHeight:"100vh",
       display:"flex",
       justifyContent:"center",
-      alignItems:"center",
-      background:"#050505",
-      color:"white",
-      padding:20
+      paddingTop:80
     }}>
 
       <div style={{
         width:"100%",
-        maxWidth:600,
-        textAlign:"center"
+        maxWidth:620
       }}>
 
         {/* HEADER */}
 
         <h1 style={{
-          fontSize:48,
+          fontSize:56,
           fontWeight:600,
-          marginBottom:40,
-          letterSpacing:-1
+          letterSpacing:-1,
+          textAlign:"center",
+          marginBottom:60
         }}>
           ETSYLISTER
         </h1>
 
-        {/* SCORE DIAL */}
+        {/* INPUT HERO */}
+
+        <div style={{
+          background:"#0f0f0f",
+          borderRadius:18,
+          padding:24,
+          marginBottom:30
+        }}>
+
+          <input
+            value={input}
+            onChange={(e)=>setInput(e.target.value)}
+            placeholder="Describe your product..."
+            style={{
+              width:"100%",
+              padding:20,
+              fontSize:18,
+              borderRadius:12,
+              border:"1px solid #222",
+              background:"#111",
+              color:"white"
+            }}
+          />
+
+          <button
+            onClick={generate}
+            style={{
+              width:"100%",
+              padding:18,
+              marginTop:16,
+              borderRadius:12,
+              background:"white",
+              color:"black",
+              fontWeight:600
+            }}
+          >
+            {loading ? "Analyzing..." : "Generate Listing"}
+          </button>
+
+        </div>
+
+        {/* SCORE */}
 
         {listingScore && (
 
-          <div style={{marginBottom:40}}>
+          <div style={{
+            display:"flex",
+            justifyContent:"center",
+            marginBottom:40
+          }}>
 
-            <svg width="220" height="220">
+            <svg width="200" height="200">
 
-              <circle
-                cx="110"
-                cy="110"
-                r={radius}
-                stroke="#222"
-                strokeWidth="10"
-                fill="transparent"
-              />
+              <circle cx="100" cy="100" r={radius} stroke="#222" strokeWidth="8" fill="transparent"/>
 
               <circle
-                cx="110"
-                cy="110"
+                cx="100"
+                cy="100"
                 r={radius}
                 stroke="white"
-                strokeWidth="10"
+                strokeWidth="8"
                 fill="transparent"
                 strokeDasharray={circumference}
                 strokeDashoffset={circumference-progress}
                 strokeLinecap="round"
-                transform="rotate(-90 110 110)"
+                transform="rotate(-90 100 100)"
               />
 
               <text
@@ -146,7 +179,7 @@ export default function Home(){
                 y="50%"
                 dominantBaseline="middle"
                 textAnchor="middle"
-                fontSize="42"
+                fontSize="36"
                 fill="white"
               >
                 {animatedScore}
@@ -154,64 +187,19 @@ export default function Home(){
 
             </svg>
 
-            <div style={{opacity:.6}}>
-              {listingScore.status}
-            </div>
-
           </div>
 
         )}
-
-        {/* INPUT */}
-
-        <input
-  value={input}
-  onChange={(e)=>setInput(e.target.value)}
-  placeholder="Describe your product..."
-  style={{
-    width:"100%",
-    padding:18,
-    fontSize:16,
-    borderRadius:12,
-    border:"1px solid #222",
-    background:"#111",
-    color:"white",
-    outline:"none",
-    marginBottom:16
-  }}
-/>
-
-        <button
-          onClick={generate}
-          style={{
-            width:"100%",
-            padding:18,
-            borderRadius:12,
-            background:"white",
-            color:"black",
-            fontWeight:600
-          }}
-        >
-          {loading ? "Analyzing..." : "Generate Listing"}
-        </button>
 
         {/* RESULTS */}
 
         {parsed && (
 
-          <div style={{marginTop:40,textAlign:"left"}}>
+          <div>
 
-            <h3>TITLE</h3>
-            <p>{parsed.title}</p>
-            <button onClick={()=>copy(parsed.title)}>Copy</button>
-
-            <h3>DESCRIPTION</h3>
-            <p>{parsed.description}</p>
-            <button onClick={()=>copy(parsed.description)}>Copy</button>
-
-            <h3>TAGS</h3>
-            <p>{parsed.tags}</p>
-            <button onClick={()=>copy(parsed.tags)}>Copy</button>
+            <ResultBlock title="TITLE" text={parsed.title} copy={copy}/>
+            <ResultBlock title="DESCRIPTION" text={parsed.description} copy={copy}/>
+            <ResultBlock title="TAGS" text={parsed.tags} copy={copy}/>
 
           </div>
 
@@ -220,5 +208,37 @@ export default function Home(){
       </div>
 
     </main>
+  )
+}
+
+function ResultBlock({title,text,copy}:{title:string,text:string,copy:any}){
+
+  return(
+
+    <div style={{
+      background:"#0f0f0f",
+      padding:24,
+      borderRadius:16,
+      marginBottom:20
+    }}>
+
+      <strong style={{display:"block",marginBottom:10}}>{title}</strong>
+
+      <p style={{opacity:.85}}>{text}</p>
+
+      <button
+        onClick={()=>copy(text)}
+        style={{
+          marginTop:12,
+          background:"#222",
+          color:"white",
+          padding:"8px 14px",
+          borderRadius:8
+        }}
+      >
+        Copy
+      </button>
+
+    </div>
   )
 }
