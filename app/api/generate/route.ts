@@ -14,9 +14,13 @@ export async function POST(req:Request){
 
   const keyword = product || "product"
 
-  const competitors = await scanEtsy(keyword)
+  // 🔥 NEW MARKET INTELLIGENCE STRUCTURE
+  const scan = await scanEtsy(keyword)
 
-  const titles = competitors.map(c=>c.title)
+  const competitors = scan.competitors || []
+  const market = scan.marketInsights || {}
+
+  const titles = competitors.map((c:any)=>c.title)
 
   const seo = analyzeSEO(titles)
 
@@ -29,16 +33,25 @@ export async function POST(req:Request){
         role:"user",
         content:`
 
-You are an elite Etsy reverse-engine strategist.
+You are an elite Etsy domination strategist using REAL market intelligence.
 
 USER PRODUCT:
 ${keyword}
 
-TOP COMPETITOR TITLES:
+REAL COMPETITOR TITLES:
 ${titles.join("\n")}
+
+LIVE MARKET DATA:
+${JSON.stringify(market,null,2)}
 
 SEO SIGNALS:
 ${JSON.stringify(seo,null,2)}
+
+TASK:
+
+- Reverse engineer why competitors win
+- Use REAL market signals (inCart, competition level, trend)
+- Generate HIGH-CONVERSION listing
 
 RULES:
 
@@ -78,17 +91,17 @@ Return ONLY JSON:
     return Response.json({ error:"Invalid AI response"})
   }
 
-  // 🔥 ETSY TAG ENFORCER
+  // 🔥 ETSY TAG ENFORCER (ULTRA SAFE)
 
   let tags = (data.tags || "")
     .split(",")
     .map((t:string)=>t.trim())
     .filter(Boolean)
 
-  // max 20 chars
+  // enforce max length
   tags = tags.map((t:string)=> t.slice(0,20))
 
-  // max 13 tags
+  // enforce count
   tags = tags.slice(0,13)
 
   data.tags = tags.join(", ")
