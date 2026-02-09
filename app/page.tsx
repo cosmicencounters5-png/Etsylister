@@ -14,6 +14,9 @@ export default function Home(){
   const [profit,setProfit]=useState<any>(null)
   const [listingScore,setListingScore]=useState<any>(null)
 
+  const [animatedScore,setAnimatedScore]=useState(0)
+  const [aiThinking,setAiThinking]=useState("")
+
   function analyzeLiveSEO(text:string){
 
     const words=text.toLowerCase().split(" ").filter(Boolean)
@@ -45,6 +48,34 @@ export default function Home(){
 
   const liveSEO = analyzeLiveSEO(input)
 
+  // AI THINKING SIMULATION
+
+  useEffect(()=>{
+
+    if(!loading) return
+
+    const steps=[
+      "Scanning competitors...",
+      "Analyzing market demand...",
+      "Detecting ranking gaps...",
+      "Calculating profitability...",
+      "Optimizing strategy..."
+    ]
+
+    let i=0
+
+    const interval=setInterval(()=>{
+      setAiThinking(steps[i])
+      i++
+      if(i>=steps.length) clearInterval(interval)
+    },700)
+
+    return ()=>clearInterval(interval)
+
+  },[loading])
+
+  // DATA FETCH
+
   useEffect(()=>{
 
     if(input.length < 4) return
@@ -71,6 +102,30 @@ export default function Home(){
     return ()=>clearTimeout(timeout)
 
   },[input])
+
+  // SCORE ANIMATION
+
+  useEffect(()=>{
+
+    if(!listingScore) return
+
+    let current=0
+
+    const interval=setInterval(()=>{
+
+      current+=2
+      if(current>=listingScore.score){
+        current=listingScore.score
+        clearInterval(interval)
+      }
+
+      setAnimatedScore(current)
+
+    },20)
+
+    return ()=>clearInterval(interval)
+
+  },[listingScore])
 
   async function generate(){
 
@@ -145,14 +200,13 @@ export default function Home(){
         <h1 style={{fontSize:54,fontWeight:700}}>ETSYLISTER</h1>
 
         {listingScore && (
-          <div style={{
-            ...card,
-            boxShadow:"0 0 40px rgba(0,255,255,0.2)"
-          }}>
-            <h2>👑 LISTING SCORE {listingScore.score}/100</h2>
+          <div style={{...card,boxShadow:"0 0 40px rgba(0,255,255,0.2)"}}>
+            <h2>👑 LISTING SCORE {animatedScore}/100</h2>
             <p>{listingScore.status}</p>
           </div>
         )}
+
+        {loading && <p>{aiThinking}</p>}
 
         <input
           value={input}
