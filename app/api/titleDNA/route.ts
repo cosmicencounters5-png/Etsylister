@@ -9,15 +9,24 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  const competitors = await scanEtsy(product)
+  // 🔥 NEW STRUCTURE
+  const scan = await scanEtsy(product)
 
-  const titles = competitors.map(c=>c.title)
+  const competitors = scan?.competitors || []
+
+  if(!competitors.length){
+    return Response.json(null)
+  }
+
+  const titles = competitors
+    .map((c:any)=>c.title || "")
+    .filter(Boolean)
 
   const patterns = {
-    pipes: titles.filter(t=>t.includes("|")).length,
-    commas: titles.filter(t=>t.includes(",")).length,
-    longTitles: titles.filter(t=>t.length > 80).length,
-    giftWords: titles.filter(t=>t.toLowerCase().includes("gift")).length
+    pipes: titles.filter((t:string)=>t.includes("|")).length,
+    commas: titles.filter((t:string)=>t.includes(",")).length,
+    longTitles: titles.filter((t:string)=>t.length > 80).length,
+    giftWords: titles.filter((t:string)=>t.toLowerCase().includes("gift")).length
   }
 
   let structure = "[Primary Keyword] + [Niche/Style] + [Use Case]"
