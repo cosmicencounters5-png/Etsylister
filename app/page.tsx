@@ -9,7 +9,7 @@ export default function Home(){
   const [parsed,setParsed]=useState<any>(null)
   const [showResult,setShowResult]=useState(false)
 
-  const [typed,setTyped]=useState<any>({
+  const [typed,setTyped]=useState({
     title:"",
     description:"",
     tags:""
@@ -49,8 +49,6 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // LIVE MARKET SCAN
-
   useEffect(()=>{
 
     if(input.length < 4){
@@ -61,7 +59,6 @@ export default function Home(){
     const timeout=setTimeout(async()=>{
 
       try{
-
         const res=await fetch("/api/liveMarket",{
           method:"POST",
           headers:{ "Content-Type":"application/json"},
@@ -69,7 +66,6 @@ export default function Home(){
         })
 
         const data=await res.json()
-
         setLiveMarket(data)
 
       }catch(e){}
@@ -79,8 +75,6 @@ export default function Home(){
     return ()=>clearTimeout(timeout)
 
   },[input])
-
-  // AUTONOMOUS ANALYZER
 
   useEffect(()=>{
 
@@ -136,8 +130,6 @@ export default function Home(){
     setShowResult(true)
   }
 
-  // AI THINKING
-
   useEffect(()=>{
 
     if(!loading) return
@@ -153,21 +145,14 @@ export default function Home(){
     let i = 0
 
     const interval = setInterval(()=>{
-
       setBrainStep(steps[i])
       i++
-
-      if(i >= steps.length){
-        clearInterval(interval)
-      }
-
+      if(i >= steps.length) clearInterval(interval)
     },600)
 
     return ()=>clearInterval(interval)
 
   },[loading])
-
-  // TYPING EFFECT
 
   useEffect(()=>{
 
@@ -181,7 +166,7 @@ export default function Home(){
 
         i++
 
-        setTyped((prev:any)=>({
+        setTyped(prev=>({
           ...prev,
           [field]:value.slice(0,i)
         }))
@@ -216,69 +201,32 @@ export default function Home(){
           ETSYLISTER
         </h1>
 
-        <div style={{background:"#0f0f0f",borderRadius:18,padding:24,marginBottom:20}}>
+        <InputPanel input={input} setInput={setInput} generate={generate} loading={loading}/>
 
-          <input
-            value={input}
-            onChange={(e)=>setInput(e.target.value)}
-            placeholder="Describe your product..."
-            style={{width:"100%",padding:20,fontSize:18,borderRadius:12,border:"1px solid #222",background:"#111",color:"white"}}
-          />
+        <DominationPanel liveDomination={liveDomination}/>
 
-          <button
-            onClick={generate}
-            style={{width:"100%",padding:18,marginTop:16,borderRadius:12,background:"white",color:"black",fontWeight:600}}
-          >
-            {loading ? "AI thinking..." : "Generate Listing"}
-          </button>
-
-        </div>
-
-        {input.length>0 && (
-          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
-            👑 LIVE DOMINATION ENGINE
-            <p>Score: {liveDomination.score}/100</p>
-            <p>Level: {liveDomination.level}</p>
-          </div>
-        )}
-
-        {liveMarket && (
-          <>
-            <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
-              <strong>📊 LIVE MARKET INTELLIGENCE</strong>
-              <p>Avg In Cart: {liveMarket.avgInCart}</p>
-              <p>Demand: {liveMarket.demand}</p>
-              <p>Competition: {liveMarket.competition}</p>
-              <p>Trend: {liveMarket.trend}</p>
-            </div>
-
-            {liveMarket.leaders && (
-              <LeaderPanel leaders={liveMarket.leaders}/>
-            )}
-          </>
-        )}
+        {liveMarket && <MarketPanel liveMarket={liveMarket}/>}
 
         {autonomousSignals.length>0 && !loading && (
-          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
-            🤖 Live AI Analysis:
+          <InfoCard title="🤖 Live AI Analysis">
             {autonomousSignals.map((s,i)=><div key={i}>⚡ {s}</div>)}
-          </div>
+          </InfoCard>
         )}
 
         {loading && (
-          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
-            🤖 {brainStep}
-          </div>
+          <InfoCard title="🤖 AI Brain">
+            {brainStep}
+          </InfoCard>
         )}
 
         {showResult && parsed && (
-          <div>
+          <>
             <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
-            <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
+            <TagBlock tags={typed.tags}/>
             <StrategyPanel parsed={parsed}/>
             <UltraStrategistPanel parsed={parsed}/>
-          </div>
+          </>
         )}
 
       </div>
@@ -287,45 +235,89 @@ export default function Home(){
   )
 }
 
-function LeaderPanel({leaders}:any){
+function InputPanel({input,setInput,generate,loading}:any){
   return(
-    <div style={{background:"#0f0f0f",padding:20,borderRadius:14,marginBottom:20}}>
-      <strong>🔥 MARKET DOMINATION LEADERS</strong>
-      {leaders.map((l:any,i:number)=>(
-        <div key={i}>{l.title}</div>
-      ))}
+    <div style={{background:"#0f0f0f",borderRadius:18,padding:24,marginBottom:20}}>
+      <input value={input} onChange={(e)=>setInput(e.target.value)}
+        placeholder="Describe your product..."
+        style={{width:"100%",padding:20,fontSize:18,borderRadius:12,border:"1px solid #222",background:"#111",color:"white"}}
+      />
+      <button onClick={generate}
+        style={{width:"100%",padding:18,marginTop:16,borderRadius:12,background:"white",color:"black",fontWeight:600}}>
+        {loading ? "AI thinking..." : "Generate Listing"}
+      </button>
+    </div>
+  )
+}
+
+function DominationPanel({liveDomination}:any){
+  return(
+    <InfoCard title="👑 LIVE DOMINATION ENGINE">
+      <p>Score: {liveDomination.score}/100</p>
+      <p>Level: {liveDomination.level}</p>
+    </InfoCard>
+  )
+}
+
+function MarketPanel({liveMarket}:any){
+  return(
+    <>
+      <InfoCard title="📊 LIVE MARKET INTELLIGENCE">
+        <p>Avg In Cart: {liveMarket.avgInCart}</p>
+        <p>Demand: {liveMarket.demand}</p>
+        <p>Competition: {liveMarket.competition}</p>
+        <p>Trend: {liveMarket.trend}</p>
+      </InfoCard>
+
+      {liveMarket.leaders && (
+        <InfoCard title="🔥 MARKET DOMINATION LEADERS">
+          {liveMarket.leaders.map((l:any,i:number)=><div key={i}>{l.title}</div>)}
+        </InfoCard>
+      )}
+    </>
+  )
+}
+
+function InfoCard({title,children}:any){
+  return(
+    <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
+      <strong>{title}</strong>
+      <div style={{marginTop:10}}>{children}</div>
     </div>
   )
 }
 
 function ResultBlock({title,text,label,copied,copy}:any){
   return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
-      <strong>{title}</strong>
-      <p style={{marginTop:10,opacity:.85}}>{text}</p>
+    <InfoCard title={title}>
+      <p style={{opacity:.85}}>{text}</p>
       <button onClick={()=>copy(text,label)}>
         {copied===label ? "Copied ✓" : "Copy"}
       </button>
-    </div>
+    </InfoCard>
   )
 }
 
 function TagBlock({tags}:any){
-  return <div>{tags}</div>
+  const tagArray = tags.split(",")
+  return(
+    <InfoCard title="TAGS">
+      {tagArray.map((t:string,i:number)=><span key={i}>{t.trim()} </span>)}
+    </InfoCard>
+  )
 }
 
 function StrategyPanel({parsed}:any){
   if(!parsed) return null
-  return <div>{parsed.strategyInsights}</div>
+  return <InfoCard title="🧠 Strategy">{parsed.strategyInsights}</InfoCard>
 }
 
 function UltraStrategistPanel({parsed}:any){
   if(!parsed) return null
   return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
-      <strong>🔥 ULTRA STRATEGIST AI</strong>
+    <InfoCard title="🔥 ULTRA STRATEGIST AI">
       <p>{parsed.titleFormula}</p>
       <p>{parsed.dominationScore}</p>
-    </div>
+    </InfoCard>
   )
 }
