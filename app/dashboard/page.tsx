@@ -193,4 +193,91 @@ export default function Home(){
               padding:18,
               marginTop:16,
               borderRadius:12,
-              background:"
+              background:"white",
+              color:"black",
+              fontWeight:600
+            }}>
+              {loading ? "AI thinking..." : "Generate Listing"}
+            </button>
+
+          </div>
+
+          {/* DOMINATION */}
+
+          <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
+            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
+          </div>
+
+          {/* AI THOUGHTS */}
+
+          {aiThoughts.map((t,i)=><div key={i}>⚡ {t}</div>)}
+
+          {/* RESULTS */}
+
+          {parsed && (
+
+            <div style={{marginTop:30}}>
+
+              <div style={{background:"#0f0f0f",padding:18,borderRadius:14}}>
+                🔥 Profitability: {parsed.dominationScore}
+              </div>
+
+              <h3>TITLE</h3>
+              <p>{typed.title}</p>
+              <button onClick={()=>copy(typed.title,"title")}>
+                {copied==="title"?"Copied ✓":"Copy"}
+              </button>
+
+              <h3>DESCRIPTION</h3>
+              <p>{typed.description}</p>
+              <button onClick={()=>copy(typed.description,"desc")}>
+                {copied==="desc"?"Copied ✓":"Copy"}
+              </button>
+
+              <h3>TAGS</h3>
+
+              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                {typed.tags.split(",").map((t:string,i:number)=>(
+                  <span key={i} style={{
+                    background:"#1a1a1a",
+                    padding:"6px 10px",
+                    borderRadius:999
+                  }}>
+                    {t.trim()}
+                  </span>
+                ))}
+              </div>
+
+              <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
+                {copied==="tags"?"Copied ✓":"Copy Tags"}
+              </button>
+
+              {/* STRATEGIST PANEL */}
+
+              <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
+
+                <strong>🧠 Strategy Insights</strong>
+                <p>{parsed.strategyInsights}</p>
+
+                <strong>⚡ SEO Advantage</strong>
+                <p>{parsed.seoAdvantage}</p>
+
+                <strong>🔥 Competitor Insights</strong>
+                <p>{parsed.competitorInsights}</p>
+
+                <strong>👑 Title Formula</strong>
+                <p>{parsed.titleFormula}</p>
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </main>
+
+    </AuthGuard>
+  )
+}
