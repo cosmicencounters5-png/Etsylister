@@ -2,28 +2,27 @@ import OpenAI from "openai";
 import { scanEtsy } from "../../../lib/etsyScanner";
 import { analyzeSEO } from "../../../lib/seoAnalyzer";
 
-const openai=new OpenAI({
-  apiKey:process.env.OPENAI_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 })
 
 export async function POST(req:Request){
 
-  const body=await req.json()
+  const body = await req.json()
 
-  const product=body.product
+  const product = body.product
 
-  const keyword=product || "product"
+  const keyword = product || "product"
 
-  const competitors=await scanEtsy(keyword)
+  const competitors = await scanEtsy(keyword)
 
-  const titles=competitors.map(c=>c.title)
+  const titles = competitors.map(c=>c.title)
 
-  const seo=analyzeSEO(titles)
+  const seo = analyzeSEO(titles)
 
-  const stream=await openai.chat.completions.create({
+  const completion = await openai.chat.completions.create({
 
     model:"gpt-4o-mini",
-    stream:true,
 
     messages:[
       {
@@ -41,12 +40,12 @@ ${titles.join("\n")}
 SEO SIGNALS:
 ${JSON.stringify(seo,null,2)}
 
-TASK:
+RULES:
 
-1) Generate optimized listing
-2) Calculate domination metrics
-3) Reverse engineer WHY competitors win
-4) Extract WINNING TITLE FORMULA pattern
+- Title max 140 characters
+- EXACTLY 13 tags
+- EACH tag MAX 20 characters
+- Tags comma separated
 
 Return ONLY JSON:
 
@@ -66,29 +65,34 @@ Return ONLY JSON:
     ]
   })
 
-  const encoder=new TextEncoder()
+  let text = completion.choices[0].message.content || "{}"
 
-  const readable=new ReadableStream({
+  // remove markdown if AI adds it
+  text = text.replace(/```json/g,"").replace(/```/g,"")
 
-    async start(controller){
+  let data:any = {}
 
-      for await(const chunk of stream){
+  try{
+    data = JSON.parse(text)
+  }catch(e){
+    return Response.json({ error:"Invalid AI response"})
+  }
 
-        const content=chunk.choices[0]?.delta?.content
+  // 🔥 ETSY TAG ENFORCER
 
-        if(content){
-          controller.enqueue(encoder.encode(content))
-        }
+  let tags = (data.tags || "")
+    .split(",")
+    .map((t:string)=>t.trim())
+    .filter(Boolean)
 
-      }
+  // max 20 chars
+  tags = tags.map((t:string)=> t.slice(0,20))
 
-      controller.close()
-    }
+  // max 13 tags
+  tags = tags.slice(0,13)
 
-  })
+  data.tags = tags.join(", ")
 
-  return new Response(readable,{
-    headers:{ "Content-Type":"text/plain"}
-  })
+  return Response.json(data)
 
 }
