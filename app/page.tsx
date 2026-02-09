@@ -165,19 +165,21 @@ export default function Home(){
         {/* INPUT */}
 
         <input
-          value={input}
-          onChange={(e)=>setInput(e.target.value)}
-          placeholder="Describe your product..."
-          style={{
-            width:"100%",
-            padding:18,
-            fontSize:16,
-            borderRadius:12,
-            border:"1px solid #222",
-            background:"#111",
-            marginBottom:16
-          }}
-        />
+  value={input}
+  onChange={(e)=>setInput(e.target.value)}
+  placeholder="Describe your product..."
+  style={{
+    width:"100%",
+    padding:18,
+    fontSize:16,
+    borderRadius:12,
+    border:"1px solid #222",
+    background:"#111",
+    color:"white",
+    outline:"none",
+    marginBottom:16
+  }}
+/>
 
         <button
           onClick={generate}
