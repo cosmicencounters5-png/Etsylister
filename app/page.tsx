@@ -1,54 +1,26 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function Home(){
 
   const router = useRouter()
 
-  return(
+  useEffect(()=>{
 
-    <main style={{
-      minHeight:"100vh",
-      display:"flex",
-      alignItems:"center",
-      justifyContent:"center"
-    }}>
+    supabase.auth.getSession().then(({data})=>{
 
-      <div style={{
-        width:"100%",
-        maxWidth:420,
-        textAlign:"center"
-      }}>
+      if(data.session){
+        router.push("/dashboard")
+      }else{
+        router.push("/login")
+      }
 
-        <h1 style={{
-          fontSize:56,
-          fontWeight:700,
-          marginBottom:20
-        }}>
-          ETSY LISTER AI
-        </h1>
+    })
 
-        <p style={{opacity:.7,marginBottom:40}}>
-          Live Market Intelligence for Etsy domination.
-        </p>
+  },[])
 
-        <button
-          onClick={()=>router.push("/dashboard")}
-          style={{
-            width:"100%",
-            padding:18,
-            borderRadius:12,
-            background:"white",
-            color:"black",
-            fontWeight:600
-          }}
-        >
-          Enter Dashboard
-        </button>
-
-      </div>
-
-    </main>
-  )
+  return null
 }
