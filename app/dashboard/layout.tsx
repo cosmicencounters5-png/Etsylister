@@ -1,6 +1,5 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
 
 export default async function DashboardLayout({
   children,
@@ -8,24 +7,22 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
 
-  const cookieStore = cookies()
-
-  const supabase = createServerClient(
+  // 🔥 SERVER SIDE SUPABASE CLIENT
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name:string) {
-          return cookieStore.get(name)?.value
-        }
-      }
-    }
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data:{ session } } = await supabase.auth.getSession()
+  // ⚠️ simple session check
+  // siden vi ikke bruker ssr package nå
 
-  // 🔥 NO LOGIN = NO ACCESS
-  if(!session){
+  // NOTE:
+  // dette er basic protection
+  // vi oppgraderer senere til cookie auth
+
+  const { data } = await supabase.auth.getSession()
+
+  if(!data?.session){
     redirect("/login")
   }
 
