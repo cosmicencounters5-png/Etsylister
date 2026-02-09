@@ -8,9 +8,8 @@ export default function Home(){
 
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
-  const [parsed,setParsed]=useState<any>(null)
-  const [showResult,setShowResult]=useState(false)
 
+  const [parsed,setParsed]=useState<any>(null)
   const [typed,setTyped]=useState({
     title:"",
     description:"",
@@ -31,17 +30,16 @@ export default function Home(){
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
-
     let score=0
 
     if(words.includes("pattern") || words.includes("template")) score+=20
     if(words.includes("printable") || words.includes("download")) score+=20
     if(words.includes("gift") || words.includes("custom")) score+=20
 
-    const wordCount = words.split(" ").length
+    const wc = words.split(" ").length
 
-    if(wordCount>=3) score+=20
-    if(wordCount>=5) score+=20
+    if(wc>=3) score+=20
+    if(wc>=5) score+=20
 
     const level =
       score>=80 ? "GOD MODE" :
@@ -102,10 +100,11 @@ export default function Home(){
         })
 
         const data=await res.json()
-
         setLiveMarket(data)
 
-      }catch(e){}
+      }catch(e){
+        console.log("LiveMarket error",e)
+      }
 
     },900)
 
@@ -113,30 +112,36 @@ export default function Home(){
 
   },[input])
 
+  // GENERATE
   async function generate(){
 
     if(!input) return
 
     setLoading(true)
-    setShowResult(false)
 
-    const res=await fetch("/api/generate",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ product:input })
-    })
+    try{
 
-    const data=await res.json()
+      const res=await fetch("/api/generate",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ product:input })
+      })
 
-    setParsed(data)
-    setTyped({
-      title:data.title || "",
-      description:data.description || "",
-      tags:data.tags || ""
-    })
+      const data=await res.json()
+
+      setParsed(data)
+
+      setTyped({
+        title:data?.title || "",
+        description:data?.description || "",
+        tags:data?.tags || ""
+      })
+
+    }catch(e){
+      console.log("Generate error",e)
+    }
 
     setLoading(false)
-    setShowResult(true)
   }
 
   return(
@@ -211,7 +216,7 @@ export default function Home(){
 
           </div>
 
-          {/* AI FEELS ALIVE */}
+          {/* AI THOUGHTS */}
 
           {aiThoughts.length>0 && (
             <div style={{marginTop:20}}>
@@ -228,6 +233,36 @@ export default function Home(){
               <strong>📊 Market:</strong>
               <div>Demand: {liveMarket.demand}</div>
               <div>Competition: {liveMarket.competition}</div>
+            </div>
+          )}
+
+          {/* RESULT */}
+
+          {parsed && (
+            <div style={{marginTop:30}}>
+
+              <h3>TITLE</h3>
+              <p>{typed.title}</p>
+
+              <h3>DESCRIPTION</h3>
+              <p>{typed.description}</p>
+
+              <h3>TAGS</h3>
+
+              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+
+                {typed.tags.split(",").map((t:string,i:number)=>(
+                  <span key={i} style={{
+                    background:"#1a1a1a",
+                    padding:"6px 10px",
+                    borderRadius:999
+                  }}>
+                    {t.trim()}
+                  </span>
+                ))}
+
+              </div>
+
             </div>
           )}
 
