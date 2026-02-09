@@ -23,7 +23,7 @@ export default function Home(){
   const [copied,setCopied]=useState("")
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
 
-  // 🔥 LOGOUT (CORRECT PLACEMENT)
+  // 🔥 LOGOUT
   async function logout(){
     await supabase.auth.signOut()
     window.location.href="/login"
@@ -55,7 +55,7 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // AI THOUGHT STREAM
+  // 🔥 AI THOUGHT STREAM
   useEffect(()=>{
 
     if(input.length < 3){
@@ -111,39 +111,103 @@ export default function Home(){
 
   },[input])
 
-  // AUTONOMOUS SIGNALS
-  useEffect(()=>{
-
-    if(input.length < 3){
-      setAutonomousSignals([])
-      return
-    }
-
-    const words=input.toLowerCase()
-    const signals=[]
-
-    if(words.includes("pattern") || words.includes("template")){
-      signals.push("Digital product niche detected")
-    }
-
-    if(words.includes("printable") || words.includes("download")){
-      signals.push("Instant download buyer intent detected")
-    }
-
-    if(words.split(" ").length >=3){
-      signals.push("Long-tail keyword structure identified")
-    }
-
-    if(words.includes("gift") || words.includes("custom")){
-      signals.push("High buyer intent keyword detected")
-    }
-
-    signals.push("Etsy SEO alignment active")
-
-    setAutonomousSignals(signals)
-
-  },[input])
-
   async function generate(){
 
     if(!input) return
+
+    setLoading(true)
+    setShowResult(false)
+
+    const res=await fetch("/api/generate",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body: JSON.stringify({ product:input })
+    })
+
+    const data=await res.json()
+
+    setParsed(data)
+    setTyped({title:"",description:"",tags:""})
+
+    setLoading(false)
+    setShowResult(true)
+  }
+
+  return(
+
+    <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
+
+      <div style={{width:"100%",maxWidth:620}}>
+
+        {/* 🔥 NEW HEADER WITH LOGOUT */}
+
+        <div style={{
+          display:"flex",
+          justifyContent:"space-between",
+          alignItems:"center",
+          marginBottom:40
+        }}>
+
+          <h1 style={{
+            fontSize:36,
+            fontWeight:600
+          }}>
+            ETSY LISTER
+          </h1>
+
+          <button
+            onClick={logout}
+            style={{
+              background:"#111",
+              border:"1px solid #222",
+              padding:"8px 14px",
+              borderRadius:10,
+              cursor:"pointer"
+            }}
+          >
+            Logout
+          </button>
+
+        </div>
+
+        {/* INPUT */}
+
+        <div style={{background:"#0f0f0f",borderRadius:18,padding:24}}>
+
+          <input
+            value={input}
+            onChange={(e)=>setInput(e.target.value)}
+            placeholder="Describe your product..."
+            style={{
+              width:"100%",
+              padding:20,
+              fontSize:18,
+              borderRadius:12,
+              border:"1px solid #222",
+              background:"#111",
+              color:"white"
+            }}
+          />
+
+          <button
+            onClick={generate}
+            style={{
+              width:"100%",
+              padding:18,
+              marginTop:16,
+              borderRadius:12,
+              background:"white",
+              color:"black",
+              fontWeight:600
+            }}
+          >
+            {loading ? "AI thinking..." : "Generate Listing"}
+          </button>
+
+        </div>
+
+      </div>
+
+    </main>
+  )
+}
