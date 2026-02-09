@@ -8,7 +8,6 @@ export default function Home(){
 
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
-
   const [parsed,setParsed]=useState<any>(null)
 
   const [typed,setTyped]=useState({
@@ -21,9 +20,7 @@ export default function Home(){
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
   const [copied,setCopied]=useState("")
-  const [brainStep,setBrainStep]=useState("")
 
-  // LOGOUT
   async function logout(){
     await supabase.auth.signOut()
     window.location.href="/login"
@@ -35,7 +32,6 @@ export default function Home(){
     setTimeout(()=>setCopied(""),1200)
   }
 
-  // LIVE DOMINATION ENGINE
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
@@ -62,7 +58,6 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // AI THOUGHT STREAM
   useEffect(()=>{
 
     if(input.length < 3){
@@ -90,7 +85,6 @@ export default function Home(){
 
   },[input])
 
-  // LIVE MARKET SCAN
   useEffect(()=>{
 
     if(input.length < 4){
@@ -111,9 +105,7 @@ export default function Home(){
         const data=await res.json()
         setLiveMarket(data)
 
-      }catch(e){
-        console.log(e)
-      }
+      }catch(e){}
 
     },900)
 
@@ -121,62 +113,6 @@ export default function Home(){
 
   },[input])
 
-  // AI brain thinking animation
-  useEffect(()=>{
-
-    if(!loading) return
-
-    const steps=[
-      "Scanning Etsy competitors...",
-      "Analyzing SEO patterns...",
-      "Detecting buyer intent...",
-      "Calculating profitability...",
-      "Generating domination listing..."
-    ]
-
-    let i=0
-
-    const interval=setInterval(()=>{
-      setBrainStep(steps[i])
-      i++
-      if(i>=steps.length) clearInterval(interval)
-    },600)
-
-    return ()=>clearInterval(interval)
-
-  },[loading])
-
-  // typing animation
-  useEffect(()=>{
-
-    if(!parsed) return
-
-    function typeField(field:string,value:string,delay:number){
-
-      let i=0
-
-      const interval=setInterval(()=>{
-
-        i++
-
-        setTyped(prev=>({
-          ...prev,
-          [field]:value.slice(0,i)
-        }))
-
-        if(i>=value.length) clearInterval(interval)
-
-      },delay)
-
-    }
-
-    typeField("title",parsed.title || "",10)
-    setTimeout(()=>typeField("description",parsed.description || "",2),400)
-    setTimeout(()=>typeField("tags",parsed.tags || "",8),800)
-
-  },[parsed])
-
-  // GENERATE
   async function generate(){
 
     if(!input) return
@@ -195,9 +131,13 @@ export default function Home(){
 
       setParsed(data)
 
-    }catch(e){
-      console.log(e)
-    }
+      setTyped({
+        title:data?.title || "",
+        description:data?.description || "",
+        tags:data?.tags || ""
+      })
+
+    }catch(e){}
 
     setLoading(false)
   }
@@ -253,83 +193,4 @@ export default function Home(){
               padding:18,
               marginTop:16,
               borderRadius:12,
-              background:"white",
-              color:"black",
-              fontWeight:600
-            }}>
-              {loading ? "AI thinking..." : "Generate Listing"}
-            </button>
-
-          </div>
-
-          {/* LIVE DOMINATION */}
-
-          <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
-            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
-          </div>
-
-          {/* AI THINKING */}
-
-          {loading && (
-            <div style={{marginTop:20}}>
-              🤖 {brainStep}
-            </div>
-          )}
-
-          {/* AI THOUGHTS */}
-
-          {aiThoughts.map((t,i)=><div key={i}>⚡ {t}</div>)}
-
-          {/* RESULTS */}
-
-          {parsed && (
-
-            <div style={{marginTop:30}}>
-
-              <div style={{background:"#0f0f0f",padding:18,borderRadius:14}}>
-                🔥 Profitability: {parsed.dominationScore}
-              </div>
-
-              <h3>TITLE</h3>
-              <p>{typed.title}</p>
-              <button onClick={()=>copy(typed.title,"title")}>
-                {copied==="title"?"Copied ✓":"Copy"}
-              </button>
-
-              <h3>DESCRIPTION</h3>
-              <p>{typed.description}</p>
-              <button onClick={()=>copy(typed.description,"desc")}>
-                {copied==="desc"?"Copied ✓":"Copy"}
-              </button>
-
-              <h3>TAGS</h3>
-
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-
-                {typed.tags.split(",").map((t:string,i:number)=>(
-                  <span key={i} style={{
-                    background:"#1a1a1a",
-                    padding:"6px 10px",
-                    borderRadius:999
-                  }}>
-                    {t.trim()}
-                  </span>
-                ))}
-
-              </div>
-
-              <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
-                {copied==="tags"?"Copied ✓":"Copy Tags"}
-              </button>
-
-            </div>
-
-          )}
-
-        </div>
-
-      </main>
-
-    </AuthGuard>
-  )
-}
+              background:"
