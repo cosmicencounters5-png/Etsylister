@@ -13,7 +13,7 @@ export async function POST(req:Request){
   const product = body.product
   const keyword = product || "product"
 
-  // LIVE MARKET SCAN
+  // 🔥 LIVE MARKET SCAN
   const scan = await scanEtsy(keyword)
 
   const competitors = scan.competitors || []
@@ -105,7 +105,7 @@ Return ONLY JSON:
     return Response.json({ error:"Invalid AI response"})
   }
 
-  // ETSY TAG ENFORCER
+  // 🔥 ETSY TAG ENFORCER
 
   let tags = (data.tags || "")
     .split(",")
@@ -116,6 +116,9 @@ Return ONLY JSON:
   tags = tags.slice(0,13)
 
   data.tags = tags.join(", ")
+
+  // 🔥 VERY IMPORTANT: send market data to frontend
+  data.marketInsights = market
 
   return Response.json(data)
 }
