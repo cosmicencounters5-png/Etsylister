@@ -2,6 +2,7 @@
 
 import { supabase } from "../lib/supabaseClient"
 import { useRouter } from "next/navigation"
+import AiLogo from "../components/AiLogo"
 
 export default function LandingPage(){
 
