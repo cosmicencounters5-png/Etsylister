@@ -11,10 +11,9 @@ export async function POST(req:Request){
   const body = await req.json()
 
   const product = body.product
-
   const keyword = product || "product"
 
-  // 🔥 LIVE MARKET SCAN
+  // LIVE MARKET SCAN
   const scan = await scanEtsy(keyword)
 
   const competitors = scan.competitors || []
@@ -24,13 +23,13 @@ export async function POST(req:Request){
 
   const seo = analyzeSEO(titles)
 
-  // 🔥 FULL COMPETITOR INTELLIGENCE
   const competitorData = competitors.map((c:any)=>({
     title:c.title,
     inCart:c.inCart,
     reviews:c.reviews,
     profitability:c.profitability,
-    trendScore:c.trendScore
+    trendScore:c.trendScore,
+    dominationScore:c.dominationScore
   }))
 
   const completion = await openai.chat.completions.create({
@@ -42,7 +41,13 @@ export async function POST(req:Request){
         role:"user",
         content:`
 
-You are an elite Etsy domination strategist using REAL market intelligence.
+You are an ELITE Etsy domination strategist using REAL live market intelligence.
+
+IMPORTANT:
+
+- HIGH inCart = strong demand signal
+- LOW reviews + HIGH inCart = growth opportunity
+- HIGH dominationScore = market leader pattern
 
 USER PRODUCT:
 ${keyword}
@@ -58,10 +63,10 @@ ${JSON.stringify(seo,null,2)}
 
 TASK:
 
-- Reverse engineer why competitors win
-- Identify gaps user can exploit
-- Use REAL market signals (inCart, profitability, trendScore)
-- Generate HIGH-CONVERSION listing.
+1) Reverse engineer WHY top listings rank
+2) Detect hidden opportunity gaps
+3) Prioritize rising opportunities over saturated leaders
+4) Create HIGH-CONVERSION listing designed to OUTRANK competitors.
 
 RULES:
 
@@ -100,7 +105,7 @@ Return ONLY JSON:
     return Response.json({ error:"Invalid AI response"})
   }
 
-  // 🔥 ETSY TAG ENFORCER
+  // ETSY TAG ENFORCER
 
   let tags = (data.tags || "")
     .split(",")
@@ -108,11 +113,9 @@ Return ONLY JSON:
     .filter(Boolean)
 
   tags = tags.map((t:string)=> t.slice(0,20))
-
   tags = tags.slice(0,13)
 
   data.tags = tags.join(", ")
 
   return Response.json(data)
-
 }
