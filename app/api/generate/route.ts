@@ -14,7 +14,7 @@ export async function POST(req:Request){
 
   const keyword = product || "product"
 
-  // 🔥 NEW MARKET INTELLIGENCE STRUCTURE
+  // 🔥 LIVE MARKET SCAN
   const scan = await scanEtsy(keyword)
 
   const competitors = scan.competitors || []
@@ -23,6 +23,15 @@ export async function POST(req:Request){
   const titles = competitors.map((c:any)=>c.title)
 
   const seo = analyzeSEO(titles)
+
+  // 🔥 FULL COMPETITOR INTELLIGENCE
+  const competitorData = competitors.map((c:any)=>({
+    title:c.title,
+    inCart:c.inCart,
+    reviews:c.reviews,
+    profitability:c.profitability,
+    trendScore:c.trendScore
+  }))
 
   const completion = await openai.chat.completions.create({
 
@@ -38,10 +47,10 @@ You are an elite Etsy domination strategist using REAL market intelligence.
 USER PRODUCT:
 ${keyword}
 
-REAL COMPETITOR TITLES:
-${titles.join("\n")}
+REAL COMPETITOR DATA:
+${JSON.stringify(competitorData,null,2)}
 
-LIVE MARKET DATA:
+LIVE MARKET SUMMARY:
 ${JSON.stringify(market,null,2)}
 
 SEO SIGNALS:
@@ -50,8 +59,9 @@ ${JSON.stringify(seo,null,2)}
 TASK:
 
 - Reverse engineer why competitors win
-- Use REAL market signals (inCart, competition level, trend)
-- Generate HIGH-CONVERSION listing
+- Identify gaps user can exploit
+- Use REAL market signals (inCart, profitability, trendScore)
+- Generate HIGH-CONVERSION listing.
 
 RULES:
 
@@ -80,7 +90,6 @@ Return ONLY JSON:
 
   let text = completion.choices[0].message.content || "{}"
 
-  // remove markdown if AI adds it
   text = text.replace(/```json/g,"").replace(/```/g,"")
 
   let data:any = {}
@@ -91,17 +100,15 @@ Return ONLY JSON:
     return Response.json({ error:"Invalid AI response"})
   }
 
-  // 🔥 ETSY TAG ENFORCER (ULTRA SAFE)
+  // 🔥 ETSY TAG ENFORCER
 
   let tags = (data.tags || "")
     .split(",")
     .map((t:string)=>t.trim())
     .filter(Boolean)
 
-  // enforce max length
   tags = tags.map((t:string)=> t.slice(0,20))
 
-  // enforce count
   tags = tags.slice(0,13)
 
   data.tags = tags.join(", ")
