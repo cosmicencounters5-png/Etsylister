@@ -7,9 +7,12 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
+  const [showResult,setShowResult]=useState(false)
 
   const [listingScore,setListingScore]=useState<any>(null)
   const [animatedScore,setAnimatedScore]=useState(0)
+
+  const [copied,setCopied]=useState("")
 
   useEffect(()=>{
 
@@ -59,6 +62,7 @@ export default function Home(){
     if(!input) return
 
     setLoading(true)
+    setShowResult(false)
 
     const res=await fetch("/api/generate",{
       method:"POST",
@@ -70,10 +74,14 @@ export default function Home(){
 
     setParsed(data)
     setLoading(false)
+
+    setTimeout(()=>setShowResult(true),100)
   }
 
-  function copy(text:string){
+  function copy(text:string,label:string){
     navigator.clipboard.writeText(text)
+    setCopied(label)
+    setTimeout(()=>setCopied(""),1200)
   }
 
   const radius=90
@@ -89,12 +97,7 @@ export default function Home(){
       paddingTop:80
     }}>
 
-      <div style={{
-        width:"100%",
-        maxWidth:620
-      }}>
-
-        {/* HEADER */}
+      <div style={{width:"100%",maxWidth:620}}>
 
         <h1 style={{
           fontSize:56,
@@ -105,8 +108,6 @@ export default function Home(){
         }}>
           ETSYLISTER
         </h1>
-
-        {/* INPUT HERO */}
 
         <div style={{
           background:"#0f0f0f",
@@ -146,8 +147,6 @@ export default function Home(){
           </button>
 
         </div>
-
-        {/* SCORE */}
 
         {listingScore && (
 
@@ -191,15 +190,15 @@ export default function Home(){
 
         )}
 
-        {/* RESULTS */}
+        {parsed && showResult && (
 
-        {parsed && (
+          <div style={{animation:"fadeIn .4s ease"}}>
 
-          <div>
+            <ResultBlock title="TITLE" text={parsed.title} label="title" copied={copied} copy={copy}/>
 
-            <ResultBlock title="TITLE" text={parsed.title} copy={copy}/>
-            <ResultBlock title="DESCRIPTION" text={parsed.description} copy={copy}/>
-            <ResultBlock title="TAGS" text={parsed.tags} copy={copy}/>
+            <ResultBlock title="DESCRIPTION" text={parsed.description} label="description" copied={copied} copy={copy}/>
+
+            <TagBlock tags={parsed.tags} label="tags" copied={copied} copy={copy}/>
 
           </div>
 
@@ -207,11 +206,18 @@ export default function Home(){
 
       </div>
 
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity:0; transform:translateY(10px); }
+          to { opacity:1; transform:translateY(0); }
+        }
+      `}</style>
+
     </main>
   )
 }
 
-function ResultBlock({title,text,copy}:{title:string,text:string,copy:any}){
+function ResultBlock({title,text,label,copied,copy}:any){
 
   return(
 
@@ -227,7 +233,7 @@ function ResultBlock({title,text,copy}:{title:string,text:string,copy:any}){
       <p style={{opacity:.85}}>{text}</p>
 
       <button
-        onClick={()=>copy(text)}
+        onClick={()=>copy(text,label)}
         style={{
           marginTop:12,
           background:"#222",
@@ -236,7 +242,57 @@ function ResultBlock({title,text,copy}:{title:string,text:string,copy:any}){
           borderRadius:8
         }}
       >
-        Copy
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+
+    </div>
+  )
+}
+
+function TagBlock({tags,label,copied,copy}:any){
+
+  const tagArray = tags.split(",")
+
+  return(
+
+    <div style={{
+      background:"#0f0f0f",
+      padding:24,
+      borderRadius:16,
+      marginBottom:20
+    }}>
+
+      <strong>TAGS</strong>
+
+      <div style={{
+        display:"flex",
+        flexWrap:"wrap",
+        gap:8,
+        marginTop:12
+      }}>
+        {tagArray.map((t:string,i:number)=>(
+          <span key={i} style={{
+            background:"#1a1a1a",
+            padding:"6px 10px",
+            borderRadius:999,
+            fontSize:14
+          }}>
+            {t.trim()}
+          </span>
+        ))}
+      </div>
+
+      <button
+        onClick={()=>copy(tags,label)}
+        style={{
+          marginTop:12,
+          background:"#222",
+          color:"white",
+          padding:"8px 14px",
+          borderRadius:8
+        }}
+      >
+        {copied===label ? "Copied ✓" : "Copy"}
       </button>
 
     </div>
