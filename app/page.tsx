@@ -19,11 +19,9 @@ export default function Home(){
   const [autonomousSignals,setAutonomousSignals]=useState<string[]>([])
   const [liveMarket,setLiveMarket]=useState<any>(null)
 
-  const [listingScore,setListingScore]=useState<any>(null)
-  const [animatedScore,setAnimatedScore]=useState(0)
   const [copied,setCopied]=useState("")
 
-  // 🔥 LIVE MARKET SCAN WHILE TYPING
+  // LIVE MARKET SCAN
 
   useEffect(()=>{
 
@@ -34,15 +32,18 @@ export default function Home(){
 
     const timeout=setTimeout(async()=>{
 
-      const res=await fetch("/api/liveMarket",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body:JSON.stringify({product:input})
-      })
-
       try{
+
+        const res=await fetch("/api/liveMarket",{
+          method:"POST",
+          headers:{ "Content-Type":"application/json"},
+          body:JSON.stringify({product:input})
+        })
+
         const data=await res.json()
+
         setLiveMarket(data.marketInsights)
+
       }catch(e){}
 
     },900)
@@ -139,6 +140,39 @@ export default function Home(){
 
   },[loading])
 
+  // TYPING EFFECT
+
+  useEffect(()=>{
+
+    if(!parsed) return
+
+    function typeField(field:string,value:string,delay:number){
+
+      let i=0
+
+      const interval=setInterval(()=>{
+
+        i++
+
+        setTyped((prev:any)=>({
+          ...prev,
+          [field]:value.slice(0,i)
+        }))
+
+        if(i>=value.length){
+          clearInterval(interval)
+        }
+
+      },delay)
+
+    }
+
+    typeField("title",parsed.title,10)
+    setTimeout(()=>typeField("description",parsed.description,2),400)
+    setTimeout(()=>typeField("tags",parsed.tags,8),800)
+
+  },[parsed])
+
   function copy(text:string,label:string){
     navigator.clipboard.writeText(text)
     setCopied(label)
@@ -173,10 +207,9 @@ export default function Home(){
 
         </div>
 
-        {/* 🔥 LIVE MARKET PANEL */}
+        {/* LIVE MARKET */}
 
         {liveMarket && (
-
           <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
             <strong>📊 LIVE MARKET INTELLIGENCE</strong>
             <p>Avg In Cart: {liveMarket.avgInCart}</p>
@@ -185,7 +218,6 @@ export default function Home(){
             <p>Trend: {liveMarket.trend}</p>
             <p>Opportunity: {liveMarket.opportunity}</p>
           </div>
-
         )}
 
         {autonomousSignals.length>0 && !loading && (
@@ -201,8 +233,69 @@ export default function Home(){
           </div>
         )}
 
+        {showResult && parsed && (
+          <div>
+
+            <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
+            <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
+            <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
+            <StrategyPanel parsed={parsed}/>
+
+          </div>
+        )}
+
       </div>
 
     </main>
+  )
+}
+
+// RESULT COMPONENTS (UNCHANGED)
+
+function ResultBlock({title,text,label,copied,copy}:any){
+  return(
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
+      <strong>{title}</strong>
+      <p style={{marginTop:10,opacity:.85}}>{text}</p>
+      <button onClick={()=>copy(text,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+    </div>
+  )
+}
+
+function TagBlock({tags,label,copied,copy}:any){
+
+  const tagArray = tags.split(",")
+
+  return(
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
+      <strong>TAGS</strong>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:12}}>
+        {tagArray.map((t:string,i:number)=>(
+          <span key={i} style={{background:"#1a1a1a",padding:"6px 10px",borderRadius:999,fontSize:14}}>
+            {t.trim()}
+          </span>
+        ))}
+      </div>
+      <button onClick={()=>copy(tags,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+    </div>
+  )
+}
+
+function StrategyPanel({parsed}:any){
+
+  if(!parsed) return null
+
+  return(
+    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
+      <strong>🧠 AI Strategy Insights</strong>
+      {parsed.titleFormula && <p style={{marginTop:10}}><b>Winning Title Formula:</b> {parsed.titleFormula}</p>}
+      {parsed.strategyInsights && <p style={{marginTop:10}}>{parsed.strategyInsights}</p>}
+      {parsed.seoAdvantage && <p style={{marginTop:10}}><b>SEO Advantage:</b> {parsed.seoAdvantage}</p>}
+      {parsed.competitorInsights && <p style={{marginTop:10}}><b>Competitor Insights:</b> {parsed.competitorInsights}</p>}
+    </div>
   )
 }
