@@ -9,6 +9,12 @@ export default function Home(){
   const [parsed,setParsed]=useState<any>(null)
   const [showResult,setShowResult]=useState(false)
 
+  const [typed,setTyped]=useState<any>({
+    title:"",
+    description:"",
+    tags:""
+  })
+
   const [listingScore,setListingScore]=useState<any>(null)
   const [animatedScore,setAnimatedScore]=useState(0)
 
@@ -73,10 +79,50 @@ export default function Home(){
     const data=await res.json()
 
     setParsed(data)
-    setLoading(false)
+    setTyped({title:"",description:"",tags:""})
 
-    setTimeout(()=>setShowResult(true),100)
+    setLoading(false)
+    setShowResult(true)
   }
+
+  // 🔥 FAKE STREAM TYPING EFFECT
+
+  useEffect(()=>{
+
+    if(!parsed) return
+
+    function typeField(field:string,value:string,delay:number){
+
+      let i=0
+
+      const interval=setInterval(()=>{
+
+        i++
+
+        setTyped((prev:any)=>({
+          ...prev,
+          [field]:value.slice(0,i)
+        }))
+
+        if(i>=value.length){
+          clearInterval(interval)
+        }
+
+      },delay)
+
+    }
+
+    typeField("title",parsed.title,10)
+
+    setTimeout(()=>{
+      typeField("description",parsed.description,2)
+    },400)
+
+    setTimeout(()=>{
+      typeField("tags",parsed.tags,8)
+    },800)
+
+  },[parsed])
 
   function copy(text:string,label:string){
     navigator.clipboard.writeText(text)
@@ -143,7 +189,7 @@ export default function Home(){
               fontWeight:600
             }}
           >
-            {loading ? "Analyzing..." : "Generate Listing"}
+            {loading ? "AI thinking..." : "Generate Listing"}
           </button>
 
         </div>
@@ -190,28 +236,19 @@ export default function Home(){
 
         )}
 
-        {parsed && showResult && (
+        {showResult && (
 
-          <div style={{animation:"fadeIn .4s ease"}}>
+          <div>
 
-            <ResultBlock title="TITLE" text={parsed.title} label="title" copied={copied} copy={copy}/>
-
-            <ResultBlock title="DESCRIPTION" text={parsed.description} label="description" copied={copied} copy={copy}/>
-
-            <TagBlock tags={parsed.tags} label="tags" copied={copied} copy={copy}/>
+            <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
+            <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
+            <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
 
           </div>
 
         )}
 
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity:0; transform:translateY(10px); }
-          to { opacity:1; transform:translateY(0); }
-        }
-      `}</style>
 
     </main>
   )
@@ -228,9 +265,9 @@ function ResultBlock({title,text,label,copied,copy}:any){
       marginBottom:20
     }}>
 
-      <strong style={{display:"block",marginBottom:10}}>{title}</strong>
+      <strong>{title}</strong>
 
-      <p style={{opacity:.85}}>{text}</p>
+      <p style={{marginTop:10,opacity:.85}}>{text}</p>
 
       <button
         onClick={()=>copy(text,label)}
