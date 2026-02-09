@@ -17,10 +17,39 @@ export default function Home(){
 
   const [brainStep,setBrainStep]=useState("")
   const [autonomousSignals,setAutonomousSignals]=useState<string[]>([])
+  const [liveMarket,setLiveMarket]=useState<any>(null)
 
   const [listingScore,setListingScore]=useState<any>(null)
   const [animatedScore,setAnimatedScore]=useState(0)
   const [copied,setCopied]=useState("")
+
+  // 🔥 LIVE MARKET SCAN WHILE TYPING
+
+  useEffect(()=>{
+
+    if(input.length < 4){
+      setLiveMarket(null)
+      return
+    }
+
+    const timeout=setTimeout(async()=>{
+
+      const res=await fetch("/api/liveMarket",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body:JSON.stringify({product:input})
+      })
+
+      try{
+        const data=await res.json()
+        setLiveMarket(data.marketInsights)
+      }catch(e){}
+
+    },900)
+
+    return ()=>clearTimeout(timeout)
+
+  },[input])
 
   // AUTONOMOUS ANALYZER
 
@@ -57,48 +86,27 @@ export default function Home(){
 
   },[input])
 
-  useEffect(()=>{
+  async function generate(){
 
-    if(input.length < 4) return
+    if(!input) return
 
-    const timeout = setTimeout(async()=>{
+    setLoading(true)
+    setShowResult(false)
 
-      const scoreRes = await fetch("/api/listingGod",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ product:input })
-      })
+    const res=await fetch("/api/generate",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body: JSON.stringify({ product:input })
+    })
 
-      setListingScore(await scoreRes.json())
+    const data=await res.json()
 
-    },400)
+    setParsed(data)
+    setTyped({title:"",description:"",tags:""})
 
-    return ()=>clearTimeout(timeout)
-
-  },[input])
-
-  useEffect(()=>{
-
-    if(!listingScore) return
-
-    let current=0
-
-    const interval=setInterval(()=>{
-
-      current+=2
-
-      if(current>=listingScore.score){
-        current=listingScore.score
-        clearInterval(interval)
-      }
-
-      setAnimatedScore(current)
-
-    },16)
-
-    return ()=>clearInterval(interval)
-
-  },[listingScore])
+    setLoading(false)
+    setShowResult(true)
+  }
 
   // AI THINKING
 
@@ -131,71 +139,11 @@ export default function Home(){
 
   },[loading])
 
-  async function generate(){
-
-    if(!input) return
-
-    setLoading(true)
-    setShowResult(false)
-
-    const res=await fetch("/api/generate",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ product:input })
-    })
-
-    const data=await res.json()
-
-    setParsed(data)
-    setTyped({title:"",description:"",tags:""})
-
-    setLoading(false)
-    setShowResult(true)
-  }
-
-  // typing effect
-
-  useEffect(()=>{
-
-    if(!parsed) return
-
-    function typeField(field:string,value:string,delay:number){
-
-      let i=0
-
-      const interval=setInterval(()=>{
-
-        i++
-
-        setTyped((prev:any)=>({
-          ...prev,
-          [field]:value.slice(0,i)
-        }))
-
-        if(i>=value.length){
-          clearInterval(interval)
-        }
-
-      },delay)
-
-    }
-
-    typeField("title",parsed.title,10)
-
-    setTimeout(()=>typeField("description",parsed.description,2),400)
-    setTimeout(()=>typeField("tags",parsed.tags,8),800)
-
-  },[parsed])
-
   function copy(text:string,label:string){
     navigator.clipboard.writeText(text)
     setCopied(label)
     setTimeout(()=>setCopied(""),1200)
   }
-
-  const radius=90
-  const circumference=2*Math.PI*radius
-  const progress=(animatedScore/100)*circumference
 
   return(
 
@@ -203,7 +151,7 @@ export default function Home(){
 
       <div style={{width:"100%",maxWidth:620}}>
 
-        <h1 style={{fontSize:56,fontWeight:600,letterSpacing:-1,textAlign:"center",marginBottom:60}}>
+        <h1 style={{fontSize:56,fontWeight:600,textAlign:"center",marginBottom:60}}>
           ETSYLISTER
         </h1>
 
@@ -225,6 +173,21 @@ export default function Home(){
 
         </div>
 
+        {/* 🔥 LIVE MARKET PANEL */}
+
+        {liveMarket && (
+
+          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
+            <strong>📊 LIVE MARKET INTELLIGENCE</strong>
+            <p>Avg In Cart: {liveMarket.avgInCart}</p>
+            <p>Demand: {liveMarket.demand}</p>
+            <p>Competition: {liveMarket.competition}</p>
+            <p>Trend: {liveMarket.trend}</p>
+            <p>Opportunity: {liveMarket.opportunity}</p>
+          </div>
+
+        )}
+
         {autonomousSignals.length>0 && !loading && (
           <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
             🤖 Live AI Analysis:
@@ -238,108 +201,8 @@ export default function Home(){
           </div>
         )}
 
-        {parsed?.marketInsights && (
-          <MarketPanel market={parsed.marketInsights}/>
-        )}
-
-        {listingScore && (
-          <ScoreDial animatedScore={animatedScore} progress={progress} radius={radius}/>
-        )}
-
-        {showResult && (
-          <div>
-            <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
-            <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
-            <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
-            <StrategyPanel parsed={parsed}/>
-          </div>
-        )}
-
       </div>
 
     </main>
-  )
-}
-
-function MarketPanel({market}:any){
-
-  return(
-    <div style={{background:"#0f0f0f",padding:20,borderRadius:14,marginBottom:20}}>
-      <strong>📊 LIVE MARKET INTELLIGENCE</strong>
-      <p>Avg In Cart: {market.avgInCart}</p>
-      <p>Competition: {market.competitionDensity}</p>
-      <p>Trend: {market.trendDirection}</p>
-      <p>Profit Signal: {market.profitSignal}</p>
-    </div>
-  )
-}
-
-function ScoreDial({animatedScore,progress,radius}:any){
-
-  const circumference=2*Math.PI*radius
-
-  return(
-    <div style={{display:"flex",justifyContent:"center",marginBottom:40}}>
-      <svg width="200" height="200">
-        <circle cx="100" cy="100" r={radius} stroke="#222" strokeWidth="8" fill="transparent"/>
-        <circle cx="100" cy="100" r={radius} stroke="white" strokeWidth="8" fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference-progress}
-          strokeLinecap="round"
-          transform="rotate(-90 100 100)"
-        />
-        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="36" fill="white">
-          {animatedScore}
-        </text>
-      </svg>
-    </div>
-  )
-}
-
-function ResultBlock({title,text,label,copied,copy}:any){
-  return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
-      <strong>{title}</strong>
-      <p style={{marginTop:10,opacity:.85}}>{text}</p>
-      <button onClick={()=>copy(text,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
-        {copied===label ? "Copied ✓" : "Copy"}
-      </button>
-    </div>
-  )
-}
-
-function TagBlock({tags,label,copied,copy}:any){
-
-  const tagArray = tags.split(",")
-
-  return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
-      <strong>TAGS</strong>
-      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:12}}>
-        {tagArray.map((t:string,i:number)=>(
-          <span key={i} style={{background:"#1a1a1a",padding:"6px 10px",borderRadius:999,fontSize:14}}>
-            {t.trim()}
-          </span>
-        ))}
-      </div>
-      <button onClick={()=>copy(tags,label)} style={{marginTop:12,background:"#222",color:"white",padding:"8px 14px",borderRadius:8}}>
-        {copied===label ? "Copied ✓" : "Copy"}
-      </button>
-    </div>
-  )
-}
-
-function StrategyPanel({parsed}:any){
-
-  if(!parsed) return null
-
-  return(
-    <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
-      <strong>🧠 AI Strategy Insights</strong>
-      {parsed.titleFormula && <p style={{marginTop:10}}><b>Winning Title Formula:</b> {parsed.titleFormula}</p>}
-      {parsed.strategyInsights && <p style={{marginTop:10}}>{parsed.strategyInsights}</p>}
-      {parsed.seoAdvantage && <p style={{marginTop:10}}><b>SEO Advantage:</b> {parsed.seoAdvantage}</p>}
-      {parsed.competitorInsights && <p style={{marginTop:10}}><b>Competitor Insights:</b> {parsed.competitorInsights}</p>}
-    </div>
   )
 }
