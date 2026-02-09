@@ -21,6 +21,7 @@ export default function Home(){
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
   const [copied,setCopied]=useState("")
+  const [brainStep,setBrainStep]=useState("")
 
   // LOGOUT
   async function logout(){
@@ -89,7 +90,7 @@ export default function Home(){
 
   },[input])
 
-  // LIVE MARKET
+  // LIVE MARKET SCAN
   useEffect(()=>{
 
     if(input.length < 4){
@@ -120,6 +121,61 @@ export default function Home(){
 
   },[input])
 
+  // AI brain thinking animation
+  useEffect(()=>{
+
+    if(!loading) return
+
+    const steps=[
+      "Scanning Etsy competitors...",
+      "Analyzing SEO patterns...",
+      "Detecting buyer intent...",
+      "Calculating profitability...",
+      "Generating domination listing..."
+    ]
+
+    let i=0
+
+    const interval=setInterval(()=>{
+      setBrainStep(steps[i])
+      i++
+      if(i>=steps.length) clearInterval(interval)
+    },600)
+
+    return ()=>clearInterval(interval)
+
+  },[loading])
+
+  // typing animation
+  useEffect(()=>{
+
+    if(!parsed) return
+
+    function typeField(field:string,value:string,delay:number){
+
+      let i=0
+
+      const interval=setInterval(()=>{
+
+        i++
+
+        setTyped(prev=>({
+          ...prev,
+          [field]:value.slice(0,i)
+        }))
+
+        if(i>=value.length) clearInterval(interval)
+
+      },delay)
+
+    }
+
+    typeField("title",parsed.title || "",10)
+    setTimeout(()=>typeField("description",parsed.description || "",2),400)
+    setTimeout(()=>typeField("tags",parsed.tags || "",8),800)
+
+  },[parsed])
+
   // GENERATE
   async function generate(){
 
@@ -138,12 +194,6 @@ export default function Home(){
       const data=await res.json()
 
       setParsed(data)
-
-      setTyped({
-        title:data?.title || "",
-        description:data?.description || "",
-        tags:data?.tags || ""
-      })
 
     }catch(e){
       console.log(e)
@@ -212,11 +262,19 @@ export default function Home(){
 
           </div>
 
-          {/* LIVE DOMINATION BOX */}
+          {/* LIVE DOMINATION */}
 
           <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
             👑 Score: {liveDomination.score}/100 — {liveDomination.level}
           </div>
+
+          {/* AI THINKING */}
+
+          {loading && (
+            <div style={{marginTop:20}}>
+              🤖 {brainStep}
+            </div>
+          )}
 
           {/* AI THOUGHTS */}
 
@@ -259,6 +317,10 @@ export default function Home(){
                 ))}
 
               </div>
+
+              <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
+                {copied==="tags"?"Copied ✓":"Copy Tags"}
+              </button>
 
             </div>
 
