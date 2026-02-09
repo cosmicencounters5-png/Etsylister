@@ -97,4 +97,36 @@ Return ONLY JSON:
     data.titleFormula ??= ""
 
     // 🔥 TAG ENFORCER
-   
+    let tags = data.tags
+      .split(",")
+      .map((t:string)=>t.trim())
+      .filter(Boolean)
+
+    tags = tags.map((t:string)=> t.slice(0,20)).slice(0,13)
+
+    data.tags = tags.join(", ")
+
+    data.marketInsights = market
+
+    return Response.json(data)
+
+  }catch(error){
+
+    console.log("Generate API error:", error)
+
+    return Response.json({
+      title:"",
+      description:"",
+      tags:"",
+      strategyInsights:"",
+      dominationScore:"",
+      seoAdvantage:"",
+      keywordCoverage:"",
+      competitorInsights:"",
+      titleFormula:"",
+      marketInsights:{}
+    })
+
+  }
+
+}
