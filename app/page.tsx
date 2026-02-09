@@ -73,7 +73,7 @@ export default function Home(){
 
         const data=await res.json()
 
-        setLiveMarket(data.marketInsights)
+        setLiveMarket(data)
 
       }catch(e){}
 
@@ -238,7 +238,7 @@ export default function Home(){
 
         </div>
 
-        {/* 🔥 LIVE DOMINATION PANEL */}
+        {/* LIVE DOMINATION */}
 
         {input.length>0 && (
           <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
@@ -251,13 +251,19 @@ export default function Home(){
         {/* LIVE MARKET */}
 
         {liveMarket && (
-          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
-            <strong>📊 LIVE MARKET INTELLIGENCE</strong>
-            <p>Avg In Cart: {liveMarket.avgInCart}</p>
-            <p>Demand: {liveMarket.demand}</p>
-            <p>Competition: {liveMarket.competition}</p>
-            <p>Trend: {liveMarket.trend}</p>
-          </div>
+          <>
+            <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
+              <strong>📊 LIVE MARKET INTELLIGENCE</strong>
+              <p>Avg In Cart: {liveMarket.avgInCart}</p>
+              <p>Demand: {liveMarket.demand}</p>
+              <p>Competition: {liveMarket.competition}</p>
+              <p>Trend: {liveMarket.trend}</p>
+            </div>
+
+            {liveMarket.leaders && (
+              <LeaderPanel leaders={liveMarket.leaders}/>
+            )}
+          </>
         )}
 
         {autonomousSignals.length>0 && !loading && (
@@ -275,12 +281,10 @@ export default function Home(){
 
         {showResult && parsed && (
           <div>
-
             <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
             <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
             <StrategyPanel parsed={parsed}/>
-
           </div>
         )}
 
@@ -290,7 +294,39 @@ export default function Home(){
   )
 }
 
-// COMPONENTS
+// 🔥 LEADER PANEL
+
+function LeaderPanel({leaders}:any){
+
+  return(
+    <div style={{background:"#0f0f0f",padding:20,borderRadius:14,marginBottom:20}}>
+      <strong>🔥 MARKET DOMINATION LEADERS</strong>
+
+      <div style={{display:"flex",flexDirection:"column",gap:12,marginTop:14}}>
+
+        {leaders.map((l:any,i:number)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"center",background:"#111",padding:10,borderRadius:10}}>
+
+            {l.image && (
+              <img src={l.image} style={{width:60,height:60,objectFit:"cover",borderRadius:8}}/>
+            )}
+
+            <div style={{fontSize:14}}>
+              <div style={{fontWeight:600}}>
+                {l.title}
+              </div>
+              <div style={{opacity:.6}}>
+                👥 {l.inCart} in cart
+              </div>
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+    </div>
+  )
+}
 
 function ResultBlock({title,text,label,copied,copy}:any){
   return(
