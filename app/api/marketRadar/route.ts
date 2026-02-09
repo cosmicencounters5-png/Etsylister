@@ -10,23 +10,22 @@ export async function POST(req:Request){
     return Response.json(null)
   }
 
-  const competitors = await scanEtsy(product)
+  const scan = await scanEtsy(product)
 
-  if(!competitors.length){
+  const competitors = scan.competitors || []
+  const market = scan.marketInsights || null
+
+  if(!competitors.length || !market){
     return Response.json(null)
   }
 
-  const avgInCart =
-    competitors.reduce((a,c)=>a+c.inCart,0) / competitors.length
-
-  const avgTrend =
-    competitors.reduce((a,c)=>a+c.trendScore,0) / competitors.length
-
   const radar = {
-    demand: avgInCart > 40 ? "STRONG" : "MEDIUM",
-    avgInCart: Math.round(avgInCart),
-    trend: avgTrend > 50 ? "RISING" : "STABLE",
-    competition: competitors.length > 5 ? "HIGH" : "LOW"
+    demand: market.demand,
+    avgInCart: market.avgInCart,
+    trend: market.trend,
+    competition: market.competition,
+    opportunity: market.opportunity,
+    leaders: market.leaders
   }
 
   return Response.json(radar)
