@@ -223,7 +223,7 @@ export default function Home(){
           <>
             <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
-            <TagBlock tags={typed.tags}/>
+            <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
             <StrategyPanel parsed={parsed}/>
             <UltraStrategistPanel parsed={parsed}/>
           </>
@@ -298,11 +298,36 @@ function ResultBlock({title,text,label,copied,copy}:any){
   )
 }
 
-function TagBlock({tags}:any){
+function TagBlock({tags,label,copied,copy}:any){
+
+  if(!tags) return null
+
   const tagArray = tags.split(",")
+
   return(
     <InfoCard title="TAGS">
-      {tagArray.map((t:string,i:number)=><span key={i}>{t.trim()} </span>)}
+
+      <div style={{
+        display:"flex",
+        flexWrap:"wrap",
+        gap:8
+      }}>
+        {tagArray.map((t:string,i:number)=>(
+          <span key={i} style={{
+            background:"#1a1a1a",
+            padding:"6px 10px",
+            borderRadius:999,
+            fontSize:14
+          }}>
+            {t.trim()}
+          </span>
+        ))}
+      </div>
+
+      <button style={{marginTop:12}} onClick={()=>copy(tags,label)}>
+        {copied===label ? "Copied ✓" : "Copy"}
+      </button>
+
     </InfoCard>
   )
 }
