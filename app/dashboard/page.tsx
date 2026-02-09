@@ -372,3 +372,7 @@ function UltraStrategistPanel({parsed}:any){
     </InfoCard>
   )
 }
+async function logout(){
+  await supabase.auth.signOut()
+  window.location.href="/login"
+}
