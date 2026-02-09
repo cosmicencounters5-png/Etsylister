@@ -4,10 +4,6 @@ import { useState, useEffect } from "react"
 
 export default function Home(){
 
-  const [chatOpen,setChatOpen]=useState(false)
-  const [chatInput,setChatInput]=useState("")
-  const [chatMessages,setChatMessages]=useState<any[]>([])
-
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [parsed,setParsed]=useState<any>(null)
@@ -19,7 +15,6 @@ export default function Home(){
   const [listingScore,setListingScore]=useState<any>(null)
 
   const [animatedScore,setAnimatedScore]=useState(0)
-  const [aiThinking,setAiThinking]=useState("")
 
   function analyzeLiveSEO(text:string){
 
@@ -35,46 +30,14 @@ export default function Home(){
       words.length>=4 && intentScore>=1 ? "HIGH" :
       words.length>=2 ? "MEDIUM" : "LOW"
 
-    const competition =
-      words.length>=5 ? "LOW" :
-      words.length>=3 ? "MEDIUM" : "HIGH"
-
-    const trend =
-      intentScore>=2 ? "STRONG" :
-      intentScore>=1 ? "RISING" : "UNKNOWN"
-
     const intent =
       intentScore>=2 ? "EXCELLENT" :
       intentScore>=1 ? "GOOD" : "WEAK"
 
-    return {strength,competition,trend,intent}
+    return {strength,intent}
   }
 
   const liveSEO = analyzeLiveSEO(input)
-
-  useEffect(()=>{
-
-    if(!loading) return
-
-    const steps=[
-      "Scanning competitors...",
-      "Analyzing market demand...",
-      "Detecting ranking gaps...",
-      "Calculating profitability...",
-      "Optimizing strategy..."
-    ]
-
-    let i=0
-
-    const interval=setInterval(()=>{
-      setAiThinking(steps[i])
-      i++
-      if(i>=steps.length) clearInterval(interval)
-    },700)
-
-    return ()=>clearInterval(interval)
-
-  },[loading])
 
   useEffect(()=>{
 
@@ -97,7 +60,7 @@ export default function Home(){
       const scoreRes = await fetch("/api/listingGod",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
       setListingScore(await scoreRes.json())
 
-    },800)
+    },600)
 
     return ()=>clearTimeout(timeout)
 
@@ -119,7 +82,7 @@ export default function Home(){
 
       setAnimatedScore(current)
 
-    },20)
+    },15)
 
     return ()=>clearInterval(interval)
 
@@ -130,9 +93,12 @@ export default function Home(){
     if(!input) return
 
     setLoading(true)
-    setParsed(null)
 
-    const res=await fetch("/api/generate",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
+    const res=await fetch("/api/generate",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body: JSON.stringify({ product:input })
+    })
 
     const data=await res.json()
 
@@ -144,109 +110,94 @@ export default function Home(){
     navigator.clipboard.writeText(text)
   }
 
-  const card:any={
-    background:"#0e0e0e",
-    borderRadius:16,
-    padding:24,
-    marginBottom:24
-  }
-
   return(
 
     <main style={{
       minHeight:"100vh",
-      display:"grid",
-      gap:48,
-      padding:40,
-      gridTemplateColumns:"1fr"
+      display:"flex",
+      justifyContent:"center",
+      padding:"60px 20px",
+      background:"#050505",
+      color:"white"
     }}>
 
-      <style>{`
-        @media (min-width: 1000px) {
-          main {
-            grid-template-columns: 320px 1fr !important;
-          }
-        }
-      `}</style>
+      <div style={{maxWidth:900,width:"100%"}}>
 
-      {/* SIDEBAR */}
+        {/* HEADER */}
 
-      <div>
+        <h1 style={{
+          fontSize:64,
+          fontWeight:600,
+          letterSpacing:-1,
+          marginBottom:40
+        }}>
+          ETSYLISTER
+        </h1>
 
-        <div style={card}>
-          <strong>LIVE SEO SIGNAL</strong>
-          <p>{liveSEO.strength} strength</p>
-          <p>{liveSEO.intent} buyer intent</p>
-        </div>
-
-        {trend && profit && (
-          <div style={card}>
-            <strong>MARKET INTELLIGENCE</strong>
-            <p>Opportunity: {profit.opportunity}</p>
-            {trend.trending.map((t:any,i:number)=><div key={i}>• {t}</div>)}
-          </div>
-        )}
-
-        {(dna || killer) && (
-          <div style={card}>
-            <strong>STRATEGY INSIGHTS</strong>
-            {dna && <p>{dna.structure}</p>}
-            {killer && killer.weaknesses.map((w:any,i:number)=><div key={i}>• {w}</div>)}
-          </div>
-        )}
-
-      </div>
-
-      {/* MAIN WORKSPACE */}
-
-      <div>
-
-        <h1 style={{fontSize:56,fontWeight:700,marginBottom:30}}>ETSYLISTER</h1>
+        {/* HERO SCORE */}
 
         {listingScore && (
+
           <div style={{
-            ...card,
-            boxShadow:"0 0 50px rgba(0,255,255,0.25)"
+            fontSize:48,
+            marginBottom:40
           }}>
-            <h2>👑 LISTING SCORE {animatedScore}/100</h2>
-            <p>{listingScore.status}</p>
+            {animatedScore}/100
+            <div style={{fontSize:16,opacity:.6}}>
+              {listingScore.status}
+            </div>
           </div>
+
         )}
 
-        {loading && <p style={{opacity:0.6}}>{aiThinking}</p>}
+        {/* INPUT */}
 
         <input
           value={input}
           onChange={(e)=>setInput(e.target.value)}
           placeholder="Describe product..."
-          style={{width:"100%",padding:18,fontSize:16}}
+          style={{
+            width:"100%",
+            padding:20,
+            fontSize:18,
+            background:"#111",
+            border:"1px solid #222",
+            borderRadius:12,
+            marginBottom:16
+          }}
         />
 
-        <button onClick={generate} style={{marginTop:16,padding:18,width:"100%"}}>
-          {loading ? "Analyzing..." : "Generate Listing"}
+        <button
+          onClick={generate}
+          style={{
+            width:"100%",
+            padding:20,
+            fontSize:16,
+            background:"white",
+            color:"black",
+            borderRadius:12
+          }}
+        >
+          {loading ? "Analyzing..." : "Generate"}
         </button>
+
+        {/* RESULTS */}
 
         {parsed && (
 
-          <div style={{marginTop:30}}>
+          <div style={{marginTop:40}}>
 
-            <div style={card}>
-              <strong>TITLE</strong>
-              <p>{parsed.title}</p>
-              <button onClick={()=>copy(parsed.title)}>Copy</button>
-            </div>
+            <h3>TITLE</h3>
+            <p>{parsed.title}</p>
+            <button onClick={()=>copy(parsed.title)}>Copy</button>
 
-            <div style={card}>
-              <strong>DESCRIPTION</strong>
-              <p>{parsed.description}</p>
-              <button onClick={()=>copy(parsed.description)}>Copy</button>
-            </div>
+            <h3>DESCRIPTION</h3>
+            <p>{parsed.description}</p>
+            <button onClick={()=>copy(parsed.description)}>Copy</button>
 
-            <div style={card}>
-              <strong>TAGS</strong>
-              <p>{parsed.tags}</p>
-              <button onClick={()=>copy(parsed.tags)}>Copy</button>
-            </div>
+            <h3>TAGS</h3>
+            <p>{parsed.tags}</p>
+            <button onClick={()=>copy(parsed.tags)}>Copy</button>
 
           </div>
 
