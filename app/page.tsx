@@ -19,9 +19,40 @@ export default function Home(){
   const [autonomousSignals,setAutonomousSignals]=useState<string[]>([])
   const [liveMarket,setLiveMarket]=useState<any>(null)
 
+  const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
+
   const [copied,setCopied]=useState("")
 
-  // LIVE MARKET SCAN
+  // 🔥 LIVE DOMINATION ENGINE
+
+  function calculateLiveDomination(text:string){
+
+    const words=text.toLowerCase()
+
+    let score=0
+
+    if(words.includes("pattern") || words.includes("template")) score+=20
+    if(words.includes("printable") || words.includes("download")) score+=20
+    if(words.includes("gift") || words.includes("custom")) score+=20
+
+    const wordCount = words.split(" ").length
+
+    if(wordCount>=3) score+=20
+    if(wordCount>=5) score+=20
+
+    const level =
+      score>=80 ? "GOD MODE" :
+      score>=60 ? "STRONG" :
+      score>=40 ? "RISING" : "LOW"
+
+    return {score,level}
+  }
+
+  useEffect(()=>{
+    setLiveDomination(calculateLiveDomination(input))
+  },[input])
+
+  // 🔥 LIVE MARKET SCAN
 
   useEffect(()=>{
 
@@ -52,7 +83,7 @@ export default function Home(){
 
   },[input])
 
-  // AUTONOMOUS ANALYZER
+  // 🔥 AUTONOMOUS ANALYZER
 
   useEffect(()=>{
 
@@ -207,6 +238,16 @@ export default function Home(){
 
         </div>
 
+        {/* 🔥 LIVE DOMINATION PANEL */}
+
+        {input.length>0 && (
+          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
+            👑 LIVE DOMINATION ENGINE
+            <p>Score: {liveDomination.score}/100</p>
+            <p>Level: {liveDomination.level}</p>
+          </div>
+        )}
+
         {/* LIVE MARKET */}
 
         {liveMarket && (
@@ -216,7 +257,6 @@ export default function Home(){
             <p>Demand: {liveMarket.demand}</p>
             <p>Competition: {liveMarket.competition}</p>
             <p>Trend: {liveMarket.trend}</p>
-            <p>Opportunity: {liveMarket.opportunity}</p>
           </div>
         )}
 
@@ -250,7 +290,7 @@ export default function Home(){
   )
 }
 
-// RESULT COMPONENTS (UNCHANGED)
+// COMPONENTS
 
 function ResultBlock({title,text,label,copied,copy}:any){
   return(
