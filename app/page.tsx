@@ -16,9 +16,46 @@ export default function Home(){
   })
 
   const [brainStep,setBrainStep]=useState("")
+  const [autonomousSignals,setAutonomousSignals]=useState<string[]>([])
+
   const [listingScore,setListingScore]=useState<any>(null)
   const [animatedScore,setAnimatedScore]=useState(0)
   const [copied,setCopied]=useState("")
+
+  // 🔥 AUTONOMOUS AI ANALYZER
+
+  useEffect(()=>{
+
+    if(input.length < 3){
+      setAutonomousSignals([])
+      return
+    }
+
+    const words=input.toLowerCase()
+
+    const signals=[]
+
+    if(words.includes("pattern") || words.includes("template")){
+      signals.push("Digital product niche detected")
+    }
+
+    if(words.includes("printable") || words.includes("download")){
+      signals.push("Instant download buyer intent detected")
+    }
+
+    if(words.split(" ").length >=3){
+      signals.push("Long-tail keyword structure identified")
+    }
+
+    if(words.includes("gift") || words.includes("custom")){
+      signals.push("High buyer intent keyword detected")
+    }
+
+    signals.push("Etsy SEO alignment active")
+
+    setAutonomousSignals(signals)
+
+  },[input])
 
   useEffect(()=>{
 
@@ -62,8 +99,6 @@ export default function Home(){
     return ()=>clearInterval(interval)
 
   },[listingScore])
-
-  // AI thinking simulation
 
   useEffect(()=>{
 
@@ -116,8 +151,6 @@ export default function Home(){
     setShowResult(true)
   }
 
-  // live typing effect
-
   useEffect(()=>{
 
     if(!parsed) return
@@ -167,131 +200,71 @@ export default function Home(){
 
   return(
 
-    <main style={{
-      minHeight:"100vh",
-      display:"flex",
-      justifyContent:"center",
-      paddingTop:80
-    }}>
+    <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
 
       <div style={{width:"100%",maxWidth:620}}>
 
-        <h1 style={{
-          fontSize:56,
-          fontWeight:600,
-          letterSpacing:-1,
-          textAlign:"center",
-          marginBottom:60
-        }}>
+        <h1 style={{fontSize:56,fontWeight:600,letterSpacing:-1,textAlign:"center",marginBottom:60}}>
           ETSYLISTER
         </h1>
 
-        <div style={{
-          background:"#0f0f0f",
-          borderRadius:18,
-          padding:24,
-          marginBottom:30
-        }}>
+        <div style={{background:"#0f0f0f",borderRadius:18,padding:24,marginBottom:20}}>
 
           <input
             value={input}
             onChange={(e)=>setInput(e.target.value)}
             placeholder="Describe your product..."
-            style={{
-              width:"100%",
-              padding:20,
-              fontSize:18,
-              borderRadius:12,
-              border:"1px solid #222",
-              background:"#111",
-              color:"white"
-            }}
+            style={{width:"100%",padding:20,fontSize:18,borderRadius:12,border:"1px solid #222",background:"#111",color:"white"}}
           />
 
           <button
             onClick={generate}
-            style={{
-              width:"100%",
-              padding:18,
-              marginTop:16,
-              borderRadius:12,
-              background:"white",
-              color:"black",
-              fontWeight:600
-            }}
+            style={{width:"100%",padding:18,marginTop:16,borderRadius:12,background:"white",color:"black",fontWeight:600}}
           >
             {loading ? "AI thinking..." : "Generate Listing"}
           </button>
 
         </div>
 
-        {loading && (
+        {/* AUTONOMOUS AI PANEL */}
 
-          <div style={{
-            background:"#0f0f0f",
-            padding:18,
-            borderRadius:14,
-            marginBottom:20,
-            opacity:.85
-          }}>
+        {autonomousSignals.length>0 && !loading && (
+          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
+            🤖 Live AI Analysis:
+            {autonomousSignals.map((s,i)=><div key={i}>⚡ {s}</div>)}
+          </div>
+        )}
+
+        {loading && (
+          <div style={{background:"#0f0f0f",padding:18,borderRadius:14,marginBottom:20}}>
             🤖 {brainStep}
           </div>
-
         )}
 
         {listingScore && (
-
-          <div style={{
-            display:"flex",
-            justifyContent:"center",
-            marginBottom:40
-          }}>
-
+          <div style={{display:"flex",justifyContent:"center",marginBottom:40}}>
             <svg width="200" height="200">
-
               <circle cx="100" cy="100" r={radius} stroke="#222" strokeWidth="8" fill="transparent"/>
-
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                stroke="white"
-                strokeWidth="8"
-                fill="transparent"
+              <circle cx="100" cy="100" r={radius} stroke="white" strokeWidth="8" fill="transparent"
                 strokeDasharray={circumference}
                 strokeDashoffset={circumference-progress}
                 strokeLinecap="round"
                 transform="rotate(-90 100 100)"
               />
-
-              <text
-                x="50%"
-                y="50%"
-                dominantBaseline="middle"
-                textAnchor="middle"
-                fontSize="36"
-                fill="white"
-              >
+              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontSize="36" fill="white">
                 {animatedScore}
               </text>
-
             </svg>
-
           </div>
-
         )}
 
         {showResult && (
-
           <div>
-
             <ResultBlock title="TITLE" text={typed.title} label="title" copied={copied} copy={copy}/>
             <ResultBlock title="DESCRIPTION" text={typed.description} label="description" copied={copied} copy={copy}/>
             <TagBlock tags={typed.tags} label="tags" copied={copied} copy={copy}/>
             <StrategyPanel parsed={parsed}/>
-
           </div>
-
         )}
 
       </div>
@@ -301,7 +274,6 @@ export default function Home(){
 }
 
 function ResultBlock({title,text,label,copied,copy}:any){
-
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>{title}</strong>
@@ -314,9 +286,7 @@ function ResultBlock({title,text,label,copied,copy}:any){
 }
 
 function TagBlock({tags,label,copied,copy}:any){
-
   const tagArray = tags.split(",")
-
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginBottom:20}}>
       <strong>TAGS</strong>
@@ -335,9 +305,7 @@ function TagBlock({tags,label,copied,copy}:any){
 }
 
 function StrategyPanel({parsed}:any){
-
   if(!parsed) return null
-
   return(
     <div style={{background:"#0f0f0f",padding:24,borderRadius:16,marginTop:20}}>
       <strong>🧠 AI Strategy Insights</strong>
