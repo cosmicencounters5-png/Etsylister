@@ -46,8 +46,15 @@ export async function scanEtsy(keyword:string){
 
         if(inCart>=20){
 
+          // 🔥 DOMINATION FORMULA
           const profitability=(inCart*3)+Math.log(reviews+1)
+
           const trendScore=(inCart*2)+profitability-Math.log(reviews+1)
+
+          const dominationScore =
+            (inCart*2) +
+            Math.log(reviews+1) +
+            (trendScore*0.5)
 
           return{
             title,
@@ -55,6 +62,7 @@ export async function scanEtsy(keyword:string){
             reviews,
             profitability,
             trendScore,
+            dominationScore,
             image
           }
 
@@ -69,6 +77,11 @@ export async function scanEtsy(keyword:string){
   )
 
   const competitors=results.filter(Boolean)
+
+  // 🔥 MARKET LEADERS
+  const sorted=[...competitors].sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
+
+  const leaders = sorted.slice(0,3)
 
   // 🔥 LIVE MARKET INTELLIGENCE
 
@@ -97,6 +110,12 @@ export async function scanEtsy(keyword:string){
   const trend =
     avgProfit>100 ? "RISING" : "STABLE"
 
+  // 🔥 OPPORTUNITY SCORE
+  const opportunity =
+    demand==="HIGH" && competition==="LOW" ? "GOLDMINE" :
+    demand==="HIGH" && competition==="MEDIUM" ? "STRONG" :
+    "NORMAL"
+
   const data={
     competitors,
     marketInsights:{
@@ -105,7 +124,9 @@ export async function scanEtsy(keyword:string){
       avgProfit,
       demand,
       competition,
-      trend
+      trend,
+      opportunity,
+      leaders
     }
   }
 
