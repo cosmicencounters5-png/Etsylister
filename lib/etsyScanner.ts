@@ -18,7 +18,7 @@ export async function scanEtsy(keyword:string){
 
   const links=[...html.matchAll(/"url":"(https:\\\/\\\/www\.etsy\.com\\\/listing\\\/.*?)"/g)]
     .map(m=>m[1].replace(/\\\//g,"/"))
-    .slice(0,10)
+    .slice(0,12)
 
   const results=await Promise.all(
 
@@ -68,9 +68,48 @@ export async function scanEtsy(keyword:string){
 
   )
 
-  const filtered=results.filter(Boolean)
+  const competitors=results.filter(Boolean)
 
-  cache[key]={ time:Date.now(), data:filtered }
+  // 🔥 LIVE MARKET INTELLIGENCE
 
-  return filtered
+  let avgInCart=0
+  let avgReviews=0
+  let avgProfit=0
+
+  competitors.forEach((c:any)=>{
+    avgInCart+=c.inCart
+    avgReviews+=c.reviews
+    avgProfit+=c.profitability
+  })
+
+  avgInCart=Math.round(avgInCart/(competitors.length||1))
+  avgReviews=Math.round(avgReviews/(competitors.length||1))
+  avgProfit=Math.round(avgProfit/(competitors.length||1))
+
+  const demand =
+    avgInCart>=60 ? "HIGH" :
+    avgInCart>=30 ? "MEDIUM" : "LOW"
+
+  const competition =
+    avgReviews>=2000 ? "HIGH" :
+    avgReviews>=500 ? "MEDIUM" : "LOW"
+
+  const trend =
+    avgProfit>100 ? "RISING" : "STABLE"
+
+  const data={
+    competitors,
+    marketInsights:{
+      avgInCart,
+      avgReviews,
+      avgProfit,
+      demand,
+      competition,
+      trend
+    }
+  }
+
+  cache[key]={ time:Date.now(), data }
+
+  return data
 }
