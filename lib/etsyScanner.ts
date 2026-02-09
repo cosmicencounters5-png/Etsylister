@@ -46,7 +46,6 @@ export async function scanEtsy(keyword:string){
 
         if(inCart>=20){
 
-          // 🔥 DOMINATION FORMULA
           const profitability=(inCart*3)+Math.log(reviews+1)
 
           const trendScore=(inCart*2)+profitability-Math.log(reviews+1)
@@ -56,6 +55,10 @@ export async function scanEtsy(keyword:string){
             Math.log(reviews+1) +
             (trendScore*0.5)
 
+          // 🔥 ULTRA OPPORTUNITY SCORE
+          const opportunityScore =
+            (inCart*4) - Math.log(reviews+1)*10
+
           return{
             title,
             inCart,
@@ -63,6 +66,7 @@ export async function scanEtsy(keyword:string){
             profitability,
             trendScore,
             dominationScore,
+            opportunityScore,
             image
           }
 
@@ -78,12 +82,17 @@ export async function scanEtsy(keyword:string){
 
   const competitors=results.filter(Boolean)
 
-  // 🔥 MARKET LEADERS
+  // MARKET LEADERS
   const sorted=[...competitors].sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
-
   const leaders = sorted.slice(0,3)
 
-  // 🔥 LIVE MARKET INTELLIGENCE
+  // 🔥 RISING OPPORTUNITIES
+  const risingOpportunities =
+    [...competitors]
+      .sort((a:any,b:any)=>b.opportunityScore-a.opportunityScore)
+      .slice(0,3)
+
+  // MARKET INTELLIGENCE
 
   let avgInCart=0
   let avgReviews=0
@@ -110,7 +119,6 @@ export async function scanEtsy(keyword:string){
   const trend =
     avgProfit>100 ? "RISING" : "STABLE"
 
-  // 🔥 OPPORTUNITY SCORE
   const opportunity =
     demand==="HIGH" && competition==="LOW" ? "GOLDMINE" :
     demand==="HIGH" && competition==="MEDIUM" ? "STRONG" :
@@ -126,7 +134,8 @@ export async function scanEtsy(keyword:string){
       competition,
       trend,
       opportunity,
-      leaders
+      leaders,
+      risingOpportunities // 👈 NEW ULTRA SIGNAL
     }
   }
 
