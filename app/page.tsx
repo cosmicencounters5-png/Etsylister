@@ -81,23 +81,9 @@ export default function Home(){
 
     const res=await fetch("/api/generate",{method:"POST",headers:{ "Content-Type":"application/json"},body: JSON.stringify({ product:input })})
 
-    const reader=res.body?.getReader()
-    const decoder=new TextDecoder()
+    const data=await res.json()
 
-    let fullText=""
-
-    while(true){
-      const {done,value}=await reader!.read()
-      if(done) break
-      fullText+=decoder.decode(value)
-    }
-
-    let cleaned=fullText.replace(/```json/g,"").replace(/```/g,"")
-
-    try{
-      setParsed(JSON.parse(cleaned))
-    }catch(e){}
-
+    setParsed(data)
     setLoading(false)
   }
 
@@ -106,22 +92,20 @@ export default function Home(){
   }
 
   const card:any={
-    background:"#111",
-    border:"1px solid #2affff",
-    boxShadow:"0 0 20px rgba(0,255,255,0.15)",
-    borderRadius:12,
-    padding:18,
-    marginBottom:18
+    background:"#0d0d0d",
+    borderRadius:14,
+    padding:24,
+    marginBottom:20
   }
 
   return(
 
-    <main style={{minHeight:"100vh",display:"grid",gap:24,gridTemplateColumns:"1fr"}}>
+    <main style={{minHeight:"100vh",display:"grid",gap:40,gridTemplateColumns:"1fr"}}>
 
       <style>{`
         @media (min-width: 900px) {
           main {
-            grid-template-columns: 300px 1fr !important;
+            grid-template-columns: 320px 1fr !important;
           }
         }
       `}</style>
@@ -131,40 +115,54 @@ export default function Home(){
       <div>
 
         <div style={card}>
-          <strong>⚡ LIVE SEO SCANNER</strong>
-          <p>Strength: {liveSEO.strength}</p>
-          <p>Competition: {liveSEO.competition}</p>
-          <p>Trend: {liveSEO.trend}</p>
-          <p>Intent: {liveSEO.intent}</p>
+          <strong>⚡ LIVE SEO</strong>
+          <p>{liveSEO.strength} strength</p>
+          <p>{liveSEO.intent} buyer intent</p>
         </div>
 
-        {trend && <div style={card}><strong>🔥 AI TREND ENGINE</strong>{trend.trending.map((t:any,i:number)=><div key={i}>- {t}</div>)}</div>}
+        {trend && profit && (
+          <div style={card}>
+            <strong>📊 MARKET INTELLIGENCE</strong>
+            <p>Opportunity: {profit.opportunity}</p>
+            {trend.trending.map((t:any,i:number)=><div key={i}>• {t}</div>)}
+          </div>
+        )}
 
-        {dna && <div style={card}><strong>🧬 TITLE DNA ENGINE</strong><p>{dna.structure}</p></div>}
-
-        {killer && <div style={card}><strong>☠️ COMPETITOR KILLER ENGINE</strong>{killer.weaknesses.map((w:any,i:number)=><div key={i}>- {w}</div>)}</div>}
-
-        {profit && <div style={card}><strong>💰 PROFIT GOD ENGINE</strong><p>Profitability: {profit.profitability}</p><p>Difficulty: {profit.difficulty}</p><p>Opportunity: {profit.opportunity}</p></div>}
-
-        {listingScore && <div style={card}><strong>👑 LISTING GOD SCORE</strong><p>{listingScore.score}/100</p><p>{listingScore.status}</p></div>}
+        {(dna || killer) && (
+          <div style={card}>
+            <strong>🧠 STRATEGY INSIGHTS</strong>
+            {dna && <p>{dna.structure}</p>}
+            {killer && killer.weaknesses.map((w:any,i:number)=><div key={i}>• {w}</div>)}
+          </div>
+        )}
 
       </div>
 
-      {/* MAIN PANEL */}
+      {/* MAIN */}
 
       <div>
 
-        <h1 style={{fontSize:48,fontWeight:"bold"}}>ETSYLISTER ⚡</h1>
+        <h1 style={{fontSize:54,fontWeight:700}}>ETSYLISTER</h1>
+
+        {listingScore && (
+          <div style={{
+            ...card,
+            boxShadow:"0 0 40px rgba(0,255,255,0.2)"
+          }}>
+            <h2>👑 LISTING SCORE {listingScore.score}/100</h2>
+            <p>{listingScore.status}</p>
+          </div>
+        )}
 
         <input
           value={input}
           onChange={(e)=>setInput(e.target.value)}
           placeholder="Describe product..."
-          style={{width:"100%",padding:14,marginTop:20,fontSize:16}}
+          style={{width:"100%",padding:16,fontSize:16}}
         />
 
-        <button onClick={generate} style={{marginTop:12,padding:14,width:"100%"}}>
-          {loading ? "🔥 Reverse engineering..." : "Generate"}
+        <button onClick={generate} style={{marginTop:14,padding:16,width:"100%"}}>
+          {loading ? "Analyzing..." : "Generate Listing"}
         </button>
 
         {parsed && (
