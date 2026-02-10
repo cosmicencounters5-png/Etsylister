@@ -6,6 +6,11 @@
     "moduleResolution": "bundler",
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   }
 }
