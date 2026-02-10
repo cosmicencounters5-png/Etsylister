@@ -9,15 +9,8 @@ const openai = new OpenAI({
 async function generateListing(prompt:string){
 
   const completion = await openai.chat.completions.create({
-
     model:"gpt-4o-mini",
-
-    messages:[
-      {
-        role:"user",
-        content:prompt
-      }
-    ]
+    messages:[{ role:"user", content:prompt }]
   })
 
   let text = completion.choices?.[0]?.message?.content || "{}"
@@ -27,6 +20,7 @@ async function generateListing(prompt:string){
   try{
     return JSON.parse(text)
   }catch{
+    console.log("JSON parse failed:", text)
     return {}
   }
 }
@@ -49,12 +43,16 @@ export async function POST(req: Request){
 
     const basePrompt = `
 
-You are an EXTREME Etsy SEO domination AI.
+You are an EXTREME Etsy market domination AI.
 
-You are NOT allowed to produce generic marketing copy.
+You MUST act like:
+
+- elite Etsy growth strategist
+- conversion expert
+- keyword domination analyst
 
 OBJECTIVE:
-Create listing that outranks competitors.
+Create listing that OUTRANKS competitors.
 
 PRODUCT:
 ${keyword}
@@ -70,38 +68,50 @@ RULES:
 TITLE:
 - keyword stacking
 - long tail heavy
-- use "|" separator
+- "|" separators
 
 TAGS:
-- long tail
+- exactly 13 tags
+- long tail phrases
 - NO hashtags
+- max 20 characters each
 - comma separated
 
-Return JSON:
+RETURN ONLY JSON:
 
 {
 "title":"",
 "description":"",
 "tags":"",
-"dominationScore":""
+"strategyInsights":"",
+"dominationScore":"",
+"seoAdvantage":"",
+"keywordCoverage":"",
+"competitorInsights":"",
+"titleFormula":""
 }
 
 `
 
-    // FIRST GENERATION
     let data = await generateListing(basePrompt)
 
-    // 🔥 SELF EVALUATION LOOP
+    // 🔥 SELF IMPROVEMENT LOOP WITH FULL CONTEXT
     const evaluationPrompt = `
 
-Evaluate this listing brutally.
+You are auditing your own work.
 
-If weak SEO → rewrite aggressively.
+Rewrite ONLY if stronger SEO possible.
 
-LISTING:
+PRODUCT:
+${keyword}
+
+SEO DATA:
+${JSON.stringify(seo,null,2)}
+
+CURRENT LISTING:
 ${JSON.stringify(data,null,2)}
 
-Return improved version using same JSON format.
+Return same JSON structure.
 
 `
 
@@ -111,15 +121,26 @@ Return improved version using same JSON format.
       data = improved
     }
 
-    // TAG FIX
+    // TAG ENFORCER
     let tags = (data.tags || "")
       .split(",")
       .map((t:string)=>t.trim().replace("#",""))
       .filter(Boolean)
 
+    tags = tags.map((t:string)=> t.slice(0,20))
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
+
+    // SAFE DEFAULTS
+    data.title ??= ""
+    data.description ??= ""
+    data.strategyInsights ??= ""
+    data.dominationScore ??= ""
+    data.seoAdvantage ??= ""
+    data.keywordCoverage ??= ""
+    data.competitorInsights ??= ""
+    data.titleFormula ??= ""
 
     data.marketInsights = market
 
@@ -127,13 +148,18 @@ Return improved version using same JSON format.
 
   }catch(error){
 
-    console.log(error)
+    console.log("Generate error:", error)
 
     return Response.json({
       title:"",
       description:"",
       tags:"",
+      strategyInsights:"",
       dominationScore:"",
+      seoAdvantage:"",
+      keywordCoverage:"",
+      competitorInsights:"",
+      titleFormula:"",
       marketInsights:{}
     })
 
