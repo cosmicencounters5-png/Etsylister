@@ -1,6 +1,38 @@
 "use client"
 
+import { useState,useEffect } from "react"
+import Link from "next/link"
+
 export default function Landing(){
+
+  const [typed,setTyped]=useState("")
+  const text="AI scans Etsy. Finds profitable niches. Builds domination listings."
+
+  // 🔥 AI typing effect
+  useEffect(()=>{
+
+    let i=0
+
+    const interval=setInterval(()=>{
+
+      setTyped(text.slice(0,i))
+      i++
+
+      if(i>text.length) clearInterval(interval)
+
+    },25)
+
+    return ()=>clearInterval(interval)
+
+  },[])
+
+  const card={
+    background:"#0f0f0f",
+    padding:22,
+    borderRadius:18,
+    border:"1px solid #1f1f1f",
+    boxShadow:"0 0 0 1px rgba(255,255,255,0.03)"
+  }
 
   return(
 
@@ -8,162 +40,107 @@ export default function Landing(){
       minHeight:"100vh",
       display:"flex",
       justifyContent:"center",
-      padding:"60px 20px",
+      padding:"80px 20px",
       background:"#050505"
     }}>
 
-      <div style={{
-        width:"100%",
-        maxWidth:900
-      }}>
+      <div style={{maxWidth:720,width:"100%"}}>
 
-        {/* HEADER */}
+        {/* HERO */}
+
+        <h1 style={{
+          fontSize:42,
+          fontWeight:700,
+          lineHeight:1.2
+        }}>
+          Build Etsy listings that actually rank.
+        </h1>
+
+        <p style={{
+          marginTop:20,
+          fontSize:20,
+          opacity:0.8,
+          minHeight:30
+        }}>
+          {typed}
+        </p>
+
+        {/* CTA */}
 
         <div style={{
           display:"flex",
-          justifyContent:"space-between",
-          alignItems:"center",
-          marginBottom:80
+          gap:12,
+          marginTop:30
         }}>
 
-          <h1 style={{
-            fontSize:28,
-            fontWeight:700
-          }}>
-            ETSY LISTER
-          </h1>
+          <Link href="/login">
+            <button style={{
+              padding:"16px 22px",
+              borderRadius:12,
+              background:"white",
+              color:"black",
+              fontWeight:600,
+              border:"none",
+              cursor:"pointer"
+            }}>
+              Start Free
+            </button>
+          </Link>
 
-          <div style={{display:"flex",gap:12}}>
+          <Link href="/login">
+            <button style={{
+              padding:"16px 22px",
+              borderRadius:12,
+              background:"#111",
+              color:"white",
+              border:"1px solid #222",
+              cursor:"pointer"
+            }}>
+              Login
+            </button>
+          </Link>
 
-            <a href="/login">
-              <button style={btnGhost}>
-                Login
-              </button>
-            </a>
+        </div>
 
-            <a href="/login">
-              <button style={btnPrimary}>
-                Start Free
-              </button>
-            </a>
+        <p style={{opacity:0.5,marginTop:18}}>
+          AI-powered Etsy keyword domination.
+        </p>
 
+        {/* LIVE AI SECTION */}
+
+        <div style={{...card,marginTop:50}}>
+
+          <strong>🧠 AI THINKING...</strong>
+
+          <ul style={{marginTop:14,opacity:0.7}}>
+            <li>Scanning competitors...</li>
+            <li>Analyzing SEO patterns...</li>
+            <li>Detecting buyer intent...</li>
+            <li>Finding profitable keywords...</li>
+          </ul>
+
+        </div>
+
+        {/* FEATURE BLOCKS */}
+
+        <div style={{display:"grid",gap:20,marginTop:30}}>
+
+          <div style={card}>
+            👑 Profitability scoring from real Etsy data
+          </div>
+
+          <div style={card}>
+            ⚡ Long-tail keyword domination engine
+          </div>
+
+          <div style={card}>
+            🔥 AI strategist insights — not generic copy
           </div>
 
         </div>
 
-        {/* HERO */}
-
-        <section style={{marginBottom:80}}>
-
-          <h2 style={{
-            fontSize:56,
-            lineHeight:1.1,
-            fontWeight:700,
-            marginBottom:24
-          }}>
-            AI That Builds Etsy Listings
-            <br/>
-            That Actually Rank.
-          </h2>
-
-          <p style={{
-            opacity:0.7,
-            fontSize:18,
-            maxWidth:520,
-            marginBottom:40
-          }}>
-            Live market scanning. Competitor intelligence. SEO domination engine.
-            Stop guessing — start outranking.
-          </p>
-
-          <a href="/login">
-            <button style={{
-              ...btnPrimary,
-              padding:"18px 28px",
-              fontSize:18
-            }}>
-              Generate Your First Listing →
-            </button>
-          </a>
-
-        </section>
-
-        {/* FEATURES */}
-
-        <section style={{
-          display:"grid",
-          gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",
-          gap:20
-        }}>
-
-          <Feature
-            title="Live Market Intelligence"
-            text="Real Etsy competitors scanned automatically."
-          />
-
-          <Feature
-            title="Domination Scoring"
-            text="AI predicts ranking strength before you publish."
-          />
-
-          <Feature
-            title="Long Tail SEO Engine"
-            text="Keyword stacking designed for Etsy algorithm."
-          />
-
-          <Feature
-            title="AI Strategy Brain"
-            text="Actionable optimization insights instantly."
-          />
-
-        </section>
-
       </div>
 
     </main>
-  )
-}
-
-const btnPrimary={
-  background:"white",
-  color:"black",
-  border:"none",
-  padding:"10px 18px",
-  borderRadius:12,
-  fontWeight:600,
-  cursor:"pointer"
-}
-
-const btnGhost={
-  background:"transparent",
-  border:"1px solid #222",
-  color:"white",
-  padding:"10px 18px",
-  borderRadius:12,
-  cursor:"pointer"
-}
-
-function Feature({title,text}:any){
-
-  return(
-
-    <div style={{
-      background:"#0f0f0f",
-      padding:24,
-      borderRadius:16,
-      border:"1px solid #1f1f1f"
-    }}>
-
-      <strong>{title}</strong>
-
-      <p style={{
-        marginTop:10,
-        opacity:0.7
-      }}>
-        {text}
-      </p>
-
-    </div>
-
   )
 }
