@@ -176,7 +176,32 @@ export default function Home(){
 
         <div style={{width:"100%",maxWidth:640}}>
 
-          <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
+          {/* HEADER WITH LOGOUT BACK */}
+
+          <div style={{
+            display:"flex",
+            justifyContent:"space-between",
+            alignItems:"center"
+          }}>
+
+            <h1 style={{fontSize:36,fontWeight:600}}>
+              ETSY LISTER
+            </h1>
+
+            <button
+              onClick={logout}
+              style={{
+                background:"#111",
+                border:"1px solid #222",
+                padding:"8px 14px",
+                borderRadius:10,
+                cursor:"pointer"
+              }}
+            >
+              Logout
+            </button>
+
+          </div>
 
           {/* INPUT */}
 
@@ -263,8 +288,6 @@ export default function Home(){
                 </button>
 
               </div>
-
-              {/* STRATEGIST PANEL BACK (🔥🔥🔥) */}
 
               <div style={{...cardStyle,marginTop:20}}>
 
