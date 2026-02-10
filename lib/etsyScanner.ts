@@ -1,6 +1,6 @@
 import OpenAI from "openai"
-import { scanEtsy } from "@/lib/etsyScanner"
-import { analyzeSEO } from "@/lib/seoAnalyzer"
+import { scanEtsy } from "@/seoAnalyzer/etsyScanner"
+import { analyzeSEO } from "@/seoAnalyzer/seoAnalyzer"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
