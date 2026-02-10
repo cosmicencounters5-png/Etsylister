@@ -48,7 +48,7 @@ export async function POST(req: Request){
     const titles = competitors.map((c:any)=>c.title || "")
     const seo = analyzeSEO(titles)
 
-    // 🔥 reduce AI overload
+    // reduce AI overload
     const topCompetitors =
       competitors
         .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
@@ -87,6 +87,7 @@ TAGS:
 - comma separated
 - NO hashtags
 - minimum 10 tags
+- EACH TAG MUST BE UNDER 20 CHARACTERS
 
 Return JSON:
 
@@ -117,7 +118,7 @@ Return SAME JSON format.
       data = improved
     }
 
-    // 🔥 SAFETY DEFAULTS
+    // SAFETY DEFAULTS
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
@@ -127,16 +128,16 @@ Return SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // 🔥 ETSY TAG ENFORCER (FULL FIX)
+    // 🔥 REAL ETSY TAG ENFORCER (NO HALF CUT TAGS)
     let tags = (data.tags || "")
       .split(",")
       .map((t:string)=>
         t
           .trim()
           .replace("#","")
-          .slice(0,20)   // ⭐ Etsy max length
       )
-      .filter(Boolean)
+      // remove empty + over 20 chars (NO slicing)
+      .filter((t:string)=> t.length > 0 && t.length <= 20)
 
     // max 13 tags
     tags = tags.slice(0,13)
