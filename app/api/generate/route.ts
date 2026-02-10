@@ -83,11 +83,12 @@ TITLE:
 - use "|"
 
 TAGS:
-- long tail
-- comma separated
+- EXACTLY 13 tags
+- each tag UNDER 20 characters
 - NO hashtags
-- minimum 10 tags
-- EACH TAG MUST BE UNDER 20 CHARACTERS
+- comma separated
+- Etsy optimized keywords
+- NEVER exceed 20 characters
 
 Return JSON:
 
