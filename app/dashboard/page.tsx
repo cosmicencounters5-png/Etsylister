@@ -8,6 +8,8 @@ export default function Home(){
 
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
+  const [brainStep,setBrainStep]=useState("")
+
   const [parsed,setParsed]=useState<any>(null)
 
   const [typed,setTyped]=useState({
@@ -32,6 +34,7 @@ export default function Home(){
     setTimeout(()=>setCopied(""),1200)
   }
 
+  // LIVE DOMINATION ENGINE
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
@@ -58,6 +61,7 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
+  // AI THOUGHT STREAM
   useEffect(()=>{
 
     if(input.length < 3){
@@ -85,33 +89,60 @@ export default function Home(){
 
   },[input])
 
+  // AI THINKING STEPS (🔥 makes AI feel alive)
   useEffect(()=>{
 
-    if(input.length < 4){
-      setLiveMarket(null)
-      return
+    if(!loading) return
+
+    const steps=[
+      "Scanning Etsy competitors...",
+      "Analyzing SEO patterns...",
+      "Detecting buyer intent...",
+      "Calculating profitability...",
+      "Generating domination listing..."
+    ]
+
+    let i=0
+
+    const interval=setInterval(()=>{
+      setBrainStep(steps[i])
+      i++
+      if(i>=steps.length) clearInterval(interval)
+    },600)
+
+    return ()=>clearInterval(interval)
+
+  },[loading])
+
+  // TYPE EFFECT (🔥 BIG DIFFERENCE)
+  useEffect(()=>{
+
+    if(!parsed) return
+
+    function typeField(field:string,value:string,delay:number){
+
+      let i=0
+
+      const interval=setInterval(()=>{
+
+        i++
+
+        setTyped(prev=>({
+          ...prev,
+          [field]:value.slice(0,i)
+        }))
+
+        if(i>=value.length) clearInterval(interval)
+
+      },delay)
+
     }
 
-    const timeout=setTimeout(async()=>{
+    typeField("title",parsed.title,10)
+    setTimeout(()=>typeField("description",parsed.description,2),400)
+    setTimeout(()=>typeField("tags",parsed.tags,8),800)
 
-      try{
-
-        const res=await fetch("/api/liveMarket",{
-          method:"POST",
-          headers:{ "Content-Type":"application/json"},
-          body:JSON.stringify({product:input})
-        })
-
-        const data=await res.json()
-        setLiveMarket(data)
-
-      }catch(e){}
-
-    },900)
-
-    return ()=>clearTimeout(timeout)
-
-  },[input])
+  },[parsed])
 
   async function generate(){
 
@@ -130,12 +161,6 @@ export default function Home(){
       const data=await res.json()
 
       setParsed(data)
-
-      setTyped({
-        title:data?.title || "",
-        description:data?.description || "",
-        tags:data?.tags || ""
-      })
 
     }catch(e){}
 
@@ -197,7 +222,7 @@ export default function Home(){
               color:"black",
               fontWeight:600
             }}>
-              {loading ? "AI thinking..." : "Generate Listing"}
+              {loading ? brainStep : "Generate Listing"}
             </button>
 
           </div>
@@ -224,15 +249,9 @@ export default function Home(){
 
               <h3>TITLE</h3>
               <p>{typed.title}</p>
-              <button onClick={()=>copy(typed.title,"title")}>
-                {copied==="title"?"Copied ✓":"Copy"}
-              </button>
 
               <h3>DESCRIPTION</h3>
               <p>{typed.description}</p>
-              <button onClick={()=>copy(typed.description,"desc")}>
-                {copied==="desc"?"Copied ✓":"Copy"}
-              </button>
 
               <h3>TAGS</h3>
 
@@ -251,8 +270,6 @@ export default function Home(){
               <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
                 {copied==="tags"?"Copied ✓":"Copy Tags"}
               </button>
-
-              {/* STRATEGIST PANEL */}
 
               <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
 
