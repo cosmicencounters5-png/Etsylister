@@ -10,6 +10,7 @@ export default function Home(){
   const [loading,setLoading]=useState(false)
   const [brainStep,setBrainStep]=useState("")
   const [parsed,setParsed]=useState<any>(null)
+  const [seoSlug,setSeoSlug]=useState("")
 
   const [typed,setTyped]=useState({
     title:"",
@@ -46,7 +47,14 @@ ${window.location.origin}`
     setTimeout(()=>setCopied(""),1200)
   }
 
-  // LIVE DOMINATION SCORE
+  function slugify(text:string){
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g,"")
+      .trim()
+      .replace(/\s+/g,"-")
+  }
+
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
@@ -73,60 +81,6 @@ ${window.location.origin}`
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // AI THOUGHTS
-  useEffect(()=>{
-
-    if(input.length < 3){
-      setAiThoughts([])
-      return
-    }
-
-    const thoughts:string[]=[]
-
-    if(input.includes("pattern") || input.includes("template")){
-      thoughts.push("AI detected digital product category")
-    }
-
-    if(input.split(" ").length >=3){
-      thoughts.push("AI analyzing long-tail keyword opportunity")
-    }
-
-    if(input.includes("gift")){
-      thoughts.push("AI boosting buyer intent weighting")
-    }
-
-    thoughts.push("Scanning hidden ranking signals")
-
-    setAiThoughts(thoughts)
-
-  },[input])
-
-  // AI BRAIN STEPS
-  useEffect(()=>{
-
-    if(!loading) return
-
-    const steps=[
-      "Scanning Etsy competitors...",
-      "Analyzing SEO patterns...",
-      "Detecting buyer intent...",
-      "Calculating profitability...",
-      "Generating domination listing..."
-    ]
-
-    let i=0
-
-    const interval=setInterval(()=>{
-      setBrainStep(steps[i])
-      i++
-      if(i>=steps.length) clearInterval(interval)
-    },600)
-
-    return ()=>clearInterval(interval)
-
-  },[loading])
-
-  // TYPE EFFECT
   useEffect(()=>{
 
     if(!parsed) return
@@ -153,6 +107,12 @@ ${window.location.origin}`
     typeField("title",parsed.title,10)
     setTimeout(()=>typeField("description",parsed.description,2),400)
     setTimeout(()=>typeField("tags",parsed.tags,8),800)
+
+    // 🔥 AUTO SEO PAGE GENERATION
+    if(parsed.title){
+      const slug = slugify(parsed.title)
+      setSeoSlug(slug)
+    }
 
   },[parsed])
 
@@ -188,143 +148,147 @@ ${window.location.origin}`
 
   return(
 
-    <AuthGuard>
+<AuthGuard>
 
-      <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
+<main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
 
-        <div style={{width:"100%",maxWidth:700}}>
+<div style={{width:"100%",maxWidth:700}}>
 
-          {/* HEADER */}
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
 
-            <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
+<button onClick={logout}>Logout</button>
 
-            <button onClick={logout}>Logout</button>
+</div>
 
-          </div>
+<div style={{...card,marginTop:20}}>
 
-          {/* INPUT */}
+<input
+value={input}
+onChange={(e)=>setInput(e.target.value)}
+placeholder="Describe your product..."
+style={{
+width:"100%",
+padding:20,
+fontSize:18,
+borderRadius:12,
+border:"1px solid #222",
+background:"#111",
+color:"white"
+}}
+/>
 
-          <div style={{...card,marginTop:20}}>
+<button onClick={generate} style={{
+width:"100%",
+padding:18,
+marginTop:16,
+borderRadius:12,
+background:"white",
+color:"black",
+fontWeight:600
+}}>
+{loading ? brainStep : "Generate Listing"}
+</button>
 
-            <input
-              value={input}
-              onChange={(e)=>setInput(e.target.value)}
-              placeholder="Describe your product..."
-              style={{
-                width:"100%",
-                padding:20,
-                fontSize:18,
-                borderRadius:12,
-                border:"1px solid #222",
-                background:"#111",
-                color:"white"
-              }}
-            />
+</div>
 
-            <button onClick={generate} style={{
-              width:"100%",
-              padding:18,
-              marginTop:16,
-              borderRadius:12,
-              background:"white",
-              color:"black",
-              fontWeight:600
-            }}>
-              {loading ? brainStep : "Generate Listing"}
-            </button>
+<div style={{...card,marginTop:20}}>
+👑 Score: {liveDomination.score}/100 — {liveDomination.level}
+</div>
 
-          </div>
+{parsed && (
 
-          {/* DOMINATION */}
+<div style={{marginTop:30}}>
 
-          <div style={{...card,marginTop:20}}>
-            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
-          </div>
+<div style={card}>
+🔥 Profitability Score: {parsed.dominationScore}
+</div>
 
-          {/* RESULTS */}
+<div style={{...card,marginTop:20}}>
+<strong>TITLE</strong>
+<p>{typed.title}</p>
+<button onClick={()=>copy(typed.title,"title")}>
+{copied==="title"?"Copied ✓":"Copy"}
+</button>
+</div>
 
-          {parsed && (
+<div style={{...card,marginTop:20}}>
+<strong>DESCRIPTION</strong>
+<p>{typed.description}</p>
+<button onClick={()=>copy(typed.description,"desc")}>
+{copied==="desc"?"Copied ✓":"Copy"}
+</button>
+</div>
 
-            <div style={{marginTop:30}}>
+<div style={{...card,marginTop:20}}>
+<strong>TAGS</strong>
 
-              <div style={card}>
-                🔥 Profitability Score: {parsed.dominationScore}
-                <div style={{marginTop:8,fontSize:14}}>
-                  You are ahead of 87% of Etsy sellers.
-                </div>
-              </div>
+<div style={{display:"flex",flexWrap:"wrap",gap:8}}>
 
-              <div style={{...card,marginTop:20}}>
-                <strong>TITLE</strong>
-                <p>{typed.title}</p>
-                <button onClick={()=>copy(typed.title,"title")}>
-                  {copied==="title"?"Copied ✓":"Copy"}
-                </button>
-              </div>
+{typed.tags.split(",").map((t:string,i:number)=>(
+<span key={i} style={{
+background:"#1a1a1a",
+padding:"6px 10px",
+borderRadius:999
+}}>
+{t.trim()}
+</span>
+))}
 
-              <div style={{...card,marginTop:20}}>
-                <strong>DESCRIPTION</strong>
-                <p>{typed.description}</p>
-                <button onClick={()=>copy(typed.description,"desc")}>
-                  {copied==="desc"?"Copied ✓":"Copy"}
-                </button>
-              </div>
+</div>
 
-              <div style={{...card,marginTop:20}}>
-                <strong>TAGS</strong>
+<button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
+{copied==="tags"?"Copied ✓":"Copy Tags"}
+</button>
 
-                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+</div>
 
-                  {typed.tags.split(",").map((t:string,i:number)=>(
-                    <span key={i} style={{
-                      background:"#1a1a1a",
-                      padding:"6px 10px",
-                      borderRadius:999
-                    }}>
-                      {t.trim()}
-                    </span>
-                  ))}
+{/* 🔥 AUTO SEO PAGE LINK */}
 
-                </div>
+{seoSlug && (
 
-                <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
-                  {copied==="tags"?"Copied ✓":"Copy Tags"}
-                </button>
+<div style={{...card,marginTop:20}}>
 
-              </div>
+🚀 SEO Page Created:
 
-              {/* STRATEGIST PANEL */}
+<a href={`/listing/${seoSlug}`} style={{display:"block",marginTop:8}}>
+/listing/{seoSlug}
+</a>
 
-              <div style={{...card,marginTop:20}}>
+</div>
 
-                <strong>🧠 Strategy Insights</strong>
-                <p>{parsed.strategyInsights}</p>
+)}
 
-                <strong>⚡ SEO Advantage</strong>
-                <p>{parsed.seoAdvantage}</p>
+<div style={{...card,marginTop:20}}>
 
-                <strong>🔥 Competitor Insights</strong>
-                <p>{parsed.competitorInsights}</p>
+<strong>🧠 Strategy Insights</strong>
+<p>{parsed.strategyInsights}</p>
 
-                <strong>👑 Title Formula</strong>
-                <p>{parsed.titleFormula}</p>
+<strong>⚡ SEO Advantage</strong>
+<p>{parsed.seoAdvantage}</p>
 
-                <button style={{marginTop:16}} onClick={shareResult}>
-                  {copied==="share"?"Copied ✓":"Share Result"}
-                </button>
+<strong>🔥 Competitor Insights</strong>
+<p>{parsed.competitorInsights}</p>
 
-              </div>
+<strong>👑 Title Formula</strong>
+<p>{parsed.titleFormula}</p>
 
-            </div>
+<button style={{marginTop:16}} onClick={shareResult}>
+{copied==="share"?"Copied ✓":"Share Result"}
+</button>
 
-          )}
+</div>
 
-        </div>
+</div>
 
-      </main>
+)}
 
-    </AuthGuard>
+</div>
+
+</main>
+
+</AuthGuard>
+
   )
 }
