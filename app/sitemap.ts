@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import { baseKeywords, seoTemplates } from "@/lib/seoKeywords"
+import { baseKeywords, seoTemplates } from "../lib/seoKeywords"
 
 export default function sitemap(): MetadataRoute.Sitemap {
 
