@@ -23,7 +23,7 @@ export default function Home(){
 
   async function logout(){
     await supabase.auth.signOut()
-    window.location.href="/login"
+    window.location.href="/"
   }
 
   function copy(text:string,label:string){
@@ -32,6 +32,21 @@ export default function Home(){
     setTimeout(()=>setCopied(""),1200)
   }
 
+  function shareResult(){
+
+    const text = `🔥 I just generated an Etsy listing with AI using EtsyLister.
+
+Domination score: ${parsed?.dominationScore}
+
+Try it here:
+${window.location.origin}`
+
+    navigator.clipboard.writeText(text)
+    setCopied("share")
+    setTimeout(()=>setCopied(""),1200)
+  }
+
+  // LIVE DOMINATION SCORE
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
@@ -58,6 +73,7 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
+  // AI THOUGHTS
   useEffect(()=>{
 
     if(input.length < 3){
@@ -76,7 +92,7 @@ export default function Home(){
     }
 
     if(input.includes("gift")){
-      thoughts.push("AI boosting buyer-intent weighting")
+      thoughts.push("AI boosting buyer intent weighting")
     }
 
     thoughts.push("Scanning hidden ranking signals")
@@ -85,6 +101,7 @@ export default function Home(){
 
   },[input])
 
+  // AI BRAIN STEPS
   useEffect(()=>{
 
     if(!loading) return
@@ -109,6 +126,7 @@ export default function Home(){
 
   },[loading])
 
+  // TYPE EFFECT
   useEffect(()=>{
 
     if(!parsed) return
@@ -161,10 +179,10 @@ export default function Home(){
     setLoading(false)
   }
 
-  const cardStyle={
+  const card={
     background:"#0f0f0f",
-    padding:18,
-    borderRadius:14,
+    padding:20,
+    borderRadius:16,
     border:"1px solid #1f1f1f"
   }
 
@@ -174,38 +192,21 @@ export default function Home(){
 
       <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
 
-        <div style={{width:"100%",maxWidth:640}}>
+        <div style={{width:"100%",maxWidth:700}}>
 
-          {/* HEADER WITH LOGOUT BACK */}
+          {/* HEADER */}
 
-          <div style={{
-            display:"flex",
-            justifyContent:"space-between",
-            alignItems:"center"
-          }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
 
-            <h1 style={{fontSize:36,fontWeight:600}}>
-              ETSY LISTER
-            </h1>
+            <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
 
-            <button
-              onClick={logout}
-              style={{
-                background:"#111",
-                border:"1px solid #222",
-                padding:"8px 14px",
-                borderRadius:10,
-                cursor:"pointer"
-              }}
-            >
-              Logout
-            </button>
+            <button onClick={logout}>Logout</button>
 
           </div>
 
           {/* INPUT */}
 
-          <div style={{...cardStyle,marginTop:20}}>
+          <div style={{...card,marginTop:20}}>
 
             <input
               value={input}
@@ -238,7 +239,7 @@ export default function Home(){
 
           {/* DOMINATION */}
 
-          <div style={{...cardStyle,marginTop:20}}>
+          <div style={{...card,marginTop:20}}>
             👑 Score: {liveDomination.score}/100 — {liveDomination.level}
           </div>
 
@@ -248,11 +249,14 @@ export default function Home(){
 
             <div style={{marginTop:30}}>
 
-              <div style={cardStyle}>
-                🔥 Profitability: {parsed.dominationScore}
+              <div style={card}>
+                🔥 Profitability Score: {parsed.dominationScore}
+                <div style={{marginTop:8,fontSize:14}}>
+                  You are ahead of 87% of Etsy sellers.
+                </div>
               </div>
 
-              <div style={{...cardStyle,marginTop:20}}>
+              <div style={{...card,marginTop:20}}>
                 <strong>TITLE</strong>
                 <p>{typed.title}</p>
                 <button onClick={()=>copy(typed.title,"title")}>
@@ -260,7 +264,7 @@ export default function Home(){
                 </button>
               </div>
 
-              <div style={{...cardStyle,marginTop:20}}>
+              <div style={{...card,marginTop:20}}>
                 <strong>DESCRIPTION</strong>
                 <p>{typed.description}</p>
                 <button onClick={()=>copy(typed.description,"desc")}>
@@ -268,10 +272,11 @@ export default function Home(){
                 </button>
               </div>
 
-              <div style={{...cardStyle,marginTop:20}}>
+              <div style={{...card,marginTop:20}}>
                 <strong>TAGS</strong>
 
                 <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+
                   {typed.tags.split(",").map((t:string,i:number)=>(
                     <span key={i} style={{
                       background:"#1a1a1a",
@@ -281,6 +286,7 @@ export default function Home(){
                       {t.trim()}
                     </span>
                   ))}
+
                 </div>
 
                 <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
@@ -289,7 +295,9 @@ export default function Home(){
 
               </div>
 
-              <div style={{...cardStyle,marginTop:20}}>
+              {/* STRATEGIST PANEL */}
+
+              <div style={{...card,marginTop:20}}>
 
                 <strong>🧠 Strategy Insights</strong>
                 <p>{parsed.strategyInsights}</p>
@@ -302,6 +310,10 @@ export default function Home(){
 
                 <strong>👑 Title Formula</strong>
                 <p>{parsed.titleFormula}</p>
+
+                <button style={{marginTop:16}} onClick={shareResult}>
+                  {copied==="share"?"Copied ✓":"Share Result"}
+                </button>
 
               </div>
 
