@@ -6,6 +6,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
+// 🔥 ULTRA SAFE GENERATOR (removes non-JSON text like "seo page created")
 async function generateListing(prompt:string){
 
   const completion = await openai.chat.completions.create({
@@ -18,15 +19,21 @@ async function generateListing(prompt:string){
     ]
   })
 
-  let text = completion.choices?.[0]?.message?.content || "{}"
+  let text = completion.choices?.[0]?.message?.content || ""
 
+  // remove markdown codeblocks
   text = text
     .replace(/```json/g,"")
     .replace(/```/g,"")
     .trim()
 
+  // 🔥 extract ONLY JSON object (prevents UI break + hides AI messages)
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+
+  if(!jsonMatch) return {}
+
   try{
-    return JSON.parse(text)
+    return JSON.parse(jsonMatch[0])
   }catch{
     return {}
   }
@@ -39,6 +46,7 @@ export async function POST(req: Request){
     const body = await req.json()
     const keyword = body.product || "product"
 
+    // 🔥 LIVE SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -104,6 +112,7 @@ Return JSON:
 
     let data = await generateListing(basePrompt)
 
+    // 🔥 SELF IMPROVE PASS
     const improved = await generateListing(`
 Improve brutally if weak:
 
@@ -116,7 +125,7 @@ Return SAME JSON format.
       data = improved
     }
 
-    // SAFETY DEFAULTS
+    // SAFE DEFAULTS
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
@@ -126,47 +135,18 @@ Return SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // 🔥 ULTRA ETSY TAG ENGINE (FINAL FIX)
-
+    // 🔥 REAL ETSY TAG ENFORCER (no half cuts)
     let tags = (data.tags || "")
       .split(",")
       .map((t:string)=>t.trim().replace("#",""))
-      .filter(Boolean)
+      .filter((t:string)=> t.length > 0 && t.length <= 20)
 
-    // remove tags > 20 chars
-    tags = tags.filter((t:string)=> t.length <= 20)
-
-    // ⭐ AUTO RECOVERY if AI failed
-    if(tags.length < 13){
-
-      const fallback = [
-        keyword,
-        `${keyword} pattern`,
-        `${keyword} gift`,
-        "digital download",
-        "etsy bestseller",
-        "easy diy",
-        "handmade gift",
-        "instant download",
-        "printable design",
-        "craft template",
-        "gift idea",
-        "etsy trending",
-        "creative diy"
-      ]
-
-      fallback.forEach(f=>{
-        if(tags.length < 13 && f.length <= 20){
-          tags.push(f)
-        }
-      })
-    }
-
-    // max 13
+    // ensure max 13
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
 
+    // send market data to UI
     data.marketInsights = market
 
     return Response.json(data)
