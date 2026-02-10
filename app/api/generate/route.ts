@@ -6,15 +6,38 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-export async function POST(req: Request) {
+async function generateListing(prompt:string){
 
-  try {
+  const completion = await openai.chat.completions.create({
+
+    model:"gpt-4o-mini",
+
+    messages:[
+      {
+        role:"user",
+        content:prompt
+      }
+    ]
+  })
+
+  let text = completion.choices?.[0]?.message?.content || "{}"
+
+  text = text.replace(/```json/g,"").replace(/```/g,"").trim()
+
+  try{
+    return JSON.parse(text)
+  }catch{
+    return {}
+  }
+}
+
+export async function POST(req: Request){
+
+  try{
 
     const body = await req.json()
-
     const keyword = body.product || "product"
 
-    // LIVE SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -24,113 +47,76 @@ export async function POST(req: Request) {
 
     const seo = analyzeSEO(titles)
 
-    const competitorData = competitors.map((c:any)=>({
-      title:c.title,
-      inCart:c.inCart,
-      reviews:c.reviews,
-      profitability:c.profitability,
-      trendScore:c.trendScore,
-      dominationScore:c.dominationScore
-    }))
-
-    const completion = await openai.chat.completions.create({
-
-      model:"gpt-4o-mini",
-
-      messages:[
-        {
-          role:"user",
-          content:`
+    const basePrompt = `
 
 You are an EXTREME Etsy SEO domination AI.
 
-You DO NOT write generic marketing text.
+You are NOT allowed to produce generic marketing copy.
 
-You:
+OBJECTIVE:
+Create listing that outranks competitors.
 
-- Reverse engineer high-ranking Etsy listings
-- Stack long-tail keywords aggressively
-- Increase buyer intent signals
-- Optimize for Etsy search algorithm, not humans.
-
-USER PRODUCT:
+PRODUCT:
 ${keyword}
 
-REAL COMPETITOR DATA:
-${JSON.stringify(competitorData,null,2)}
+COMPETITORS:
+${JSON.stringify(competitors,null,2)}
 
-LIVE MARKET SUMMARY:
-${JSON.stringify(market,null,2)}
-
-SEO SIGNALS:
+SEO DATA:
 ${JSON.stringify(seo,null,2)}
 
 RULES:
 
 TITLE:
-- multiple keyword segments
-- "|" or "-" separators
-- buyer intent phrases
-- maximize search coverage
-
-DESCRIPTION:
-- SEO heavy opening
-- conversion psychology
+- keyword stacking
+- long tail heavy
+- use "|" separator
 
 TAGS:
-- comma separated
+- long tail
 - NO hashtags
-- long-tail Etsy keywords
+- comma separated
 
-Return ONLY JSON:
+Return JSON:
 
 {
 "title":"",
 "description":"",
 "tags":"",
-"strategyInsights":"",
-"dominationScore":"",
-"seoAdvantage":"",
-"keywordCoverage":"",
-"competitorInsights":"",
-"titleFormula":""
+"dominationScore":""
 }
 
 `
-        }
-      ]
-    })
 
-    let text = completion.choices?.[0]?.message?.content || "{}"
+    // FIRST GENERATION
+    let data = await generateListing(basePrompt)
 
-    text = text.replace(/```json/g,"").replace(/```/g,"").trim()
+    // 🔥 SELF EVALUATION LOOP
+    const evaluationPrompt = `
 
-    let data:any = {}
+Evaluate this listing brutally.
 
-    try{
-      data = JSON.parse(text)
-    }catch{
-      data = {}
+If weak SEO → rewrite aggressively.
+
+LISTING:
+${JSON.stringify(data,null,2)}
+
+Return improved version using same JSON format.
+
+`
+
+    const improved = await generateListing(evaluationPrompt)
+
+    if(improved.title){
+      data = improved
     }
 
-    // SAFETY DEFAULTS
-    data.title ??= ""
-    data.description ??= ""
-    data.tags ??= ""
-    data.strategyInsights ??= ""
-    data.dominationScore ??= ""
-    data.seoAdvantage ??= ""
-    data.keywordCoverage ??= ""
-    data.competitorInsights ??= ""
-    data.titleFormula ??= ""
-
-    // ETSY TAG FORMAT
-    let tags = data.tags
+    // TAG FIX
+    let tags = (data.tags || "")
       .split(",")
-      .map((t:string)=>t.trim())
+      .map((t:string)=>t.trim().replace("#",""))
       .filter(Boolean)
 
-    tags = tags.map((t:string)=> t.replace("#","").slice(0,20))
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
@@ -139,23 +125,17 @@ Return ONLY JSON:
 
     return Response.json(data)
 
-  } catch (error) {
+  }catch(error){
 
-    console.log("Generate API error:", error)
+    console.log(error)
 
     return Response.json({
       title:"",
       description:"",
       tags:"",
-      strategyInsights:"",
       dominationScore:"",
-      seoAdvantage:"",
-      keywordCoverage:"",
-      competitorInsights:"",
-      titleFormula:"",
       marketInsights:{}
     })
 
   }
-
 }
