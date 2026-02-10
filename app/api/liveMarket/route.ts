@@ -1,5 +1,5 @@
 import { scanEtsy } from "../../../lib/etsyScanner"
-import { analyzeSEO } from "@/lib/seoAnalyzer"
+import { analyzeSEO } from "../../../lib/seoAnalyzer"
 
 export async function POST(req: Request){
 
