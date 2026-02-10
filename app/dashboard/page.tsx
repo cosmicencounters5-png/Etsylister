@@ -34,7 +34,6 @@ export default function Home(){
     setTimeout(()=>setCopied(""),1200)
   }
 
-  // LIVE DOMINATION ENGINE
   function calculateLiveDomination(text:string){
 
     const words=text.toLowerCase()
@@ -61,7 +60,6 @@ export default function Home(){
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // AI THOUGHT STREAM
   useEffect(()=>{
 
     if(input.length < 3){
@@ -89,7 +87,6 @@ export default function Home(){
 
   },[input])
 
-  // AI THINKING STEPS (🔥 makes AI feel alive)
   useEffect(()=>{
 
     if(!loading) return
@@ -114,7 +111,6 @@ export default function Home(){
 
   },[loading])
 
-  // TYPE EFFECT (🔥 BIG DIFFERENCE)
   useEffect(()=>{
 
     if(!parsed) return
@@ -165,6 +161,14 @@ export default function Home(){
     }catch(e){}
 
     setLoading(false)
+  }
+
+  const boxStyle={
+    background:"#0f0f0f",
+    padding:18,
+    borderRadius:14,
+    border:"1px solid #1f1f1f",
+    marginTop:18
   }
 
   return(
@@ -229,49 +233,57 @@ export default function Home(){
 
           {/* DOMINATION */}
 
-          <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
+          <div style={boxStyle}>
             👑 Score: {liveDomination.score}/100 — {liveDomination.level}
           </div>
 
-          {/* AI THOUGHTS */}
-
           {aiThoughts.map((t,i)=><div key={i}>⚡ {t}</div>)}
-
-          {/* RESULTS */}
 
           {parsed && (
 
             <div style={{marginTop:30}}>
 
-              <div style={{background:"#0f0f0f",padding:18,borderRadius:14}}>
+              <div style={boxStyle}>
                 🔥 Profitability: {parsed.dominationScore}
               </div>
 
-              <h3>TITLE</h3>
-              <p>{typed.title}</p>
-
-              <h3>DESCRIPTION</h3>
-              <p>{typed.description}</p>
-
-              <h3>TAGS</h3>
-
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {typed.tags.split(",").map((t:string,i:number)=>(
-                  <span key={i} style={{
-                    background:"#1a1a1a",
-                    padding:"6px 10px",
-                    borderRadius:999
-                  }}>
-                    {t.trim()}
-                  </span>
-                ))}
+              <div style={boxStyle}>
+                <strong>TITLE</strong>
+                <p>{typed.title}</p>
+                <button onClick={()=>copy(typed.title,"title")}>
+                  {copied==="title"?"Copied ✓":"Copy"}
+                </button>
               </div>
 
-              <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
-                {copied==="tags"?"Copied ✓":"Copy Tags"}
-              </button>
+              <div style={boxStyle}>
+                <strong>DESCRIPTION</strong>
+                <p>{typed.description}</p>
+                <button onClick={()=>copy(typed.description,"desc")}>
+                  {copied==="desc"?"Copied ✓":"Copy"}
+                </button>
+              </div>
 
-              <div style={{marginTop:20,background:"#0f0f0f",padding:18,borderRadius:14}}>
+              <div style={boxStyle}>
+                <strong>TAGS</strong>
+
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
+                  {typed.tags.split(",").map((t:string,i:number)=>(
+                    <span key={i} style={{
+                      background:"#1a1a1a",
+                      padding:"6px 10px",
+                      borderRadius:999
+                    }}>
+                      {t.trim()}
+                    </span>
+                  ))}
+                </div>
+
+                <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
+                  {copied==="tags"?"Copied ✓":"Copy Tags"}
+                </button>
+              </div>
+
+              <div style={boxStyle}>
 
                 <strong>🧠 Strategy Insights</strong>
                 <p>{parsed.strategyInsights}</p>
