@@ -9,7 +9,6 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [brainStep,setBrainStep]=useState("")
-  const [progress,setProgress]=useState(0)
 
   const [parsed,setParsed]=useState<any>(null)
 
@@ -87,13 +86,11 @@ export default function Home(){
 
   },[input])
 
-  // AI LIVE PROGRESS (conversion psychology)
   useEffect(()=>{
 
     if(!loading) return
 
     const steps=[
-      "AI DOMINATION ENGINE ACTIVE",
       "Scanning Etsy competitors...",
       "Analyzing SEO patterns...",
       "Detecting buyer intent...",
@@ -104,14 +101,10 @@ export default function Home(){
     let i=0
 
     const interval=setInterval(()=>{
-
       setBrainStep(steps[i])
-      setProgress(prev=>Math.min(prev+15,95))
-
       i++
       if(i>=steps.length) clearInterval(interval)
-
-    },500)
+    },600)
 
     return ()=>clearInterval(interval)
 
@@ -120,8 +113,6 @@ export default function Home(){
   useEffect(()=>{
 
     if(!parsed) return
-
-    setProgress(100)
 
     function typeField(field:string,value:string,delay:number){
 
@@ -152,7 +143,6 @@ export default function Home(){
 
     if(!input) return
 
-    setProgress(5)
     setLoading(true)
 
     try{
@@ -172,14 +162,11 @@ export default function Home(){
     setLoading(false)
   }
 
-  const card={
-    background:"rgba(15,15,15,0.8)",
-    backdropFilter:"blur(10px)",
-    border:"1px solid #1f1f1f",
-    padding:20,
-    borderRadius:16,
-    marginTop:20,
-    boxShadow:"0 0 40px rgba(0,0,0,0.25)"
+  const cardStyle={
+    background:"#0f0f0f",
+    padding:18,
+    borderRadius:14,
+    border:"1px solid #1f1f1f"
   }
 
   return(
@@ -194,7 +181,7 @@ export default function Home(){
 
           {/* INPUT */}
 
-          <div style={card}>
+          <div style={{...cardStyle,marginTop:20}}>
 
             <input
               value={input}
@@ -218,30 +205,71 @@ export default function Home(){
               borderRadius:12,
               background:"white",
               color:"black",
-              fontWeight:600,
-              boxShadow: loading ? "0 0 25px white" : "none"
+              fontWeight:600
             }}>
               {loading ? brainStep : "Generate Listing"}
             </button>
 
-            {loading && (
-              <div style={{
-                height:6,
-                background:"#111",
-                borderRadius:999,
-                marginTop:12
-              }}>
-                <div style={{
-                  width:`${progress}%`,
-                  height:"100%",
-                  background:"white",
-                  borderRadius:999,
-                  transition:"0.3s"
-                }}/>
-              </div>
-            )}
-
           </div>
+
+          {/* DOMINATION */}
+
+          <div style={{...cardStyle,marginTop:20}}>
+            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
+          </div>
+
+          {/* RESULTS */}
+
+          {parsed && (
+
+            <div style={{marginTop:30}}>
+
+              <div style={cardStyle}>
+                🔥 Profitability: {parsed.dominationScore}
+              </div>
+
+              <div style={{...cardStyle,marginTop:20}}>
+                <strong>TITLE</strong>
+                <p>{typed.title}</p>
+                <button onClick={()=>copy(typed.title,"title")}>
+                  {copied==="title"?"Copied ✓":"Copy"}
+                </button>
+              </div>
+
+              <div style={{...cardStyle,marginTop:20}}>
+                <strong>DESCRIPTION</strong>
+                <p>{typed.description}</p>
+                <button onClick={()=>copy(typed.description,"desc")}>
+                  {copied==="desc"?"Copied ✓":"Copy"}
+                </button>
+              </div>
+
+              <div style={{...cardStyle,marginTop:20}}>
+                <strong>TAGS</strong>
+
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+
+                  {typed.tags.split(",").map((t:string,i:number)=>(
+                    <span key={i} style={{
+                      background:"#1a1a1a",
+                      padding:"6px 10px",
+                      borderRadius:999
+                    }}>
+                      {t.trim()}
+                    </span>
+                  ))}
+
+                </div>
+
+                <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
+                  {copied==="tags"?"Copied ✓":"Copy Tags"}
+                </button>
+
+              </div>
+
+            </div>
+
+          )}
 
         </div>
 
