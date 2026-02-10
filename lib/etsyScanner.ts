@@ -1,6 +1,6 @@
 import OpenAI from "openai"
-import { scanEtsy } from "@/seoAnalyzer/etsyScanner"
-import { analyzeSEO } from "@/seoAnalyzer/seoAnalyzer"
+import { scanEtsy } from "../../../lib/etsyScanner"
+import { analyzeSEO } from "../../../lib/seoAnalyzer"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -115,7 +115,6 @@ Return SAME JSON format.
       data = improved
     }
 
-    // SAFETY DEFAULTS
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
@@ -125,7 +124,6 @@ Return SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // ETSY TAG ENFORCER
     let tags = data.tags
       .split(",")
       .map((t:string)=>t.trim().replace("#",""))
