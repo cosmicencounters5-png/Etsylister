@@ -1,26 +1,48 @@
 "use client"
 
-import { useState,useEffect } from "react"
+import { useEffect,useState } from "react"
 import Link from "next/link"
 
 export default function Landing(){
 
-  const [typed,setTyped]=useState("")
-  const text="AI scans Etsy. Finds profitable niches. Builds domination listings."
+  const heroText="AI scans Etsy. Finds profitable niches. Builds domination listings."
 
-  // 🔥 AI typing effect
+  const [typed,setTyped]=useState("")
+  const [brain,setBrain]=useState("Booting AI engine...")
+
+  // 🔥 typing hero
   useEffect(()=>{
 
     let i=0
 
     const interval=setInterval(()=>{
-
-      setTyped(text.slice(0,i))
+      setTyped(heroText.slice(0,i))
       i++
+      if(i>heroText.length) clearInterval(interval)
+    },20)
 
-      if(i>text.length) clearInterval(interval)
+    return ()=>clearInterval(interval)
 
-    },25)
+  },[])
+
+  // 🔥 fake AI brain activity (psychology trick)
+  useEffect(()=>{
+
+    const steps=[
+      "Scanning Etsy marketplace...",
+      "Analyzing ranking signals...",
+      "Detecting buyer intent...",
+      "Finding profitable keywords...",
+      "Building domination strategy..."
+    ]
+
+    let i=0
+
+    const interval=setInterval(()=>{
+      setBrain(steps[i])
+      i++
+      if(i>=steps.length) i=0
+    },1200)
 
     return ()=>clearInterval(interval)
 
@@ -28,20 +50,19 @@ export default function Landing(){
 
   const card={
     background:"#0f0f0f",
-    padding:22,
+    padding:24,
     borderRadius:18,
-    border:"1px solid #1f1f1f",
-    boxShadow:"0 0 0 1px rgba(255,255,255,0.03)"
+    border:"1px solid #1f1f1f"
   }
 
   return(
 
     <main style={{
       minHeight:"100vh",
+      background:"#050505",
       display:"flex",
       justifyContent:"center",
-      padding:"80px 20px",
-      background:"#050505"
+      padding:"80px 20px"
     }}>
 
       <div style={{maxWidth:720,width:"100%"}}>
@@ -49,39 +70,34 @@ export default function Landing(){
         {/* HERO */}
 
         <h1 style={{
-          fontSize:42,
+          fontSize:46,
           fontWeight:700,
-          lineHeight:1.2
+          lineHeight:1.1
         }}>
-          Build Etsy listings that actually rank.
+          Etsy listings that actually rank.
         </h1>
 
         <p style={{
           marginTop:20,
-          fontSize:20,
+          fontSize:22,
           opacity:0.8,
-          minHeight:30
+          minHeight:32
         }}>
           {typed}
         </p>
 
         {/* CTA */}
 
-        <div style={{
-          display:"flex",
-          gap:12,
-          marginTop:30
-        }}>
+        <div style={{display:"flex",gap:12,marginTop:30}}>
 
           <Link href="/login">
             <button style={{
-              padding:"16px 22px",
+              padding:"18px 24px",
               borderRadius:12,
               background:"white",
               color:"black",
-              fontWeight:600,
-              border:"none",
-              cursor:"pointer"
+              fontWeight:700,
+              border:"none"
             }}>
               Start Free
             </button>
@@ -89,12 +105,11 @@ export default function Landing(){
 
           <Link href="/login">
             <button style={{
-              padding:"16px 22px",
+              padding:"18px 24px",
               borderRadius:12,
               background:"#111",
-              color:"white",
               border:"1px solid #222",
-              cursor:"pointer"
+              color:"white"
             }}>
               Login
             </button>
@@ -102,26 +117,23 @@ export default function Landing(){
 
         </div>
 
-        <p style={{opacity:0.5,marginTop:18}}>
-          AI-powered Etsy keyword domination.
+        <p style={{marginTop:14,opacity:0.5}}>
+          AI-powered Etsy domination engine.
         </p>
 
-        {/* LIVE AI SECTION */}
+        {/* LIVE AI PANEL */}
 
         <div style={{...card,marginTop:50}}>
 
-          <strong>🧠 AI THINKING...</strong>
+          <strong>🧠 LIVE AI PROCESS</strong>
 
-          <ul style={{marginTop:14,opacity:0.7}}>
-            <li>Scanning competitors...</li>
-            <li>Analyzing SEO patterns...</li>
-            <li>Detecting buyer intent...</li>
-            <li>Finding profitable keywords...</li>
-          </ul>
+          <p style={{marginTop:10,opacity:0.8}}>
+            {brain}
+          </p>
 
         </div>
 
-        {/* FEATURE BLOCKS */}
+        {/* FEATURES */}
 
         <div style={{display:"grid",gap:20,marginTop:30}}>
 
