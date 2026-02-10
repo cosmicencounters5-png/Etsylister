@@ -9,6 +9,7 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [brainStep,setBrainStep]=useState("")
+  const [progress,setProgress]=useState(0)
 
   const [parsed,setParsed]=useState<any>(null)
 
@@ -86,11 +87,13 @@ export default function Home(){
 
   },[input])
 
+  // AI LIVE PROGRESS (conversion psychology)
   useEffect(()=>{
 
     if(!loading) return
 
     const steps=[
+      "AI DOMINATION ENGINE ACTIVE",
       "Scanning Etsy competitors...",
       "Analyzing SEO patterns...",
       "Detecting buyer intent...",
@@ -101,10 +104,14 @@ export default function Home(){
     let i=0
 
     const interval=setInterval(()=>{
+
       setBrainStep(steps[i])
+      setProgress(prev=>Math.min(prev+15,95))
+
       i++
       if(i>=steps.length) clearInterval(interval)
-    },600)
+
+    },500)
 
     return ()=>clearInterval(interval)
 
@@ -113,6 +120,8 @@ export default function Home(){
   useEffect(()=>{
 
     if(!parsed) return
+
+    setProgress(100)
 
     function typeField(field:string,value:string,delay:number){
 
@@ -143,6 +152,7 @@ export default function Home(){
 
     if(!input) return
 
+    setProgress(5)
     setLoading(true)
 
     try{
@@ -164,7 +174,7 @@ export default function Home(){
 
   const card={
     background:"rgba(15,15,15,0.8)",
-    backdropFilter:"blur(8px)",
+    backdropFilter:"blur(10px)",
     border:"1px solid #1f1f1f",
     padding:20,
     borderRadius:16,
@@ -180,24 +190,7 @@ export default function Home(){
 
         <div style={{width:"100%",maxWidth:640}}>
 
-          {/* HEADER */}
-
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:40}}>
-
-            <h1 style={{fontSize:36,fontWeight:600,letterSpacing:-1}}>
-              ETSY LISTER
-            </h1>
-
-            <button onClick={logout} style={{
-              background:"#111",
-              border:"1px solid #222",
-              padding:"8px 14px",
-              borderRadius:10
-            }}>
-              Logout
-            </button>
-
-          </div>
+          <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
 
           {/* INPUT */}
 
@@ -226,84 +219,29 @@ export default function Home(){
               background:"white",
               color:"black",
               fontWeight:600,
-              boxShadow: loading ? "0 0 20px white" : "none"
+              boxShadow: loading ? "0 0 25px white" : "none"
             }}>
               {loading ? brainStep : "Generate Listing"}
             </button>
 
+            {loading && (
+              <div style={{
+                height:6,
+                background:"#111",
+                borderRadius:999,
+                marginTop:12
+              }}>
+                <div style={{
+                  width:`${progress}%`,
+                  height:"100%",
+                  background:"white",
+                  borderRadius:999,
+                  transition:"0.3s"
+                }}/>
+              </div>
+            )}
+
           </div>
-
-          {/* STICKY DOMINATION */}
-
-          <div style={{...card,position:"sticky",top:20,zIndex:2}}>
-            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
-          </div>
-
-          {aiThoughts.map((t,i)=><div key={i}>⚡ {t}</div>)}
-
-          {parsed && (
-
-            <div>
-
-              <div style={card}>
-                🔥 Profitability: {parsed.dominationScore}
-              </div>
-
-              <div style={card}>
-                <strong>TITLE</strong>
-                <p>{typed.title}</p>
-                <button onClick={()=>copy(typed.title,"title")}>
-                  {copied==="title"?"Copied ✓":"Copy"}
-                </button>
-              </div>
-
-              <div style={card}>
-                <strong>DESCRIPTION</strong>
-                <p>{typed.description}</p>
-                <button onClick={()=>copy(typed.description,"desc")}>
-                  {copied==="desc"?"Copied ✓":"Copy"}
-                </button>
-              </div>
-
-              <div style={card}>
-                <strong>TAGS</strong>
-
-                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
-                  {typed.tags.split(",").map((t:string,i:number)=>(
-                    <span key={i} style={{
-                      background:"#1a1a1a",
-                      padding:"6px 10px",
-                      borderRadius:999
-                    }}>
-                      {t.trim()}
-                    </span>
-                  ))}
-                </div>
-
-                <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
-                  {copied==="tags"?"Copied ✓":"Copy Tags"}
-                </button>
-              </div>
-
-              <div style={card}>
-
-                <strong>🧠 Strategy Insights</strong>
-                <p>{parsed.strategyInsights}</p>
-
-                <strong>⚡ SEO Advantage</strong>
-                <p>{parsed.seoAdvantage}</p>
-
-                <strong>🔥 Competitor Insights</strong>
-                <p>{parsed.competitorInsights}</p>
-
-                <strong>👑 Title Formula</strong>
-                <p>{parsed.titleFormula}</p>
-
-              </div>
-
-            </div>
-
-          )}
 
         </div>
 
