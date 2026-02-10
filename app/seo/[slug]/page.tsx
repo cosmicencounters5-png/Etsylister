@@ -1,8 +1,8 @@
 import { Metadata } from "next"
 
 type Props = {
-  params: {
-    slug: string
+  params:{
+    slug:string
   }
 }
 
@@ -29,7 +29,7 @@ export async function generateMetadata(
     title:`${keyword} | EtsyLister AI SEO Guide`,
 
     description:
-      `${keyword}. Learn how Etsy SEO works, discover ranking strategies, keyword optimization tactics and AI-driven listing domination.`,
+      `${keyword}. Learn Etsy SEO strategy, keyword optimization and AI listing domination techniques.`,
 
     openGraph:{
       title:`${keyword} | EtsyLister`,
@@ -41,9 +41,36 @@ export async function generateMetadata(
 
 }
 
-export default function Page({ params }:Props){
+async function generateContent(keyword:string){
+
+  // 🔥 AUTO CONTENT ENGINE (safe fallback)
+
+  return `
+${keyword} is one of the most powerful opportunities for Etsy sellers
+who want to rank higher and increase visibility.
+
+Successful Etsy SEO requires understanding buyer intent,
+long-tail keywords, and competitive positioning.
+
+Using AI tools like EtsyLister allows sellers to analyze
+competitor listings, identify profitable niches, and generate
+optimized titles, tags, and descriptions designed to rank.
+
+Key strategies include:
+
+- Keyword stacking for visibility
+- Long-tail targeting for conversion
+- Data-driven listing optimization
+- Continuous testing and iteration
+
+`
+}
+
+export default async function Page({ params }:Props){
 
   const keyword = decodeSlug(params.slug)
+
+  const content = await generateContent(keyword)
 
   return(
 
@@ -59,28 +86,16 @@ export default function Page({ params }:Props){
       </h1>
 
       <p style={{marginTop:20,fontSize:18}}>
-        Etsy SEO is driven by buyer intent, keyword relevance, and listing optimization.
-        This guide explains how to dominate Etsy search results using AI-driven analysis,
-        long-tail keyword targeting, and real competitor data.
+        {content}
       </p>
 
       <h2 style={{marginTop:40}}>
-        Why Etsy SEO matters
+        Why AI improves Etsy rankings
       </h2>
 
       <p>
-        Etsy listings rank based on engagement signals, keyword placement,
-        listing quality score, and market demand. Understanding these factors
-        allows sellers to outperform competitors even in saturated niches.
-      </p>
-
-      <h2 style={{marginTop:40}}>
-        AI-powered listing optimization
-      </h2>
-
-      <p>
-        EtsyLister analyzes competitors, profitability signals, and search intent
-        to generate listings designed for visibility and conversion.
+        AI tools analyze patterns across top performing listings,
+        allowing sellers to identify ranking signals faster than manual research.
       </p>
 
       <a href="/login">
