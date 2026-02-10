@@ -18,7 +18,6 @@ export default function Home(){
     tags:""
   })
 
-  const [liveMarket,setLiveMarket]=useState<any>(null)
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
   const [aiThoughts,setAiThoughts]=useState<string[]>([])
   const [copied,setCopied]=useState("")
@@ -163,12 +162,14 @@ export default function Home(){
     setLoading(false)
   }
 
-  const boxStyle={
-    background:"#0f0f0f",
-    padding:18,
-    borderRadius:14,
+  const card={
+    background:"rgba(15,15,15,0.8)",
+    backdropFilter:"blur(8px)",
     border:"1px solid #1f1f1f",
-    marginTop:18
+    padding:20,
+    borderRadius:16,
+    marginTop:20,
+    boxShadow:"0 0 40px rgba(0,0,0,0.25)"
   }
 
   return(
@@ -177,13 +178,13 @@ export default function Home(){
 
       <main style={{minHeight:"100vh",display:"flex",justifyContent:"center",paddingTop:80}}>
 
-        <div style={{width:"100%",maxWidth:620}}>
+        <div style={{width:"100%",maxWidth:640}}>
 
           {/* HEADER */}
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:40}}>
 
-            <h1 style={{fontSize:36,fontWeight:600}}>
+            <h1 style={{fontSize:36,fontWeight:600,letterSpacing:-1}}>
               ETSY LISTER
             </h1>
 
@@ -200,7 +201,7 @@ export default function Home(){
 
           {/* INPUT */}
 
-          <div style={{background:"#0f0f0f",borderRadius:18,padding:24}}>
+          <div style={card}>
 
             <input
               value={input}
@@ -224,16 +225,17 @@ export default function Home(){
               borderRadius:12,
               background:"white",
               color:"black",
-              fontWeight:600
+              fontWeight:600,
+              boxShadow: loading ? "0 0 20px white" : "none"
             }}>
               {loading ? brainStep : "Generate Listing"}
             </button>
 
           </div>
 
-          {/* DOMINATION */}
+          {/* STICKY DOMINATION */}
 
-          <div style={boxStyle}>
+          <div style={{...card,position:"sticky",top:20,zIndex:2}}>
             👑 Score: {liveDomination.score}/100 — {liveDomination.level}
           </div>
 
@@ -241,13 +243,13 @@ export default function Home(){
 
           {parsed && (
 
-            <div style={{marginTop:30}}>
+            <div>
 
-              <div style={boxStyle}>
+              <div style={card}>
                 🔥 Profitability: {parsed.dominationScore}
               </div>
 
-              <div style={boxStyle}>
+              <div style={card}>
                 <strong>TITLE</strong>
                 <p>{typed.title}</p>
                 <button onClick={()=>copy(typed.title,"title")}>
@@ -255,7 +257,7 @@ export default function Home(){
                 </button>
               </div>
 
-              <div style={boxStyle}>
+              <div style={card}>
                 <strong>DESCRIPTION</strong>
                 <p>{typed.description}</p>
                 <button onClick={()=>copy(typed.description,"desc")}>
@@ -263,7 +265,7 @@ export default function Home(){
                 </button>
               </div>
 
-              <div style={boxStyle}>
+              <div style={card}>
                 <strong>TAGS</strong>
 
                 <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
@@ -283,7 +285,7 @@ export default function Home(){
                 </button>
               </div>
 
-              <div style={boxStyle}>
+              <div style={card}>
 
                 <strong>🧠 Strategy Insights</strong>
                 <p>{parsed.strategyInsights}</p>
