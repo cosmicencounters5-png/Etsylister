@@ -1,32 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { supabase } from "../lib/supabaseClient"
-
 export default function Landing(){
-
-  const [loading,setLoading]=useState(false)
-
-  // AUTO REDIRECT IF LOGGED IN
-  useEffect(()=>{
-
-    async function check(){
-
-      const { data } = await supabase.auth.getSession()
-
-      if(data.session){
-        window.location.href="/dashboard"
-      }
-
-    }
-
-    check()
-
-  },[])
-
-  function goLogin(){
-    window.location.href="/login"
-  }
 
   return(
 
@@ -34,141 +8,161 @@ export default function Landing(){
       minHeight:"100vh",
       display:"flex",
       justifyContent:"center",
-      paddingTop:80
+      padding:"60px 20px",
+      background:"#050505"
     }}>
 
       <div style={{
-        maxWidth:900,
         width:"100%",
-        padding:"0 20px"
+        maxWidth:900
       }}>
 
-        {/* HERO */}
+        {/* HEADER */}
 
-        <section style={{textAlign:"center"}}>
+        <div style={{
+          display:"flex",
+          justifyContent:"space-between",
+          alignItems:"center",
+          marginBottom:80
+        }}>
 
           <h1 style={{
-            fontSize:52,
-            fontWeight:700,
-            lineHeight:1.1
+            fontSize:28,
+            fontWeight:700
           }}>
             ETSY LISTER
           </h1>
 
-          <p style={{
-            opacity:.8,
-            marginTop:20,
-            fontSize:20
+          <div style={{display:"flex",gap:12}}>
+
+            <a href="/login">
+              <button style={btnGhost}>
+                Login
+              </button>
+            </a>
+
+            <a href="/login">
+              <button style={btnPrimary}>
+                Start Free
+              </button>
+            </a>
+
+          </div>
+
+        </div>
+
+        {/* HERO */}
+
+        <section style={{marginBottom:80}}>
+
+          <h2 style={{
+            fontSize:56,
+            lineHeight:1.1,
+            fontWeight:700,
+            marginBottom:24
           }}>
-            AI that reverse engineers winning Etsy listings
-            and generates domination-ready titles, tags and descriptions.
+            AI That Builds Etsy Listings
+            <br/>
+            That Actually Rank.
+          </h2>
+
+          <p style={{
+            opacity:0.7,
+            fontSize:18,
+            maxWidth:520,
+            marginBottom:40
+          }}>
+            Live market scanning. Competitor intelligence. SEO domination engine.
+            Stop guessing — start outranking.
           </p>
 
-          <button
-            onClick={goLogin}
-            style={{
-              marginTop:30,
+          <a href="/login">
+            <button style={{
+              ...btnPrimary,
               padding:"18px 28px",
-              fontSize:18,
-              borderRadius:14,
-              background:"white",
-              color:"black",
-              fontWeight:600,
-              border:"none",
-              cursor:"pointer"
-            }}
-          >
-            Start Free →
-          </button>
+              fontSize:18
+            }}>
+              Generate Your First Listing →
+            </button>
+          </a>
 
         </section>
 
-        {/* FEATURE GRID */}
+        {/* FEATURES */}
 
         <section style={{
-          marginTop:80,
           display:"grid",
+          gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",
           gap:20
         }}>
 
           <Feature
             title="Live Market Intelligence"
-            desc="Analyzes real competitor data and ranking signals before generating your listing."
+            text="Real Etsy competitors scanned automatically."
           />
 
           <Feature
-            title="AI Domination Engine"
-            desc="Detects buyer intent, keyword gaps and hidden opportunity niches."
+            title="Domination Scoring"
+            text="AI predicts ranking strength before you publish."
           />
 
           <Feature
-            title="Instant Listing Generator"
-            desc="Create high-converting titles, descriptions and tags in seconds."
+            title="Long Tail SEO Engine"
+            text="Keyword stacking designed for Etsy algorithm."
           />
 
-        </section>
-
-        {/* SOCIAL PROOF STYLE BLOCK */}
-
-        <section style={{
-          marginTop:80,
-          background:"#0f0f0f",
-          padding:30,
-          borderRadius:18
-        }}>
-
-          <h2 style={{fontSize:28}}>
-            Stop guessing Etsy SEO.
-          </h2>
-
-          <p style={{opacity:.8,marginTop:10}}>
-            ETSY LISTER scans real listing structures, detects ranking DNA,
-            and builds optimized listings designed to outrank competitors.
-          </p>
-
-        </section>
-
-        {/* FINAL CTA */}
-
-        <section style={{
-          marginTop:80,
-          textAlign:"center"
-        }}>
-
-          <button
-            onClick={goLogin}
-            style={{
-              padding:"20px 32px",
-              fontSize:20,
-              borderRadius:14,
-              background:"white",
-              color:"black",
-              fontWeight:700
-            }}
-          >
-            Launch AI Strategist 🚀
-          </button>
+          <Feature
+            title="AI Strategy Brain"
+            text="Actionable optimization insights instantly."
+          />
 
         </section>
 
       </div>
 
     </main>
-
   )
 }
 
-function Feature({title,desc}:any){
+const btnPrimary={
+  background:"white",
+  color:"black",
+  border:"none",
+  padding:"10px 18px",
+  borderRadius:12,
+  fontWeight:600,
+  cursor:"pointer"
+}
+
+const btnGhost={
+  background:"transparent",
+  border:"1px solid #222",
+  color:"white",
+  padding:"10px 18px",
+  borderRadius:12,
+  cursor:"pointer"
+}
+
+function Feature({title,text}:any){
 
   return(
 
     <div style={{
       background:"#0f0f0f",
       padding:24,
-      borderRadius:16
+      borderRadius:16,
+      border:"1px solid #1f1f1f"
     }}>
-      <h3>{title}</h3>
-      <p style={{opacity:.8,marginTop:8}}>{desc}</p>
+
+      <strong>{title}</strong>
+
+      <p style={{
+        marginTop:10,
+        opacity:0.7
+      }}>
+        {text}
+      </p>
+
     </div>
 
   )
