@@ -1,58 +1,102 @@
 import { Metadata } from "next"
-import Link from "next/link"
 
 type Props = {
-  params:{ slug:string }
-}
-
-export async function generateMetadata({params}:Props):Promise<Metadata>{
-
-  const keyword = params.slug.replaceAll("-"," ")
-
-  return{
-    title:`${keyword} | EtsyLister AI`,
-    description:`${keyword}. AI powered Etsy SEO optimization and listing generator.`
+  params: {
+    slug: string
   }
 }
 
-export default function Page({params}:Props){
+function decodeSlug(slug:string){
 
-  const keyword = params.slug.replaceAll("-"," ")
+  return slug
+    .replaceAll("-"," ")
+    .replace("how to rank for","How to rank for")
+    .replace("best strategy for","Best strategy for")
+    .replace("complete guide to","Complete guide to")
+    .replace("advanced optimization for","Advanced optimization for")
+    .replace("ultimate seo guide","Ultimate SEO guide")
+
+}
+
+export async function generateMetadata(
+  { params }:Props
+):Promise<Metadata>{
+
+  const keyword = decodeSlug(params.slug)
+
+  return{
+
+    title:`${keyword} | EtsyLister AI SEO Guide`,
+
+    description:
+      `${keyword}. Learn how Etsy SEO works, discover ranking strategies, keyword optimization tactics and AI-driven listing domination.`,
+
+    openGraph:{
+      title:`${keyword} | EtsyLister`,
+      description:`AI-powered Etsy SEO strategy for ${keyword}.`,
+      type:"article"
+    }
+
+  }
+
+}
+
+export default function Page({ params }:Props){
+
+  const keyword = decodeSlug(params.slug)
 
   return(
 
     <main style={{
-      minHeight:"100vh",
-      background:"#050505",
-      color:"white",
+      maxWidth:760,
+      margin:"0 auto",
       padding:"80px 20px",
-      display:"flex",
-      justifyContent:"center"
+      lineHeight:1.6
     }}>
 
-      <div style={{maxWidth:700,width:"100%"}}>
+      <h1 style={{fontSize:42,fontWeight:700}}>
+        {keyword}
+      </h1>
 
-        <h1>{keyword}</h1>
+      <p style={{marginTop:20,fontSize:18}}>
+        Etsy SEO is driven by buyer intent, keyword relevance, and listing optimization.
+        This guide explains how to dominate Etsy search results using AI-driven analysis,
+        long-tail keyword targeting, and real competitor data.
+      </p>
 
-        <p style={{marginTop:20}}>
-          Generate optimized Etsy listings using AI strategy and real competitor data.
-        </p>
+      <h2 style={{marginTop:40}}>
+        Why Etsy SEO matters
+      </h2>
 
-        <Link href="/login">
-          <button style={{
-            marginTop:30,
-            padding:"18px 24px",
-            background:"white",
-            color:"black",
-            borderRadius:12,
-            fontWeight:700
-          }}>
-            Try AI Listing Generator
-          </button>
-        </Link>
+      <p>
+        Etsy listings rank based on engagement signals, keyword placement,
+        listing quality score, and market demand. Understanding these factors
+        allows sellers to outperform competitors even in saturated niches.
+      </p>
 
-      </div>
+      <h2 style={{marginTop:40}}>
+        AI-powered listing optimization
+      </h2>
+
+      <p>
+        EtsyLister analyzes competitors, profitability signals, and search intent
+        to generate listings designed for visibility and conversion.
+      </p>
+
+      <a href="/login">
+        <button style={{
+          marginTop:40,
+          padding:"18px 24px",
+          background:"black",
+          color:"white",
+          borderRadius:12
+        }}>
+          Generate Your Listing Free →
+        </button>
+      </a>
 
     </main>
+
   )
+
 }
