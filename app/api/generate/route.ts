@@ -39,7 +39,6 @@ export async function POST(req: Request){
     const body = await req.json()
     const keyword = body.product || "product"
 
-    // 🔥 LIVE SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -48,7 +47,6 @@ export async function POST(req: Request){
     const titles = competitors.map((c:any)=>c.title || "")
     const seo = analyzeSEO(titles)
 
-    // reduce AI overload
     const topCompetitors =
       competitors
         .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
@@ -106,7 +104,6 @@ Return JSON:
 
     let data = await generateListing(basePrompt)
 
-    // 🔥 SELF IMPROVE PASS
     const improved = await generateListing(`
 Improve brutally if weak:
 
@@ -129,23 +126,47 @@ Return SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // 🔥 REAL ETSY TAG ENFORCER (NO HALF CUT TAGS)
+    // 🔥 ULTRA ETSY TAG ENGINE (FINAL FIX)
+
     let tags = (data.tags || "")
       .split(",")
-      .map((t:string)=>
-        t
-          .trim()
-          .replace("#","")
-      )
-      // remove empty + over 20 chars (NO slicing)
-      .filter((t:string)=> t.length > 0 && t.length <= 20)
+      .map((t:string)=>t.trim().replace("#",""))
+      .filter(Boolean)
 
-    // max 13 tags
+    // remove tags > 20 chars
+    tags = tags.filter((t:string)=> t.length <= 20)
+
+    // ⭐ AUTO RECOVERY if AI failed
+    if(tags.length < 13){
+
+      const fallback = [
+        keyword,
+        `${keyword} pattern`,
+        `${keyword} gift`,
+        "digital download",
+        "etsy bestseller",
+        "easy diy",
+        "handmade gift",
+        "instant download",
+        "printable design",
+        "craft template",
+        "gift idea",
+        "etsy trending",
+        "creative diy"
+      ]
+
+      fallback.forEach(f=>{
+        if(tags.length < 13 && f.length <= 20){
+          tags.push(f)
+        }
+      })
+    }
+
+    // max 13
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
 
-    // send market data to UI
     data.marketInsights = market
 
     return Response.json(data)
