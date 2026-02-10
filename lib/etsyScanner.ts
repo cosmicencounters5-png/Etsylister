@@ -1,6 +1,6 @@
 import OpenAI from "openai"
-import { scanEtsy } from "../../../lib/etsyScanner"
-import { analyzeSEO } from "../../../lib/seoAnalyzer"
+import { scanEtsy } from "@/lib/etsyScanner"
+import { analyzeSEO } from "@/lib/seoAnalyzer"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -36,7 +36,6 @@ export async function POST(req: Request){
     const body = await req.json()
     const keyword = body.product || "product"
 
-    // 🔥 LIVE MARKET SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -45,7 +44,6 @@ export async function POST(req: Request){
     const titles = competitors.map((c:any)=>c.title || "")
     const seo = analyzeSEO(titles)
 
-    // 🔥 SMART DATA (prevents AI overload)
     const topCompetitors =
       competitors
         .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
@@ -61,15 +59,12 @@ export async function POST(req: Request){
 
 You are an EXTREME Etsy SEO domination AI.
 
-You are NOT allowed to produce generic marketing copy.
-
-OBJECTIVE:
 Create listing that outranks competitors.
 
 PRODUCT:
 ${keyword}
 
-TOP COMPETITOR INSIGHTS:
+TOP COMPETITORS:
 ${JSON.stringify(topCompetitors,null,2)}
 
 SEO DATA:
@@ -80,15 +75,13 @@ RULES:
 TITLE:
 - keyword stacking
 - long tail heavy
-- use "|" separator
+- use "|"
 
 TAGS:
 - long tail
-- NO hashtags
 - comma separated
+- NO hashtags
 - minimum 10 tags
-
-OUTPUT MUST FEEL LIKE PREMIUM SAAS STRATEGIST.
 
 Return JSON:
 
@@ -102,23 +95,17 @@ Return JSON:
 "competitorInsights":"",
 "titleFormula":""
 }
-
 `
 
-    // FIRST GENERATION
     let data = await generateListing(basePrompt)
 
-    // 🔥 SELF IMPROVEMENT LOOP
     const evaluationPrompt = `
 
-Evaluate brutally.
+Improve aggressively if weak:
 
-If weak SEO or too short → rewrite stronger.
-
-LISTING:
 ${JSON.stringify(data,null,2)}
 
-Return improved version using SAME JSON format.
+Return SAME JSON format.
 
 `
 
@@ -128,7 +115,7 @@ Return improved version using SAME JSON format.
       data = improved
     }
 
-    // 🔥 SAFETY DEFAULTS (prevents frontend breaking)
+    // SAFETY DEFAULTS
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
@@ -138,7 +125,7 @@ Return improved version using SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // 🔥 TAG ENFORCER (etsy rules)
+    // ETSY TAG ENFORCER
     let tags = data.tags
       .split(",")
       .map((t:string)=>t.trim().replace("#",""))
@@ -148,7 +135,6 @@ Return improved version using SAME JSON format.
 
     data.tags = tags.join(", ")
 
-    // send market insights to frontend
     data.marketInsights = market
 
     return Response.json(data)
