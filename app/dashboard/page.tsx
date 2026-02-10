@@ -9,7 +9,6 @@ export default function Home(){
   const [input,setInput]=useState("")
   const [loading,setLoading]=useState(false)
   const [brainStep,setBrainStep]=useState("")
-
   const [parsed,setParsed]=useState<any>(null)
 
   const [typed,setTyped]=useState({
@@ -248,7 +247,6 @@ export default function Home(){
                 <strong>TAGS</strong>
 
                 <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-
                   {typed.tags.split(",").map((t:string,i:number)=>(
                     <span key={i} style={{
                       background:"#1a1a1a",
@@ -258,12 +256,29 @@ export default function Home(){
                       {t.trim()}
                     </span>
                   ))}
-
                 </div>
 
                 <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
                   {copied==="tags"?"Copied ✓":"Copy Tags"}
                 </button>
+
+              </div>
+
+              {/* STRATEGIST PANEL BACK (🔥🔥🔥) */}
+
+              <div style={{...cardStyle,marginTop:20}}>
+
+                <strong>🧠 Strategy Insights</strong>
+                <p>{parsed.strategyInsights}</p>
+
+                <strong>⚡ SEO Advantage</strong>
+                <p>{parsed.seoAdvantage}</p>
+
+                <strong>🔥 Competitor Insights</strong>
+                <p>{parsed.competitorInsights}</p>
+
+                <strong>👑 Title Formula</strong>
+                <p>{parsed.titleFormula}</p>
 
               </div>
 
