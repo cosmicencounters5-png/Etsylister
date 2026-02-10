@@ -20,7 +20,10 @@ async function generateListing(prompt:string){
 
   let text = completion.choices?.[0]?.message?.content || "{}"
 
-  text = text.replace(/```json/g,"").replace(/```/g,"").trim()
+  text = text
+    .replace(/```json/g,"")
+    .replace(/```/g,"")
+    .trim()
 
   try{
     return JSON.parse(text)
@@ -36,6 +39,7 @@ export async function POST(req: Request){
     const body = await req.json()
     const keyword = body.product || "product"
 
+    // 🔥 LIVE SCAN
     const scan = await scanEtsy(keyword)
 
     const competitors = scan?.competitors || []
@@ -44,6 +48,7 @@ export async function POST(req: Request){
     const titles = competitors.map((c:any)=>c.title || "")
     const seo = analyzeSEO(titles)
 
+    // 🔥 reduce AI overload
     const topCompetitors =
       competitors
         .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
@@ -99,6 +104,7 @@ Return JSON:
 
     let data = await generateListing(basePrompt)
 
+    // 🔥 SELF IMPROVE PASS
     const improved = await generateListing(`
 Improve brutally if weak:
 
@@ -111,7 +117,7 @@ Return SAME JSON format.
       data = improved
     }
 
-    // SAFE DEFAULTS
+    // 🔥 SAFETY DEFAULTS
     data.title ??= ""
     data.description ??= ""
     data.tags ??= ""
@@ -121,16 +127,23 @@ Return SAME JSON format.
     data.competitorInsights ??= ""
     data.titleFormula ??= ""
 
-    // ETSY TAG RULES
-    let tags = data.tags
+    // 🔥 ETSY TAG ENFORCER (FULL FIX)
+    let tags = (data.tags || "")
       .split(",")
-      .map((t:string)=>t.trim().replace("#",""))
+      .map((t:string)=>
+        t
+          .trim()
+          .replace("#","")
+          .slice(0,20)   // ⭐ Etsy max length
+      )
       .filter(Boolean)
 
+    // max 13 tags
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
 
+    // send market data to UI
     data.marketInsights = market
 
     return Response.json(data)
