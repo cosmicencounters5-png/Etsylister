@@ -1,45 +1,34 @@
-import { MetadataRoute } from "next"
-import { baseKeywords, seoTemplates } from "@/lib/seoKeywords"
+// ULTRA PROGRAMMATIC SEO ENGINE
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const baseKeywords = [
 
-  const baseUrl = "https://etsylister.com"
+  "etsy seo",
+  "etsy listing optimization",
+  "etsy keyword research",
+  "etsy ai listings",
+  "etsy listing generator",
+  "etsy ranking strategy",
+  "etsy title generator",
+  "etsy tags generator",
+  "etsy digital products seo",
+  "etsy printables seo",
+  "etsy passive income listings",
+  "etsy product research",
+  "etsy profitable niches",
+  "etsy seo tools",
+  "etsy ai seller tool"
 
-  const staticPages = [
+]
 
-    {
-      url: baseUrl,
-      changeFrequency: "daily",
-      priority: 1
-    },
+export const seoTemplates = [
 
-    {
-      url: `${baseUrl}/login`,
-      changeFrequency:"monthly",
-      priority:0.8
-    }
+  "best",
+  "ultimate-guide-to",
+  "how-to",
+  "top-strategy-for",
+  "complete-guide-to",
+  "advanced",
+  "ai-powered",
+  "professional"
 
-  ]
-
-  const programmaticPages = baseKeywords.flatMap(keyword =>
-
-    seoTemplates.map(template => {
-
-      const slug = `${template}-${keyword}`
-        .replaceAll(" ","-")
-
-      return{
-
-        url:`${baseUrl}/seo/${slug}`,
-        changeFrequency:"weekly",
-        priority:0.9
-
-      }
-
-    })
-
-  )
-
-  return [...staticPages,...programmaticPages]
-
-}
+]
