@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { baseKeywords, seoTemplates } from "@/lib/seoKeywords"
 
 type Props = {
   params:{
@@ -8,13 +9,29 @@ type Props = {
 
 function decodeSlug(slug:string){
 
-  return slug
-    .replaceAll("-"," ")
-    .replace("how to rank for","How to rank for")
-    .replace("best strategy for","Best strategy for")
-    .replace("complete guide to","Complete guide to")
-    .replace("advanced optimization for","Advanced optimization for")
-    .replace("ultimate seo guide","Ultimate SEO guide")
+  return slug.replaceAll("-"," ")
+
+}
+
+// 🔥 AUTO RELATED ARTICLES ENGINE
+function getRelated(slug:string){
+
+  const baseUrl="/seo"
+
+  return baseKeywords
+    .slice(0,6)
+    .map(keyword=>{
+
+      const template = seoTemplates[Math.floor(Math.random()*seoTemplates.length)]
+
+      const newSlug=`${template}-${keyword}`.replaceAll(" ","-")
+
+      return{
+        title:`${template.replaceAll("-"," ")} ${keyword}`,
+        url:`${baseUrl}/${newSlug}`
+      }
+
+    })
 
 }
 
@@ -29,11 +46,11 @@ export async function generateMetadata(
     title:`${keyword} | EtsyLister AI SEO Guide`,
 
     description:
-      `${keyword}. Learn Etsy SEO strategy, keyword optimization and AI listing domination techniques.`,
+      `Complete guide for ${keyword}. AI-powered Etsy SEO strategies, keyword research and listing domination.`,
 
     openGraph:{
       title:`${keyword} | EtsyLister`,
-      description:`AI-powered Etsy SEO strategy for ${keyword}.`,
+      description:`AI Etsy SEO strategy for ${keyword}.`,
       type:"article"
     }
 
@@ -43,25 +60,19 @@ export async function generateMetadata(
 
 async function generateContent(keyword:string){
 
-  // 🔥 AUTO CONTENT ENGINE (safe fallback)
-
+  // 🔥 SAFE AUTO CONTENT
   return `
-${keyword} is one of the most powerful opportunities for Etsy sellers
-who want to rank higher and increase visibility.
+${keyword} is a powerful ranking opportunity for Etsy sellers.
 
-Successful Etsy SEO requires understanding buyer intent,
-long-tail keywords, and competitive positioning.
+Using AI tools like EtsyLister helps identify profitable niches,
+analyze competitors, and generate optimized titles and tags.
 
-Using AI tools like EtsyLister allows sellers to analyze
-competitor listings, identify profitable niches, and generate
-optimized titles, tags, and descriptions designed to rank.
+Top ranking strategies include:
 
-Key strategies include:
-
-- Keyword stacking for visibility
-- Long-tail targeting for conversion
-- Data-driven listing optimization
-- Continuous testing and iteration
+- Long-tail keyword optimization
+- Buyer intent targeting
+- Competitive analysis
+- Conversion-focused listing design
 
 `
 }
@@ -72,43 +83,76 @@ export default async function Page({ params }:Props){
 
   const content = await generateContent(keyword)
 
+  const related = getRelated(params.slug)
+
   return(
 
     <main style={{
-      maxWidth:760,
+      maxWidth:900,
       margin:"0 auto",
       padding:"80px 20px",
-      lineHeight:1.6
+      display:"grid",
+      gridTemplateColumns:"2fr 1fr",
+      gap:40
     }}>
 
-      <h1 style={{fontSize:42,fontWeight:700}}>
-        {keyword}
-      </h1>
+      {/* MAIN ARTICLE */}
 
-      <p style={{marginTop:20,fontSize:18}}>
-        {content}
-      </p>
+      <div>
 
-      <h2 style={{marginTop:40}}>
-        Why AI improves Etsy rankings
-      </h2>
+        <h1 style={{fontSize:42,fontWeight:700}}>
+          {keyword}
+        </h1>
 
-      <p>
-        AI tools analyze patterns across top performing listings,
-        allowing sellers to identify ranking signals faster than manual research.
-      </p>
+        <p style={{marginTop:20,fontSize:18,lineHeight:1.6}}>
+          {content}
+        </p>
 
-      <a href="/login">
-        <button style={{
-          marginTop:40,
-          padding:"18px 24px",
-          background:"black",
-          color:"white",
-          borderRadius:12
-        }}>
-          Generate Your Listing Free →
-        </button>
-      </a>
+        <h2 style={{marginTop:40}}>
+          Why AI improves Etsy rankings
+        </h2>
+
+        <p>
+          AI analyzes thousands of listing patterns instantly,
+          allowing sellers to optimize faster than manual research.
+        </p>
+
+        <a href="/login">
+          <button style={{
+            marginTop:40,
+            padding:"18px 24px",
+            background:"black",
+            color:"white",
+            borderRadius:12
+          }}>
+            Generate Your Listing Free →
+          </button>
+        </a>
+
+      </div>
+
+      {/* 🔥 RELATED ARTICLES SIDEBAR */}
+
+      <aside>
+
+        <h3>Related Etsy SEO Guides</h3>
+
+        <div style={{marginTop:20,display:"grid",gap:12}}>
+
+          {related.map((r,i)=>(
+            <a key={i} href={r.url} style={{
+              background:"#0f0f0f",
+              padding:14,
+              borderRadius:12,
+              display:"block"
+            }}>
+              {r.title}
+            </a>
+          ))}
+
+        </div>
+
+      </aside>
 
     </main>
 
