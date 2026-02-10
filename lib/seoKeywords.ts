@@ -1,28 +1,29 @@
+// lib/seoKeywords.ts
+
+// BASE KEYWORDS = niche + intent keywords
 export const baseKeywords = [
 
-  "crochet pattern",
-  "knitting pattern",
-  "digital planner",
-  "printable wall art",
-  "svg bundle",
-  "etsy stickers",
-  "wedding invitation template",
-  "baby shower printable",
-  "business logo template",
-  "social media template",
-  "etsy digital download",
-  "planner stickers",
-  "printable calendar",
-  "etsy gift tags"
+  "etsy seo",
+  "etsy listing optimization",
+  "etsy keyword research",
+  "etsy listing generator",
+  "etsy ai tool",
+  "etsy seller tips",
+  "etsy ranking strategy",
+  "etsy digital product seo",
+  "etsy printable seo",
+  "etsy listing titles"
 
 ]
 
+// SEO PAGE TEMPLATES (programmatic pages)
+
 export const seoTemplates = [
 
-  "etsy listing generator for",
-  "etsy seo for",
-  "best etsy tags for",
-  "etsy keyword strategy for",
-  "etsy title ideas for"
+  "how-to-rank-for",
+  "best-strategy-for",
+  "complete-guide-to",
+  "ultimate-seo-guide",
+  "advanced-optimization-for"
 
 ]
