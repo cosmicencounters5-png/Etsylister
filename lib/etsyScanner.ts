@@ -1,168 +1,173 @@
-const cache:any = {}
+import OpenAI from "openai"
+import { scanEtsy } from "../../../lib/etsyScanner"
+import { analyzeSEO } from "../../../lib/seoAnalyzer"
 
-export async function scanEtsy(keyword:string){
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
-  const key = keyword.toLowerCase()
+async function generateListing(prompt:string){
 
-  if(cache[key] && Date.now()-cache[key].time < 1000*60*30){
-    return cache[key].data
+  const completion = await openai.chat.completions.create({
+    model:"gpt-4o-mini",
+    messages:[
+      {
+        role:"user",
+        content:prompt
+      }
+    ]
+  })
+
+  let text = completion.choices?.[0]?.message?.content || "{}"
+
+  text = text.replace(/```json/g,"").replace(/```/g,"").trim()
+
+  try{
+    return JSON.parse(text)
+  }catch{
+    return {}
   }
+}
+
+export async function POST(req: Request){
 
   try{
 
-    const searchUrl = `https://www.etsy.com/search?q=${encodeURIComponent(keyword)}`
+    const body = await req.json()
+    const keyword = body.product || "product"
 
-    const res = await fetch(searchUrl,{
-      headers:{ "User-Agent":"Mozilla/5.0" },
-      cache:"no-store"
-    })
+    // 🔥 LIVE MARKET SCAN
+    const scan = await scanEtsy(keyword)
 
-    const html = await res.text()
+    const competitors = scan?.competitors || []
+    const market = scan?.marketInsights || {}
 
-    // 🔥 safer extraction
-    const linkMatches = html.match(/https:\\\/\\\/www\.etsy\.com\\\/listing\\\/[0-9]+/g) || []
+    const titles = competitors.map((c:any)=>c.title || "")
+    const seo = analyzeSEO(titles)
 
-    const links = [...new Set(
-      linkMatches.map((l:any)=>l.replace(/\\\//g,"/"))
-    )].slice(0,12)
+    // 🔥 SMART DATA (prevents AI overload)
+    const topCompetitors =
+      competitors
+        .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
+        .slice(0,5)
+        .map((c:any)=>({
+          title:c.title,
+          inCart:c.inCart,
+          reviews:c.reviews,
+          dominationScore:c.dominationScore
+        }))
 
-    const results = await Promise.all(
+    const basePrompt = `
 
-      links.map(async(link)=>{
+You are an EXTREME Etsy SEO domination AI.
 
-        try{
+You are NOT allowed to produce generic marketing copy.
 
-          const page = await fetch(link,{
-            headers:{ "User-Agent":"Mozilla/5.0"},
-            cache:"no-store"
-          })
+OBJECTIVE:
+Create listing that outranks competitors.
 
-          const pageHtml = await page.text()
+PRODUCT:
+${keyword}
 
-          const titleMatch = pageHtml.match(/<title>(.*?)<\/title>/i)
-          const title = titleMatch ? titleMatch[1] : ""
+TOP COMPETITOR INSIGHTS:
+${JSON.stringify(topCompetitors,null,2)}
 
-          const cartMatch = pageHtml.match(/(\d+)\+?\s+people have this in their cart/i)
-          const inCart = cartMatch ? parseInt(cartMatch[1]) : 0
+SEO DATA:
+${JSON.stringify(seo,null,2)}
 
-          const reviewMatch = pageHtml.match(/"reviewCount":(\d+)/)
-          const reviews = reviewMatch ? parseInt(reviewMatch[1]) : 0
+RULES:
 
-          const imageMatch = pageHtml.match(/"image":"(https:[^"]+)"/)
-          const image = imageMatch ? imageMatch[1] : ""
+TITLE:
+- keyword stacking
+- long tail heavy
+- use "|" separator
 
-          if(inCart < 20) return null
+TAGS:
+- long tail
+- NO hashtags
+- comma separated
+- minimum 10 tags
 
-          const profitability = (inCart*3)+Math.log(reviews+1)
+OUTPUT MUST FEEL LIKE PREMIUM SAAS STRATEGIST.
 
-          const trendScore = (inCart*2)+profitability-Math.log(reviews+1)
+Return JSON:
 
-          const dominationScore =
-            (inCart*2) +
-            Math.log(reviews+1) +
-            (trendScore*0.5)
+{
+"title":"",
+"description":"",
+"tags":"",
+"dominationScore":"",
+"strategyInsights":"",
+"seoAdvantage":"",
+"competitorInsights":"",
+"titleFormula":""
+}
 
-          const opportunityScore =
-            (inCart*4) - Math.log(reviews+1)*10
+`
 
-          return{
-            title,
-            inCart,
-            reviews,
-            profitability,
-            trendScore,
-            dominationScore,
-            opportunityScore,
-            image
-          }
+    // FIRST GENERATION
+    let data = await generateListing(basePrompt)
 
-        }catch(e){
-          return null
-        }
+    // 🔥 SELF IMPROVEMENT LOOP
+    const evaluationPrompt = `
 
-      })
+Evaluate brutally.
 
-    )
+If weak SEO or too short → rewrite stronger.
 
-    const competitors = results.filter(Boolean)
+LISTING:
+${JSON.stringify(data,null,2)}
 
-    // 🔥 ALWAYS SAFE STRUCTURE
+Return improved version using SAME JSON format.
 
-    const sorted=[...competitors].sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
+`
 
-    const leaders = sorted.slice(0,3)
+    const improved = await generateListing(evaluationPrompt)
 
-    const risingOpportunities =
-      [...competitors]
-        .sort((a:any,b:any)=>b.opportunityScore-a.opportunityScore)
-        .slice(0,3)
-
-    let avgInCart=0
-    let avgReviews=0
-    let avgProfit=0
-
-    competitors.forEach((c:any)=>{
-      avgInCart+=c.inCart
-      avgReviews+=c.reviews
-      avgProfit+=c.profitability
-    })
-
-    avgInCart=Math.round(avgInCart/(competitors.length||1))
-    avgReviews=Math.round(avgReviews/(competitors.length||1))
-    avgProfit=Math.round(avgProfit/(competitors.length||1))
-
-    const demand =
-      avgInCart>=60 ? "HIGH" :
-      avgInCart>=30 ? "MEDIUM" : "LOW"
-
-    const competition =
-      avgReviews>=2000 ? "HIGH" :
-      avgReviews>=500 ? "MEDIUM" : "LOW"
-
-    const trend =
-      avgProfit>100 ? "RISING" : "STABLE"
-
-    const opportunity =
-      demand==="HIGH" && competition==="LOW" ? "GOLDMINE" :
-      demand==="HIGH" && competition==="MEDIUM" ? "STRONG" :
-      "NORMAL"
-
-    const data={
-      competitors,
-      marketInsights:{
-        avgInCart,
-        avgReviews,
-        avgProfit,
-        demand,
-        competition,
-        trend,
-        opportunity,
-        leaders: leaders || [],
-        risingOpportunities: risingOpportunities || []
-      }
+    if(improved.title){
+      data = improved
     }
 
-    cache[key]={ time:Date.now(), data }
+    // 🔥 SAFETY DEFAULTS (prevents frontend breaking)
+    data.title ??= ""
+    data.description ??= ""
+    data.tags ??= ""
+    data.dominationScore ??= ""
+    data.strategyInsights ??= ""
+    data.seoAdvantage ??= ""
+    data.competitorInsights ??= ""
+    data.titleFormula ??= ""
 
-    return data
+    // 🔥 TAG ENFORCER (etsy rules)
+    let tags = data.tags
+      .split(",")
+      .map((t:string)=>t.trim().replace("#",""))
+      .filter(Boolean)
 
-  }catch(e){
+    tags = tags.slice(0,13)
 
-    // 🔥 TOTAL FAILSAFE
-    return {
-      competitors:[],
-      marketInsights:{
-        avgInCart:0,
-        avgReviews:0,
-        avgProfit:0,
-        demand:"LOW",
-        competition:"LOW",
-        trend:"STABLE",
-        opportunity:"NORMAL",
-        leaders:[],
-        risingOpportunities:[]
-      }
-    }
+    data.tags = tags.join(", ")
+
+    // send market insights to frontend
+    data.marketInsights = market
+
+    return Response.json(data)
+
+  }catch(error){
+
+    console.log("Generate API error:", error)
+
+    return Response.json({
+      title:"",
+      description:"",
+      tags:"",
+      dominationScore:"",
+      strategyInsights:"",
+      seoAdvantage:"",
+      competitorInsights:"",
+      titleFormula:"",
+      marketInsights:{}
+    })
 
   }
 
