@@ -1,7 +1,6 @@
 import OpenAI from "openai"
-import { scanEtsy } from "@/lib/etsyScanner"
-import { analyzeSEO } from "@/lib/seoAnalyzer"
-
+import { scanEtsy } from "../../../lib/etsyScanner"
+import { analyzeSEO } from "../../../lib/seoAnalyzer"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -11,7 +10,12 @@ async function generateListing(prompt:string){
 
   const completion = await openai.chat.completions.create({
     model:"gpt-4o-mini",
-    messages:[{ role:"user", content:prompt }]
+    messages:[
+      {
+        role:"user",
+        content:prompt
+      }
+    ]
   })
 
   let text = completion.choices?.[0]?.message?.content || "{}"
@@ -21,7 +25,6 @@ async function generateListing(prompt:string){
   try{
     return JSON.parse(text)
   }catch{
-    console.log("JSON parse failed:", text)
     return {}
   }
 }
@@ -39,27 +42,30 @@ export async function POST(req: Request){
     const market = scan?.marketInsights || {}
 
     const titles = competitors.map((c:any)=>c.title || "")
-
     const seo = analyzeSEO(titles)
+
+    const topCompetitors =
+      competitors
+        .sort((a:any,b:any)=>b.dominationScore-a.dominationScore)
+        .slice(0,5)
+        .map((c:any)=>({
+          title:c.title,
+          inCart:c.inCart,
+          reviews:c.reviews,
+          dominationScore:c.dominationScore
+        }))
 
     const basePrompt = `
 
-You are an EXTREME Etsy market domination AI.
+You are an EXTREME Etsy SEO domination AI.
 
-You MUST act like:
-
-- elite Etsy growth strategist
-- conversion expert
-- keyword domination analyst
-
-OBJECTIVE:
-Create listing that OUTRANKS competitors.
+Create listing that outranks competitors.
 
 PRODUCT:
 ${keyword}
 
-COMPETITORS:
-${JSON.stringify(competitors,null,2)}
+TOP COMPETITORS:
+${JSON.stringify(topCompetitors,null,2)}
 
 SEO DATA:
 ${JSON.stringify(seo,null,2)}
@@ -69,79 +75,61 @@ RULES:
 TITLE:
 - keyword stacking
 - long tail heavy
-- "|" separators
+- use "|"
 
 TAGS:
-- exactly 13 tags
-- long tail phrases
-- NO hashtags
-- max 20 characters each
+- long tail
 - comma separated
+- NO hashtags
+- minimum 10 tags
 
-RETURN ONLY JSON:
+Return JSON:
 
 {
 "title":"",
 "description":"",
 "tags":"",
-"strategyInsights":"",
 "dominationScore":"",
+"strategyInsights":"",
 "seoAdvantage":"",
-"keywordCoverage":"",
 "competitorInsights":"",
 "titleFormula":""
 }
-
 `
 
     let data = await generateListing(basePrompt)
 
-    // 🔥 SELF IMPROVEMENT LOOP WITH FULL CONTEXT
-    const evaluationPrompt = `
+    const improved = await generateListing(`
+Improve brutally if weak:
 
-You are auditing your own work.
-
-Rewrite ONLY if stronger SEO possible.
-
-PRODUCT:
-${keyword}
-
-SEO DATA:
-${JSON.stringify(seo,null,2)}
-
-CURRENT LISTING:
 ${JSON.stringify(data,null,2)}
 
-Return same JSON structure.
-
-`
-
-    const improved = await generateListing(evaluationPrompt)
+Return SAME JSON format.
+`)
 
     if(improved.title){
       data = improved
     }
 
-    // TAG ENFORCER
-    let tags = (data.tags || "")
+    // SAFE DEFAULTS
+    data.title ??= ""
+    data.description ??= ""
+    data.tags ??= ""
+    data.dominationScore ??= ""
+    data.strategyInsights ??= ""
+    data.seoAdvantage ??= ""
+    data.competitorInsights ??= ""
+    data.titleFormula ??= ""
+
+    // ETSY TAG RULES
+    let tags = data.tags
       .split(",")
       .map((t:string)=>t.trim().replace("#",""))
       .filter(Boolean)
 
-    tags = tags.map((t:string)=> t.slice(0,20))
     tags = tags.slice(0,13)
 
     data.tags = tags.join(", ")
-
-    // SAFE DEFAULTS
-    data.title ??= ""
-    data.description ??= ""
-    data.strategyInsights ??= ""
-    data.dominationScore ??= ""
-    data.seoAdvantage ??= ""
-    data.keywordCoverage ??= ""
-    data.competitorInsights ??= ""
-    data.titleFormula ??= ""
 
     data.marketInsights = market
 
@@ -149,20 +137,20 @@ Return same JSON structure.
 
   }catch(error){
 
-    console.log("Generate error:", error)
+    console.log("Generate API error:", error)
 
     return Response.json({
       title:"",
       description:"",
       tags:"",
-      strategyInsights:"",
       dominationScore:"",
+      strategyInsights:"",
       seoAdvantage:"",
-      keywordCoverage:"",
       competitorInsights:"",
       titleFormula:"",
       marketInsights:{}
     })
 
   }
+
 }
