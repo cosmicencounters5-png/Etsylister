@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -11,7 +12,7 @@ export default function OptimizePage(){
 
   async function optimize(){
 
-    if (!url) return
+    if(!url) return
 
     setLoading(true)
     setResult(null)
@@ -34,20 +35,23 @@ export default function OptimizePage(){
 
     try{
 
-      // ✅ SEND URL DIREKTE TIL API
-      const res = await fetch("/api/optimize",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ url })
-      })
+      // ⭐ STEP 1 — CLIENT PARSER
+      const listing = await parseEtsyListing(url)
 
-      const data = await res.json()
-
-      if(data.error){
-        alert(data.error)
+      if(!listing){
+        alert("Could not parse listing (Etsy blocked request)")
         setLoading(false)
         return
       }
+
+      // ⭐ STEP 2 — SEND CLEAN DATA TO API
+      const res = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ listing })
+      })
+
+      const data = await res.json()
 
       setResult(data)
 
@@ -93,18 +97,15 @@ export default function OptimizePage(){
           }}
         />
 
-        <button
-          onClick={optimize}
-          style={{
-            width:"100%",
-            marginTop:14,
-            padding:18,
-            borderRadius:12,
-            background:"white",
-            color:"black",
-            fontWeight:600
-          }}
-        >
+        <button onClick={optimize} style={{
+          width:"100%",
+          marginTop:14,
+          padding:18,
+          borderRadius:12,
+          background:"white",
+          color:"black",
+          fontWeight:600
+        }}>
           {loading ? brainStep : "Optimize Listing"}
         </button>
 
