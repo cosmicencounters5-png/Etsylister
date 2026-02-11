@@ -1,39 +1,37 @@
 export async function parseEtsyListing(rawUrl:string){
 
-  console.log("PARSER STARTED:", rawUrl)
-
-  if(!rawUrl) return null
-
   const match =
     rawUrl.match(/listing\/(\d+)/) ||
     rawUrl.match(/(\d{6,})/)
 
-  if(!match){
-    console.log("NO MATCH FOUND")
-    return null
-  }
+  if(!match) return null
 
-  const id = match[1]
-
-  console.log("FOUND LISTING ID:", id)
-
-  const pageUrl = `https://www.etsy.com/listing/${id}`
+  const url = `https://www.etsy.com/listing/${match[1]}`
 
   try{
 
-    const res = await fetch(pageUrl)
+    const res = await fetch(url,{
+      headers:{
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language":"en-US,en;q=0.9",
+        "Upgrade-Insecure-Requests":"1"
+      },
+      cache:"no-store"
+    })
 
-    console.log("FETCH STATUS:", res.status)
+    if(!res.ok){
+      console.log("Fetch failed:", res.status)
+      return null
+    }
 
     const html = await res.text()
-
-    console.log("HTML LENGTH:", html.length)
 
     const scripts = [...html.matchAll(
       /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
     )]
-
-    console.log("JSONLD SCRIPTS FOUND:", scripts.length)
 
     for(const s of scripts){
 
@@ -43,27 +41,27 @@ export async function parseEtsyListing(rawUrl:string){
 
         if(data["@type"]==="Product"){
 
-          console.log("PRODUCT FOUND:", data.name)
-
           return {
             title: data.name || "",
             description: data.description || "",
-            image: data.image || ""
+            image: Array.isArray(data.image)
+              ? data.image[0]
+              : data.image
           }
 
         }
 
-      }catch(e){}
-    }
+      }catch{}
 
-    console.log("NO PRODUCT JSON FOUND")
+    }
 
     return null
 
   }catch(e){
 
-    console.log("FETCH FAILED:", e)
-
+    console.log("Parser error:", e)
     return null
+
   }
+
 }
