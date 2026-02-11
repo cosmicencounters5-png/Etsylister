@@ -12,26 +12,53 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    const res = await fetch(
-      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
-    )
+    // ⭐ CLIENT FETCH (bypasses server block)
+    const res = await fetch(listingUrl)
 
-    if(!res.ok) return null
+    const html = await res.text()
 
-    const data = await res.json()
+    // 🔥 METHOD 1 — JSON-LD (primary)
+    const scripts = [...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+    )]
 
-    return {
+    for(const s of scripts){
 
-      title: data.title || "",
-      description: "",
-      image: data.thumbnail_url || ""
+      try{
 
+        const data = JSON.parse(s[1])
+
+        if(data["@type"]==="Product"){
+
+          return {
+            title: data.name || "",
+            description: data.description || "",
+            image: data.image || ""
+          }
+
+        }
+
+      }catch{}
     }
+
+    // 🔥 METHOD 2 — fallback title scrape
+    const titleMatch = html.match(/<title>(.*?)<\/title>/)
+
+    if(titleMatch){
+      return {
+        title: titleMatch[1],
+        description:"",
+        image:""
+      }
+    }
+
+    return null
 
   }catch(e){
 
-    console.log("oembed failed", e)
+    console.log("GOD MODE parser failed", e)
 
     return null
+
   }
 }
