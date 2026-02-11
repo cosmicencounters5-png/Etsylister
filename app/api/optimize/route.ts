@@ -4,27 +4,50 @@ import { NextResponse } from "next/server"
 import { parseEtsyListing } from "@/lib/etsyListingParser"
 import { runOptimizerBrain } from "@/lib/optimizerBrain"
 
-export async function POST(req:Request){
+export async function POST(req: Request) {
 
-  try{
+  try {
 
     const body = await req.json()
-    const url = body.url
+    let url: string = body.url
 
-    if(!url){
+    if (!url) {
       return NextResponse.json(
-        { error:"Missing URL" },
-        { status:400 }
+        { error: "Missing URL" },
+        { status: 400 }
       )
     }
+
+    // 🔥 NORMALIZE ALL ETSY LINKS
+    // supports:
+    // shopname.etsy.com/listing/ID
+    // etsy.com/listing/ID
+    // etsy.com/your/shop/.../listing/ID
+
+    const match = url.match(/listing\/(\d+)/)
+
+    if (!match) {
+      return NextResponse.json(
+        { error: "Invalid Etsy listing URL" },
+        { status: 400 }
+      )
+    }
+
+    // force canonical listing URL
+    url = `https://www.etsy.com/listing/${match[1]}`
+
+    console.log("Optimizing listing:", url)
 
     // 🔥 STEP 1 — parse Etsy listing
     const listing = await parseEtsyListing(url)
 
-    if(!listing){
+    if (!listing) {
+
+      console.log("Parser failed for:", url)
+
       return NextResponse.json(
-        { error:"Could not parse listing" },
-        { status:400 }
+        { error: "Could not parse listing (Etsy blocking or invalid page)" },
+        { status: 400 }
       )
     }
 
@@ -56,19 +79,17 @@ export async function POST(req:Request){
     })
 
     return NextResponse.json({
-
       original: listing,
       optimized: result
-
     })
 
-  }catch(e){
+  } catch (e) {
 
-    console.error(e)
+    console.error("Optimizer API error:", e)
 
     return NextResponse.json(
-      { error:"Server error" },
-      { status:500 }
+      { error: "Server error" },
+      { status: 500 }
     )
 
   }
