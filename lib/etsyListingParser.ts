@@ -3,7 +3,6 @@ export async function parseEtsyListing(rawUrl:string){
   if(!rawUrl) return null
 
   let url = rawUrl.trim()
-
   url = decodeURIComponent(url)
 
   // extract listing id
@@ -12,14 +11,11 @@ export async function parseEtsyListing(rawUrl:string){
   if(!match) return null
 
   const listingId = match[1]
-
   const canonicalUrl = `https://www.etsy.com/listing/${listingId}`
-
-  console.log("Fetching:", canonicalUrl)
 
   const res = await fetch(canonicalUrl,{
     headers:{
-      "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      "User-Agent":"Mozilla/5.0",
       "Accept-Language":"en-US,en;q=0.9"
     },
     cache:"no-store"
@@ -27,10 +23,7 @@ export async function parseEtsyListing(rawUrl:string){
 
   const html = await res.text()
 
-  // DEBUG:
-  console.log("HTML length:", html.length)
-
-  // 🔥 METHOD 1 — structured data
+  // 🔥 METHOD 1 — JSON-LD structured data
   const ldMatches = [...html.matchAll(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
   )]
@@ -41,7 +34,7 @@ export async function parseEtsyListing(rawUrl:string){
 
       const data = JSON.parse(m[1])
 
-      if(data["@type"]==="Product"){
+      if(data["@type"]===" profiling කරන්නProduct" || data["@type"]==="Product"){
 
         return {
           title:data.name || "",
@@ -54,20 +47,21 @@ export async function parseEtsyListing(rawUrl:string){
     }catch{}
   }
 
-  // 🔥 METHOD 2 — fallback title scrape
-  const titleMatch = html.match(/<title>(.*?)<\/title>/i)
+  // 🔥 METHOD 2 — meta og:title (mye mer stabil)
+  const ogMatch = html.match(/property="og:title"\s*content="([^"]+)"/i)
 
-  if(titleMatch){
+  if(ogMatch && ogMatch[1] && !ogMatch[1].toLowerCase().includes("etsy")){
 
     return {
-      title:titleMatch[1],
+      title:ogMatch[1],
       description:"",
       image:""
     }
 
   }
 
-  console.log("No product data found")
+  // ❌ ignore generic titles like "etsy.com"
+  console.log("No valid product data found")
 
   return null
 }
