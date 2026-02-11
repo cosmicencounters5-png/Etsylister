@@ -36,7 +36,13 @@ export default function OptimizePage() {
     try {
 
       // STEP 1 — PARSE LISTING
-      const listing = await parseEtsyListing(url)
+const res = await fetch("/api/optimize",{
+  method:"POST",
+  headers:{ "Content-Type":"application/json"},
+  body: JSON.stringify({
+    url
+  })
+})
 
       if (!listing) {
         alert("Could not parse listing")
