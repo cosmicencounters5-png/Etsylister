@@ -12,37 +12,65 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
+    // 🔥 STEP 1 — TRY OEMBED (fast)
+    const oembed = await fetch(
+      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
+    )
+
+    if(oembed.ok){
+
+      const data = await oembed.json()
+
+      if(data?.title){
+
+        return {
+          title: data.title,
+          description: "",
+          image: data.thumbnail_url || ""
+        }
+
+      }
+    }
+
+  }catch(e){
+    console.log("oembed failed")
+  }
+
+  try{
+
+    // 🔥 STEP 2 — FALLBACK HTML PARSE
     const res = await fetch(listingUrl,{
       headers:{
         "User-Agent":"Mozilla/5.0",
         "Accept-Language":"en-US,en;q=0.9"
-      },
-      cache:"no-store"
+      }
     })
 
     const html = await res.text()
 
-    // 🔥 Extract JSON-LD (structured data Etsy embeds)
-
-    const jsonMatch = html.match(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+    const titleMatch = html.match(
+      /<meta property="og:title" content="([^"]+)"/
     )
 
-    if(!jsonMatch) return null
+    const imageMatch = html.match(
+      /<meta property="og:image" content="([^"]+)"/
+    )
 
-    const data = JSON.parse(jsonMatch[1])
+    if(titleMatch){
 
-    return {
-      title: data.name || "",
-      description: data.description || "",
-      image: data.image || ""
+      return{
+        title: titleMatch[1],
+        description:"",
+        image: imageMatch?.[1] || ""
+      }
+
     }
 
   }catch(e){
 
-    console.log("parser failed",e)
-    return null
+    console.log("html fallback failed",e)
 
   }
 
+  return null
 }
