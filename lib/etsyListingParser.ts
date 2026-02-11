@@ -28,10 +28,33 @@ export async function parseEtsyListing(url:string){
 
       if(data["@type"]==="Product"){
 
+        const title = data.name || ""
+        const description = data.description || ""
+
+        // 🔥 SIMPLE AI SIGNAL EXTRACTION (NO SCRAPING RISK)
+
+        const words = `${title} ${description}`.toLowerCase()
+
+        const signals = {
+          hasDigitalIntent:
+            words.includes("pattern") ||
+            words.includes("printable") ||
+            words.includes("download"),
+
+          hasBuyerIntent:
+            words.includes("gift") ||
+            words.includes("personalized") ||
+            words.includes("custom"),
+
+          longTailScore:
+            title.split(" ").length
+        }
+
         return {
-          title: data.name || "",
-          description: data.description || "",
-          image: data.image || ""
+          title,
+          description,
+          image: data.image || "",
+          signals
         }
 
       }
