@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { parseEtsyListingClient } from "@/lib/etsyListingParser"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -35,7 +35,7 @@ export default function OptimizePage(){
     try{
 
       // ✅ STEP 1 — CLIENT PARSER
-      const listing = await parseEtsyListingClient(url)
+const listing = await parseEtsyListing(url)
 
       if(!listing){
         alert("Could not parse listing")
