@@ -1,7 +1,6 @@
 // app/api/optimize/route.ts
 
 import { NextResponse } from "next/server"
-import { parseEtsyListing } from "@/lib/etsyListingParser"
 import { runOptimizerBrain } from "@/lib/optimizerBrain"
 
 export async function POST(req: Request) {
@@ -9,49 +8,20 @@ export async function POST(req: Request) {
   try {
 
     const body = await req.json()
-    let url: string = body.url
 
-    if (!url) {
-      return NextResponse.json(
-        { error: "Missing URL" },
-        { status: 400 }
-      )
-    }
-
-    // 🔥 NORMALIZE ALL ETSY LINKS
-    // supports:
-    // shopname.etsy.com/listing/ID
-    // etsy.com/listing/ID
-    // etsy.com/your/shop/.../listing/ID
-
-    const match = url.match(/listing\/(\d+)/)
-
-    if (!match) {
-      return NextResponse.json(
-        { error: "Invalid Etsy listing URL" },
-        { status: 400 }
-      )
-    }
-
-    // force canonical listing URL
-    url = `https://www.etsy.com/listing/${match[1]}`
-
-    console.log("Optimizing listing:", url)
-
-    // 🔥 STEP 1 — parse Etsy listing
-    const listing = await parseEtsyListing(url)
+    // ✅ NOW WE RECEIVE PARSED LISTING FROM CLIENT
+    const listing = body.listing
 
     if (!listing) {
-
-      console.log("Parser failed for:", url)
-
       return NextResponse.json(
-        { error: "Could not parse listing (Etsy blocking or invalid page)" },
+        { error: "Missing listing data" },
         { status: 400 }
       )
     }
 
-    // 🔥 STEP 2 — detect signals (AI brain pre-analysis)
+    console.log("Optimizer received listing:", listing.title)
+
+    // 🔥 STEP 1 — detect signals
 
     const text = (listing.title + " " + listing.description).toLowerCase()
 
@@ -71,7 +41,7 @@ export async function POST(req: Request) {
 
     }
 
-    // 🔥 STEP 3 — run optimizer brain
+    // 🔥 STEP 2 — run optimizer brain
 
     const result = await runOptimizerBrain({
       ...listing,
