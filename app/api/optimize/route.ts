@@ -9,21 +9,25 @@ export async function POST(req: Request) {
 
     const body = await req.json()
 
-    // ✅ NOW WE RECEIVE PARSED LISTING FROM CLIENT
+    // ✅ receive parsed listing from client
     const listing = body.listing
 
-    if (!listing) {
+    // 🔥 DEBUG LOG
+    console.log("Optimizer received listing:", listing)
+
+    if (!listing || !listing.title) {
+
+      console.log("❌ Missing listing data")
+
       return NextResponse.json(
         { error: "Missing listing data" },
         { status: 400 }
       )
     }
 
-    console.log("Optimizer received listing:", listing.title)
-
     // 🔥 STEP 1 — detect signals
 
-    const text = (listing.title + " " + listing.description).toLowerCase()
+    const text = (listing.title + " " + (listing.description || "")).toLowerCase()
 
     const signals = {
 
@@ -47,6 +51,8 @@ export async function POST(req: Request) {
       ...listing,
       signals
     })
+
+    console.log("✅ Optimizer result generated")
 
     return NextResponse.json({
       original: listing,
