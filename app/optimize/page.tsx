@@ -1,46 +1,74 @@
-async function optimize(){
+"use client"
 
-  if(!url) return
+import { useState } from "react"
 
-  setLoading(true)
+export default function OptimizePage(){
 
-  try{
+  const [url,setUrl]=useState("")
+  const [loading,setLoading]=useState(false)
+  const [result,setResult]=useState<any>(null)
 
-    // ⭐ FETCH DIRECT FROM BROWSER
-    const res = await fetch(url)
+  async function optimize(){
 
-    const html = await res.text()
+    if(!url) return
 
-    // parse title from html
-    const titleMatch = html.match(/<title>(.*?)<\/title>/)
+    setLoading(true)
 
-    if(!titleMatch){
+    try{
 
-      alert("Could not parse listing")
-      setLoading(false)
-      return
+      const res = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ url })
+      })
+
+      const data = await res.json()
+
+      if(data.error){
+        alert(data.error)
+      }else{
+        setResult(data)
+      }
+
+    }catch(e){
+      console.log(e)
     }
 
-    const listing = {
-      title: titleMatch[1],
-      description:"",
-      image:""
-    }
-
-    // send parsed data to API
-    const apiRes = await fetch("/api/optimize",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ listing })
-    })
-
-    const data = await apiRes.json()
-
-    setResult(data)
-
-  }catch(e){
-    console.log(e)
+    setLoading(false)
   }
 
-  setLoading(false)
+  return(
+
+    <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px"}}>
+
+      <h1>Etsy Listing Optimizer</h1>
+
+      <input
+        value={url}
+        onChange={(e)=>setUrl(e.target.value)}
+        placeholder="Paste Etsy listing URL..."
+      />
+
+      <button onClick={optimize}>
+        {loading ? "Loading..." : "Optimize"}
+      </button>
+
+      {result && (
+
+        <div>
+
+          <h3>Original Title</h3>
+          <p>{result.original?.title}</p>
+
+          <h3>Optimized Title</h3>
+          <p>{result.optimized?.title}</p>
+
+        </div>
+
+      )}
+
+    </main>
+
+  )
+
 }
