@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -34,25 +33,22 @@ export default function OptimizePage(){
 
     try{
 
-      // ✅ STEP 1 — CLIENT PARSER
-const listing = await parseEtsyListing(url)
-
-      if(!listing){
-        alert("Could not parse listing")
-        setLoading(false)
-        return
-      }
-
-      // ✅ STEP 2 — SEND PARSED DATA TO API
+      // 🔥 SEND URL DIRECTLY TO API
       const res = await fetch("/api/optimize",{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
         body: JSON.stringify({
-          listing
+          url
         })
       })
 
       const data = await res.json()
+
+      if(data.error){
+        alert(data.error)
+        setLoading(false)
+        return
+      }
 
       setResult(data)
 
@@ -92,59 +88,4 @@ const listing = await parseEtsyListing(url)
             width:"100%",
             padding:18,
             borderRadius:12,
-            border:"1px solid #222",
-            background:"#111",
-            color:"white"
-          }}
-        />
-
-        <button
-          onClick={optimize}
-          style={{
-            width:"100%",
-            marginTop:14,
-            padding:18,
-            borderRadius:12,
-            background:"white",
-            color:"black",
-            fontWeight:600
-          }}
-        >
-          {loading ? brainStep : "Optimize Listing"}
-        </button>
-
-      </div>
-
-      {result && (
-
-        <div style={{marginTop:30}}>
-
-          <div style={card}>
-            <strong>Original Title</strong>
-            <p>{result.original?.title}</p>
-          </div>
-
-          <div style={{...card,marginTop:20}}>
-            <strong>Optimized Title</strong>
-            <p>{result.optimized?.title}</p>
-          </div>
-
-          <div style={{...card,marginTop:20}}>
-            <strong>Optimized Description</strong>
-            <p>{result.optimized?.description}</p>
-          </div>
-
-          <div style={{...card,marginTop:20}}>
-            <strong>Suggested Tags</strong>
-            <p>{result.optimized?.tags}</p>
-          </div>
-
-        </div>
-
-      )}
-
-    </main>
-
-  )
-
-}
+            border:"
