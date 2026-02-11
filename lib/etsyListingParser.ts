@@ -1,79 +1,64 @@
-export async function parseEtsyListing(rawUrl: string) {
+export async function parseEtsyListing(rawUrl:string){
 
-  if (!rawUrl) return null
+  if(!rawUrl) return null
 
-  // 🔥 extract listing ID from ANY Etsy URL
-  const match = rawUrl.match(/listing\/(\d+)/) || rawUrl.match(/(\d{6,})/)
+  // 🔥 extract listing id from ANY Etsy link
+  const match =
+    rawUrl.match(/listing\/(\d+)/) ||
+    rawUrl.match(/(\d{6,})/)
 
-  if (!match) return null
+  if(!match) return null
 
   const listingId = match[1]
-  const listingUrl = `https://www.etsy.com/listing/${listingId}`
 
-  try {
+  try{
 
-    // ⭐ First attempt — fetch real page
-    const res = await fetch(listingUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "en-US,en;q=0.9"
-      },
-      cache: "no-store"
-    })
-
-    const html = await res.text()
-
-    // 🔥 Extract JSON-LD (real structured data)
-    const matches = [...html.matchAll(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-    )]
-
-    for (const m of matches) {
-
-      try {
-
-        const data = JSON.parse(m[1])
-
-        if (data["@type"] === "Product") {
-
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: data.image || ""
-          }
-
+    // ⭐ Etsy internal listing API (LESS BLOCKED)
+    const res = await fetch(
+      `https://openapi.etsy.com/v3/application/listings/${listingId}`,
+      {
+        headers:{
+          "User-Agent":"Mozilla/5.0"
         }
+      }
+    )
 
-      } catch (e) {}
+    // If API blocked → fallback below
+    if(!res.ok) throw new Error("API blocked")
 
+    const data = await res.json()
+
+    return {
+      title: data.title || "",
+      description: data.description || "",
+      image: data.images?.[0]?.url_fullxfull || ""
     }
 
-    // ⭐ FALLBACK — use oEmbed if JSON-LD missing
+  }catch(e){
 
-    try {
+    console.log("Primary API failed — fallback")
 
+    try{
+
+      // 🔥 fallback = oembed (always works)
       const embed = await fetch(
-        `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
+        `https://www.etsy.com/oembed?url=${encodeURIComponent(rawUrl)}`
       )
 
       const data = await embed.json()
 
       return {
-        title: data.title || "",
-        description: "",
-        image: data.thumbnail_url || ""
+        title:data.title || "",
+        description:"",
+        image:data.thumbnail_url || ""
       }
 
-    } catch (e) {
-      console.log("oembed fallback failed")
+    }catch(e2){
+
+      console.log("Fallback failed")
+      return null
+
     }
-
-    return null
-
-  } catch (e) {
-
-    console.log("Etsy fetch failed", e)
-    return null
 
   }
 
