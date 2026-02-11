@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { parseEtsyListing } from "@/lib/etsyListingParser"
 import { runOptimizerBrain } from "@/lib/optimizerBrain"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export async function POST(req: Request) {
 
   try {
 
     const body = await req.json()
-    const url = body.url
+    let url = body.url
 
     if (!url) {
       return NextResponse.json(
@@ -16,15 +16,24 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log("Parsing URL:", url)
+    // 🔥 extract listing id from ANY Etsy link
+    const match =
+      url.match(/listing\/(\d+)/) ||
+      url.match(/(\d{6,})/)
 
-    // ✅ PARSE INSIDE API
-    const listing = await parseEtsyListing(url)
+    if (!match) {
+      return NextResponse.json(
+        { error: "Invalid Etsy URL" },
+        { status: 400 }
+      )
+    }
+
+    const listingUrl = `https://www.etsy.com/listing/${match[1]}`
+
+    // ✅ PARSE HERE
+    const listing = await parseEtsyListing(listingUrl)
 
     if (!listing) {
-
-      console.log("Parser returned null")
-
       return NextResponse.json(
         { error: "Could not parse listing" },
         { status: 400 }
@@ -46,7 +55,6 @@ export async function POST(req: Request) {
         text.includes("custom"),
 
       longTailScore: listing.title.split(" ").length
-
     }
 
     const result = await runOptimizerBrain({
@@ -61,11 +69,13 @@ export async function POST(req: Request) {
 
   } catch (e) {
 
-    console.error("Optimizer API error:", e)
+    console.error(e)
 
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
     )
+
   }
+
 }
