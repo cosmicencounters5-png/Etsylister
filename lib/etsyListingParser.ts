@@ -12,29 +12,25 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    const res = await fetch(listingUrl)
-
-    const html = await res.text()
-
-    const titleMatch = html.match(
-      /property="og:title" content="([^"]+)"/
+    const res = await fetch(
+      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
     )
 
-    const imageMatch = html.match(
-      /property="og:image" content="([^"]+)"/
-    )
+    if(!res.ok) return null
 
-    return{
+    const data = await res.json()
 
-      title: titleMatch ? titleMatch[1] : "",
-      description:"",
-      image: imageMatch ? imageMatch[1] : ""
+    return {
+
+      title: data.title || "",
+      description: "",
+      image: data.thumbnail_url || ""
 
     }
 
   }catch(e){
 
-    console.log("client parser failed", e)
+    console.log("oembed failed", e)
 
     return null
   }
