@@ -1,34 +1,31 @@
 export async function parseEtsyListing(rawUrl:string){
 
-  if(!rawUrl) return null
-
   const match =
     rawUrl.match(/listing\/(\d+)/) ||
     rawUrl.match(/(\d{6,})/)
 
-  if(!match) return null
+  if(!match){
+    console.log("NO MATCH ID")
+    return null
+  }
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-  try{
+  console.log("FETCHING:", listingUrl)
 
-    const res = await fetch(
-      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
-    )
-
-    const data = await res.json()
-
-    return {
-      title: data.title || "",
-      description: "",
-      image: data.thumbnail_url || ""
+  const res = await fetch(listingUrl,{
+    headers:{
+      "User-Agent":"Mozilla/5.0",
+      "Accept-Language":"en-US,en;q=0.9"
     }
+  })
 
-  }catch(e){
+  console.log("STATUS:", res.status)
 
-    console.log("oembed failed", e)
+  const html = await res.text()
 
-    return null
+  console.log("HTML LENGTH:", html.length)
+  console.log("FIRST 500 CHARS:", html.slice(0,500))
 
-  }
+  return null
 }
