@@ -34,29 +34,27 @@ export default function OptimizePage(){
 
     try{
 
-      // ✅ STEP 1 — CLIENT PARSER
-      const listing = await parseEtsyListingClient(url)
-
-      if(!listing){
-        alert("Could not parse listing")
-        setLoading(false)
-        return
-      }
-
-      // ✅ STEP 2 — SEND READY DATA TO API
-
+      // ✅ ONLY CALL API (NO CLIENT PARSER)
       const res = await fetch("/api/optimize",{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ listing })
+        body: JSON.stringify({ url })
       })
 
       const data = await res.json()
 
+      if(data.error){
+        alert(data.error)
+        setLoading(false)
+        return
+      }
+
       setResult(data)
 
     }catch(e){
-      console.log(e)
+
+      alert("Optimizer failed")
+
     }
 
     setLoading(false)
