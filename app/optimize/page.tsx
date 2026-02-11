@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListingClient } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -16,7 +17,6 @@ export default function OptimizePage(){
     setLoading(true)
     setResult(null)
 
-    // 🔥 AI brain animation
     const steps=[
       "Scanning Etsy listing...",
       "Extracting structured data...",
@@ -34,31 +34,33 @@ export default function OptimizePage(){
 
     try{
 
-      // ✅ ONLY CALL API (NO CLIENT PARSER)
-      const res = await fetch("/api/optimize",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ url })
-      })
+      // ✅ STEP 1 — CLIENT PARSER
+      const listing = await parseEtsyListingClient(url)
 
-      const data = await res.json()
-
-      if(data.error){
-        alert(data.error)
+      if(!listing){
+        alert("Could not parse listing")
         setLoading(false)
         return
       }
 
+      // ✅ STEP 2 — SEND PARSED DATA TO API
+      const res = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({
+          listing
+        })
+      })
+
+      const data = await res.json()
+
       setResult(data)
 
     }catch(e){
-
-      alert("Optimizer failed")
-
+      console.log(e)
     }
 
     setLoading(false)
-
   }
 
   const card={
@@ -79,8 +81,6 @@ export default function OptimizePage(){
       <h1 style={{fontSize:36,fontWeight:700}}>
         Etsy Listing Optimizer
       </h1>
-
-      {/* INPUT */}
 
       <div style={{...card,marginTop:30}}>
 
@@ -114,8 +114,6 @@ export default function OptimizePage(){
         </button>
 
       </div>
-
-      {/* RESULTS */}
 
       {result && (
 
