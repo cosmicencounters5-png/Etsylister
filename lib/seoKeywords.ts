@@ -34,3 +34,17 @@ export const baseKeywords = [
 "etsy competitor analysis"
 
 ]
+
+// 🔥 PROGRAMMATIC SEO PAGE TEMPLATES
+export const seoTemplates = [
+
+"how-to-rank-for",
+"best-strategy-for",
+"complete-guide-to",
+"ultimate-seo-guide",
+"advanced-optimization-for",
+"step-by-step-guide-to",
+"etsy-seo-blueprint-for",
+"pro-strategy-for"
+
+]
