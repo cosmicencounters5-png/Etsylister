@@ -4,63 +4,38 @@ export async function parseEtsyListing(rawUrl:string){
 
   let url = rawUrl.trim()
 
-  // 🔥 STEP 1 — normalize
   url = decodeURIComponent(url)
 
-  // remove tracking params visually
-  url = url.replace(/\?.*$/,"")
+  // extract listing id
+  const match = url.match(/(\d{6,})/)
 
-  // 🔥 STEP 2 — extract listing id from ANY etsy url
-  // works for:
-  // /listing/123
-  // ?listing_id=123
-  // /share/123
-  // mobile links etc
+  if(!match) return null
 
-  let listingId:string | null = null
+  const listingId = match[1]
 
-  const patterns = [
-    /listing\/(\d+)/i,
-    /listing_id=(\d+)/i,
-    /\/(\d{6,})/ // fallback (large numeric id)
-  ]
-
-  for(const p of patterns){
-
-    const match = url.match(p)
-
-    if(match){
-      listingId = match[1]
-      break
-    }
-  }
-
-  if(!listingId){
-    console.log("Could not detect Etsy listing ID")
-    return null
-  }
-
-  // 🔥 STEP 3 — canonical URL
   const canonicalUrl = `https://www.etsy.com/listing/${listingId}`
 
-  console.log("Fetching canonical:", canonicalUrl)
+  console.log("Fetching:", canonicalUrl)
 
-  // 🔥 STEP 4 — fetch listing HTML
   const res = await fetch(canonicalUrl,{
     headers:{
-      "User-Agent":"Mozilla/5.0",
+      "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
       "Accept-Language":"en-US,en;q=0.9"
-    }
+    },
+    cache:"no-store"
   })
 
   const html = await res.text()
 
-  // 🔥 STEP 5 — extract structured data
-  const matches = [...html.matchAll(
+  // DEBUG:
+  console.log("HTML length:", html.length)
+
+  // 🔥 METHOD 1 — structured data
+  const ldMatches = [...html.matchAll(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
   )]
 
-  for(const m of matches){
+  for(const m of ldMatches){
 
     try{
 
@@ -69,18 +44,30 @@ export async function parseEtsyListing(rawUrl:string){
       if(data["@type"]==="Product"){
 
         return {
-          title: data.name || "",
-          description: data.description || "",
-          image: data.image || "",
-          listingId
+          title:data.name || "",
+          description:data.description || "",
+          image:data.image || ""
         }
 
       }
 
-    }catch(e){}
+    }catch{}
   }
 
-  console.log("Product JSON not found")
+  // 🔥 METHOD 2 — fallback title scrape
+  const titleMatch = html.match(/<title>(.*?)<\/title>/i)
+
+  if(titleMatch){
+
+    return {
+      title:titleMatch[1],
+      description:"",
+      image:""
+    }
+
+  }
+
+  console.log("No product data found")
 
   return null
 }
