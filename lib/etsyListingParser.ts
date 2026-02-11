@@ -1,30 +1,80 @@
-export async function parseEtsyListing(rawUrl:string){
+export async function parseEtsyListing(rawUrl: string) {
 
-  if(!rawUrl) return null
+  if (!rawUrl) return null
 
-  const match = rawUrl.match(/(\d{6,})/)
+  // 🔥 extract listing ID from ANY Etsy URL
+  const match = rawUrl.match(/listing\/(\d+)/) || rawUrl.match(/(\d{6,})/)
 
-  if(!match) return null
+  if (!match) return null
 
-  const listingUrl = `https://www.etsy.com/listing/${match[1]}`
+  const listingId = match[1]
+  const listingUrl = `https://www.etsy.com/listing/${listingId}`
 
-  try{
+  try {
 
-    const res = await fetch(
-      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
-    )
+    // ⭐ First attempt — fetch real page
+    const res = await fetch(listingUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en-US,en;q=0.9"
+      },
+      cache: "no-store"
+    })
 
-    const data = await res.json()
+    const html = await res.text()
 
-    return {
-      title: data.title || "",
-      description: "",
-      image: data.thumbnail_url || ""
+    // 🔥 Extract JSON-LD (real structured data)
+    const matches = [...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+    )]
+
+    for (const m of matches) {
+
+      try {
+
+        const data = JSON.parse(m[1])
+
+        if (data["@type"] === "Product") {
+
+          return {
+            title: data.name || "",
+            description: data.description || "",
+            image: data.image || ""
+          }
+
+        }
+
+      } catch (e) {}
+
     }
 
-  }catch(e){
-    console.log("oembed failed", e)
+    // ⭐ FALLBACK — use oEmbed if JSON-LD missing
+
+    try {
+
+      const embed = await fetch(
+        `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
+      )
+
+      const data = await embed.json()
+
+      return {
+        title: data.title || "",
+        description: "",
+        image: data.thumbnail_url || ""
+      }
+
+    } catch (e) {
+      console.log("oembed fallback failed")
+    }
+
     return null
+
+  } catch (e) {
+
+    console.log("Etsy fetch failed", e)
+    return null
+
   }
 
 }
