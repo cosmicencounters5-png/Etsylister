@@ -1,13 +1,52 @@
-export async function parseEtsyListing(url:string){
+export async function parseEtsyListing(rawUrl:string){
 
-  // convert shop link → canonical listing link
-  const match = url.match(/listing\/(\d+)/)
+  if(!rawUrl) return null
 
-  if(match){
-    url = `https://www.etsy.com/listing/${match[1]}`
+  let url = rawUrl.trim()
+
+  // 🔥 STEP 1 — normalize
+  url = decodeURIComponent(url)
+
+  // remove tracking params visually
+  url = url.replace(/\?.*$/,"")
+
+  // 🔥 STEP 2 — extract listing id from ANY etsy url
+  // works for:
+  // /listing/123
+  // ?listing_id=123
+  // /share/123
+  // mobile links etc
+
+  let listingId:string | null = null
+
+  const patterns = [
+    /listing\/(\d+)/i,
+    /listing_id=(\d+)/i,
+    /\/(\d{6,})/ // fallback (large numeric id)
+  ]
+
+  for(const p of patterns){
+
+    const match = url.match(p)
+
+    if(match){
+      listingId = match[1]
+      break
+    }
   }
 
-  const res = await fetch(url,{
+  if(!listingId){
+    console.log("Could not detect Etsy listing ID")
+    return null
+  }
+
+  // 🔥 STEP 3 — canonical URL
+  const canonicalUrl = `https://www.etsy.com/listing/${listingId}`
+
+  console.log("Fetching canonical:", canonicalUrl)
+
+  // 🔥 STEP 4 — fetch listing HTML
+  const res = await fetch(canonicalUrl,{
     headers:{
       "User-Agent":"Mozilla/5.0",
       "Accept-Language":"en-US,en;q=0.9"
@@ -16,6 +55,7 @@ export async function parseEtsyListing(url:string){
 
   const html = await res.text()
 
+  // 🔥 STEP 5 — extract structured data
   const matches = [...html.matchAll(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
   )]
@@ -28,39 +68,19 @@ export async function parseEtsyListing(url:string){
 
       if(data["@type"]==="Product"){
 
-        const title = data.name || ""
-        const description = data.description || ""
-
-        // 🔥 SIMPLE AI SIGNAL EXTRACTION (NO SCRAPING RISK)
-
-        const words = `${title} ${description}`.toLowerCase()
-
-        const signals = {
-          hasDigitalIntent:
-            words.includes("pattern") ||
-            words.includes("printable") ||
-            words.includes("download"),
-
-          hasBuyerIntent:
-            words.includes("gift") ||
-            words.includes("personalized") ||
-            words.includes("custom"),
-
-          longTailScore:
-            title.split(" ").length
-        }
-
         return {
-          title,
-          description,
+          title: data.name || "",
+          description: data.description || "",
           image: data.image || "",
-          signals
+          listingId
         }
 
       }
 
     }catch(e){}
   }
+
+  console.log("Product JSON not found")
 
   return null
 }
