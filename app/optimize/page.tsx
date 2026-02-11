@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -25,6 +26,7 @@ export default function OptimizePage(){
     ]
 
     let i=0
+
     const interval=setInterval(()=>{
       setBrainStep(steps[i])
       i++
@@ -33,22 +35,23 @@ export default function OptimizePage(){
 
     try{
 
-      // 🔥 SEND URL DIRECTLY TO API
-      const res = await fetch("/api/optimize",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({
-          url
-        })
-      })
+      // STEP 1 — PARSE LISTING
+      const listing = await parseEtsyListing(url)
 
-      const data = await res.json()
-
-      if(data.error){
-        alert(data.error)
+      if(!listing){
+        alert("Could not parse listing")
         setLoading(false)
         return
       }
+
+      // STEP 2 — SEND TO API
+      const res = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ listing })
+      })
+
+      const data = await res.json()
 
       setResult(data)
 
@@ -78,6 +81,8 @@ export default function OptimizePage(){
         Etsy Listing Optimizer
       </h1>
 
+      {/* INPUT */}
+
       <div style={{...card,marginTop:30}}>
 
         <input
@@ -88,4 +93,60 @@ export default function OptimizePage(){
             width:"100%",
             padding:18,
             borderRadius:12,
-            border:"
+            border:"1px solid #222",
+            background:"#111",
+            color:"white"
+          }}
+        />
+
+        <button
+          onClick={optimize}
+          style={{
+            width:"100%",
+            marginTop:14,
+            padding:18,
+            borderRadius:12,
+            background:"white",
+            color:"black",
+            fontWeight:600
+          }}
+        >
+          {loading ? brainStep : "Optimize Listing"}
+        </button>
+
+      </div>
+
+      {/* RESULTS */}
+
+      {result && (
+
+        <div style={{marginTop:30}}>
+
+          <div style={card}>
+            <strong>Original Title</strong>
+            <p>{result.original?.title}</p>
+          </div>
+
+          <div style={{...card,marginTop:20}}>
+            <strong>Optimized Title</strong>
+            <p>{result.optimized?.title}</p>
+          </div>
+
+          <div style={{...card,marginTop:20}}>
+            <strong>Optimized Description</strong>
+            <p>{result.optimized?.description}</p>
+          </div>
+
+          <div style={{...card,marginTop:20}}>
+            <strong>Suggested Tags</strong>
+            <p>{result.optimized?.tags}</p>
+          </div>
+
+        </div>
+
+      )}
+
+    </main>
+
+  )
+}
