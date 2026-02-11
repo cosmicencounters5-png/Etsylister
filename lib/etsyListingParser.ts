@@ -12,26 +12,14 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    const res = await fetch(listingUrl,{
-      headers:{
-        "User-Agent":"Mozilla/5.0",
-        "Accept-Language":"en-US,en;q=0.9"
-      }
-    })
-
-    if(!res.ok){
-      console.log("fetch failed:", res.status)
-      return null
-    }
+    const res = await fetch(listingUrl)
 
     const html = await res.text()
 
-    // 🔥 extract OG title
     const titleMatch = html.match(
       /property="og:title" content="([^"]+)"/
     )
 
-    // 🔥 extract OG image
     const imageMatch = html.match(
       /property="og:image" content="([^"]+)"/
     )
@@ -39,16 +27,15 @@ export async function parseEtsyListing(rawUrl:string){
     return{
 
       title: titleMatch ? titleMatch[1] : "",
-      description: "",
+      description:"",
       image: imageMatch ? imageMatch[1] : ""
 
     }
 
   }catch(e){
 
-    console.log("Parser failed:", e)
+    console.log("client parser failed", e)
+
     return null
-
   }
-
 }
