@@ -13,40 +13,20 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    const res = await fetch(listingUrl,{
-      headers:{
-        "User-Agent":"Mozilla/5.0",
-        "Accept-Language":"en-US,en;q=0.9"
-      }
-    })
+    // 🔥 USE ETSY OEMBED (stable + not blocked)
+    const res = await fetch(
+      `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
+    )
 
-    const html = await res.text()
+    const data = await res.json()
 
-    // 🔥 extract JSON-LD structured data
-    const scripts = [...html.matchAll(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-    )]
+    if(!data) return null
 
-    for(const s of scripts){
-
-      try{
-
-        const data = JSON.parse(s[1])
-
-        if(data["@type"]==="Product"){
-
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: data.image || ""
-          }
-
-        }
-
-      }catch(e){}
+    return {
+      title: data.title || "",
+      description: "", // oembed does not include description
+      image: data.thumbnail_url || ""
     }
-
-    return null
 
   }catch(e){
 
