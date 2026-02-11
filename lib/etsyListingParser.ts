@@ -2,7 +2,6 @@ export async function parseEtsyListing(rawUrl:string){
 
   if(!rawUrl) return null
 
-  // extract listing id from ANY Etsy link
   const match =
     rawUrl.match(/listing\/(\d+)/) ||
     rawUrl.match(/(\d{6,})/)
@@ -13,24 +12,22 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    // ✅ Etsy official oembed endpoint
     const res = await fetch(
       `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
     )
 
     const data = await res.json()
 
-    if(!data?.title) return null
-
     return {
-      title: data.title,
+      title: data.title || "",
       description: "",
       image: data.thumbnail_url || ""
     }
 
   }catch(e){
 
-    console.log("Parser failed:", e)
+    console.log("oembed failed", e)
+
     return null
 
   }
