@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { baseKeywords } from "@/lib/seoKeywords"
 
 type Props = {
   params:{
@@ -8,6 +9,28 @@ type Props = {
 
 function decodeSlug(slug:string){
   return slug.replaceAll("-"," ")
+}
+
+// 🔥 deterministic related links (SEO SAFE)
+function getRelated(slug:string){
+
+  const baseUrl="/seo"
+
+  // stable selection based on slug hash
+  const seed = slug.length
+
+  return baseKeywords
+    .slice(seed % baseKeywords.length, (seed % baseKeywords.length) + 6)
+    .map(keyword=>{
+
+      const newSlug = keyword.replaceAll(" ","-")
+
+      return{
+        title: keyword,
+        url:`${baseUrl}/${newSlug}`
+      }
+
+    })
 }
 
 export async function generateMetadata({params}:Props):Promise<Metadata>{
@@ -34,49 +57,85 @@ export default async function Page({params}:Props){
 
   const keyword = decodeSlug(params.slug)
 
+  const related = getRelated(params.slug)
+
   return(
 
     <main style={{
       maxWidth:900,
       margin:"0 auto",
-      padding:"80px 20px"
+      padding:"80px 20px",
+      display:"grid",
+      gridTemplateColumns:"2fr 1fr",
+      gap:40
     }}>
 
-      <h1 style={{fontSize:42,fontWeight:700}}>
-        {keyword}
-      </h1>
+      {/* MAIN ARTICLE */}
 
-      <p style={{marginTop:20,fontSize:18,lineHeight:1.6}}>
+      <div>
 
-        This Etsy listing strategy was generated using AI market analysis.
+        <h1 style={{fontSize:42,fontWeight:700}}>
+          {keyword}
+        </h1>
 
-        EtsyLister scans competitors, identifies profitable keywords,
-        and builds optimized listing structures designed to rank.
+        <p style={{marginTop:20,fontSize:18,lineHeight:1.6}}>
 
-      </p>
+          This Etsy listing strategy was generated using AI market analysis.
 
-      <h2 style={{marginTop:30}}>
-        Why AI listing optimization works
-      </h2>
+          EtsyLister scans competitors, identifies profitable keywords,
+          and builds optimized listing structures designed to rank.
 
-      <p>
-        AI analyzes thousands of ranking patterns faster than manual research,
-        helping sellers discover profitable niches instantly.
-      </p>
+        </p>
 
-      <a href="/login">
+        <h2 style={{marginTop:30}}>
+          Why AI listing optimization works
+        </h2>
 
-        <button style={{
-          marginTop:40,
-          padding:"18px 26px",
-          borderRadius:12,
-          background:"black",
-          color:"white"
-        }}>
-          Generate Your Own Listing →
-        </button>
+        <p>
+          AI analyzes thousands of ranking patterns faster than manual research,
+          helping sellers discover profitable niches instantly.
+        </p>
 
-      </a>
+        <a href="/login">
+
+          <button style={{
+            marginTop:40,
+            padding:"18px 26px",
+            borderRadius:12,
+            background:"black",
+            color:"white"
+          }}>
+            Generate Your Own Listing →
+          </button>
+
+        </a>
+
+      </div>
+
+      {/* 🔥 ULTRA INTERNAL LINK ENGINE */}
+
+      <aside>
+
+        <h3>Related Etsy SEO Guides</h3>
+
+        <div style={{marginTop:20,display:"grid",gap:12}}>
+
+          {related.map((r,i)=>(
+            <a key={i} href={r.url} style={{
+              background:"#0f0f0f",
+              padding:14,
+              borderRadius:12,
+              display:"block",
+              textDecoration:"none",
+              color:"white"
+            }}>
+              {r.title}
+            </a>
+          ))}
+
+        </div>
+
+      </aside>
 
     </main>
 
