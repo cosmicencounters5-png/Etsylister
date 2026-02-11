@@ -1,36 +1,39 @@
-export async function parseEtsyListing(rawUrl:string){
+export async function parseEtsyListing(rawUrl: string) {
 
-  if(!rawUrl) return null
+  if (!rawUrl) return null
 
-  // 🔥 extract listing id from ANY Etsy link
+  // 🔥 Extract listing ID from ANY Etsy link
   const match =
     rawUrl.match(/listing\/(\d+)/) ||
     rawUrl.match(/(\d{6,})/)
 
-  if(!match) return null
+  if (!match) return null
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-  try{
+  try {
 
-    // 🔥 USE ETSY OEMBED (stable + not blocked)
+    // ⭐ OFFICIAL Etsy oEmbed endpoint
     const res = await fetch(
       `https://www.etsy.com/oembed?url=${encodeURIComponent(listingUrl)}`
     )
 
-    const data = await res.json()
+    if (!res.ok) {
+      console.log("oEmbed failed:", res.status)
+      return null
+    }
 
-    if(!data) return null
+    const data = await res.json()
 
     return {
       title: data.title || "",
-      description: "", // oembed does not include description
+      description: "", // Etsy blocks full desc — we generate via AI anyway
       image: data.thumbnail_url || ""
     }
 
-  }catch(e){
+  } catch (e) {
 
-    console.log("Parser failed:", e)
+    console.log("Ultra parser failed:", e)
     return null
 
   }
