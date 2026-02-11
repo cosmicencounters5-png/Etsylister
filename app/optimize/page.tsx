@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage() {
 
@@ -35,29 +34,23 @@ export default function OptimizePage() {
 
     try {
 
-      // STEP 1 — PARSE LISTING
-const res = await fetch("/api/optimize",{
-  method:"POST",
-  headers:{ "Content-Type":"application/json"},
-  body: JSON.stringify({
-    url
-  })
-})
-
-      if (!listing) {
-        alert("Could not parse listing")
-        setLoading(false)
-        return
-      }
-
-      // STEP 2 — SEND TO API
+      // ✅ SEND ONLY URL TO API
       const res = await fetch("/api/optimize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listing })
+        body: JSON.stringify({
+          url
+        })
       })
 
       const data = await res.json()
+
+      // API error handling
+      if (!res.ok) {
+        alert(data.error || "Optimizer failed")
+        setLoading(false)
+        return
+      }
 
       setResult(data)
 
@@ -87,8 +80,6 @@ const res = await fetch("/api/optimize",{
       <h1 style={{ fontSize: 36, fontWeight: 700 }}>
         Etsy Listing Optimizer
       </h1>
-
-      {/* INPUT */}
 
       <div style={{ ...card, marginTop: 30 }}>
 
@@ -122,8 +113,6 @@ const res = await fetch("/api/optimize",{
         </button>
 
       </div>
-
-      {/* RESULTS */}
 
       {result && (
 
