@@ -1,6 +1,5 @@
-// app/api/optimize/route.ts
-
 import { NextResponse } from "next/server"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 import { runOptimizerBrain } from "@/lib/optimizerBrain"
 
 export async function POST(req: Request) {
@@ -8,26 +7,31 @@ export async function POST(req: Request) {
   try {
 
     const body = await req.json()
+    const url = body.url
 
-    // ✅ receive parsed listing from client
-    const listing = body.listing
-
-    // 🔥 DEBUG LOG
-    console.log("Optimizer received listing:", listing)
-
-    if (!listing || !listing.title) {
-
-      console.log("❌ Missing listing data")
-
+    if (!url) {
       return NextResponse.json(
-        { error: "Missing listing data" },
+        { error: "Missing URL" },
         { status: 400 }
       )
     }
 
-    // 🔥 STEP 1 — detect signals
+    console.log("Parsing URL:", url)
 
-    const text = (listing.title + " " + (listing.description || "")).toLowerCase()
+    // ✅ PARSE INSIDE API
+    const listing = await parseEtsyListing(url)
+
+    if (!listing) {
+
+      console.log("Parser returned null")
+
+      return NextResponse.json(
+        { error: "Could not parse listing" },
+        { status: 400 }
+      )
+    }
+
+    const text = (listing.title + " " + listing.description).toLowerCase()
 
     const signals = {
 
@@ -45,14 +49,10 @@ export async function POST(req: Request) {
 
     }
 
-    // 🔥 STEP 2 — run optimizer brain
-
     const result = await runOptimizerBrain({
       ...listing,
       signals
     })
-
-    console.log("✅ Optimizer result generated")
 
     return NextResponse.json({
       original: listing,
@@ -67,7 +67,5 @@ export async function POST(req: Request) {
       { error: "Server error" },
       { status: 500 }
     )
-
   }
-
 }
