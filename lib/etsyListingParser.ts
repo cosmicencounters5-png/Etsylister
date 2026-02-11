@@ -10,55 +10,35 @@ export async function parseEtsyListing(rawUrl:string){
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-  try{
-
-    // ⭐ CLIENT FETCH (bypasses server block)
-    const res = await fetch(listingUrl)
-
-    const html = await res.text()
-
-    // 🔥 METHOD 1 — JSON-LD (primary)
-    const scripts = [...html.matchAll(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-    )]
-
-    for(const s of scripts){
-
-      try{
-
-        const data = JSON.parse(s[1])
-
-        if(data["@type"]==="Product"){
-
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: data.image || ""
-          }
-
-        }
-
-      }catch{}
+  const res = await fetch(listingUrl,{
+    headers:{
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      "Accept-Language":"en-US,en;q=0.9"
     }
+  })
 
-    // 🔥 METHOD 2 — fallback title scrape
-    const titleMatch = html.match(/<title>(.*?)<\/title>/)
+  const html = await res.text()
 
-    if(titleMatch){
-      return {
-        title: titleMatch[1],
-        description:"",
-        image:""
-      }
-    }
+  // 🔥 GOD MODE — extract INITIAL_STATE
 
-    return null
+  const stateMatch = html.match(
+    /window\.__INITIAL_STATE__\s*=\s*({.*});/
+  )
 
-  }catch(e){
+  if(!stateMatch) return null
 
-    console.log("GOD MODE parser failed", e)
+  const state = JSON.parse(stateMatch[1])
 
-    return null
+  const listing =
+    state?.listingReducer?.listing
 
+  if(!listing) return null
+
+  return {
+    title: listing.title || "",
+    description: listing.description || "",
+    image: listing.images?.[0]?.url_fullxfull || ""
   }
+
 }
