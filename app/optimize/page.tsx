@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListing } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -13,13 +14,24 @@ export default function OptimizePage(){
     if(!url) return
 
     setLoading(true)
+    setResult(null)
 
     try{
 
+      // 🔥 STEP 1 — CLIENT PARSER (browser fetch)
+      const listing = await parseEtsyListing(url)
+
+      if(!listing){
+        alert("Could not parse listing")
+        setLoading(false)
+        return
+      }
+
+      // 🔥 STEP 2 — SEND DATA TO API (NO ETSY FETCH HERE)
       const res = await fetch("/api/optimize",{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ listing })
       })
 
       const data = await res.json()
