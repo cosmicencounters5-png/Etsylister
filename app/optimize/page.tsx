@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 
-
 export default function OptimizePage(){
 
   const [url,setUrl]=useState("")
