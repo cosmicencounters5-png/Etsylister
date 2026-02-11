@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListingClient } from "@/lib/etsyListingParser"
 
 export default function OptimizePage(){
 
@@ -16,7 +17,7 @@ export default function OptimizePage(){
     setLoading(true)
     setResult(null)
 
-    // 🔥 fake AI brain animation
+    // 🔥 AI brain animation
     const steps=[
       "Scanning Etsy listing...",
       "Extracting structured data...",
@@ -26,6 +27,7 @@ export default function OptimizePage(){
     ]
 
     let i=0
+
     const interval=setInterval(()=>{
       setBrainStep(steps[i])
       i++
@@ -34,17 +36,40 @@ export default function OptimizePage(){
 
     try{
 
+      // ✅ STEP 1 — parse listing DIRECTLY from browser
+      const listing = await parseEtsyListingClient(url)
+
+      if(!listing){
+
+        setResult({
+          error:"Could not read Etsy listing"
+        })
+
+        setLoading(false)
+        return
+      }
+
+      // ✅ STEP 2 — send listing DATA (not URL) to API
+
       const res = await fetch("/api/optimize",{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ url })
+        body: JSON.stringify({
+          listing
+        })
       })
 
       const data = await res.json()
 
       setResult(data)
 
-    }catch(e){}
+    }catch(e){
+
+      setResult({
+        error:"Something went wrong"
+      })
+
+    }
 
     setLoading(false)
 
@@ -110,25 +135,36 @@ export default function OptimizePage(){
 
         <div style={{marginTop:30}}>
 
-          <div style={card}>
-            <strong>Original Title</strong>
-            <p>{result.original?.title}</p>
-          </div>
+          {result.error && (
+            <div style={card}>
+              {result.error}
+            </div>
+          )}
 
-          <div style={{...card,marginTop:20}}>
-            <strong>Optimized Title</strong>
-            <p>{result.optimized?.title}</p>
-          </div>
+          {!result.error && (
 
-          <div style={{...card,marginTop:20}}>
-            <strong>Optimized Description</strong>
-            <p>{result.optimized?.description}</p>
-          </div>
+            <>
+              <div style={card}>
+                <strong>Original Title</strong>
+                <p>{result.original?.title}</p>
+              </div>
 
-          <div style={{...card,marginTop:20}}>
-            <strong>Suggested Tags</strong>
-            <p>{result.optimized?.tags}</p>
-          </div>
+              <div style={{...card,marginTop:20}}>
+                <strong>Optimized Title</strong>
+                <p>{result.optimized?.title}</p>
+              </div>
+
+              <div style={{...card,marginTop:20}}>
+                <strong>Optimized Description</strong>
+                <p>{result.optimized?.description}</p>
+              </div>
+
+              <div style={{...card,marginTop:20}}>
+                <strong>Suggested Tags</strong>
+                <p>{result.optimized?.tags}</p>
+              </div>
+            </>
+          )}
 
         </div>
 
