@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { parseEtsyListingClient } from "@/lib/etsyListingParser"
+
 
 export default function OptimizePage(){
 
