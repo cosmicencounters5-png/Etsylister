@@ -11,26 +11,34 @@ function decodeSlug(slug:string){
   return slug.replaceAll("-"," ")
 }
 
-// 🔥 deterministic related links (SEO SAFE)
+// 🔥 SILO ENGINE
+function getSilo(keyword:string){
+
+  if(keyword.includes("tag")) return "tags"
+  if(keyword.includes("title")) return "titles"
+  if(keyword.includes("keyword")) return "keywords"
+  if(keyword.includes("printable")) return "printables"
+  if(keyword.includes("digital")) return "digital-products"
+
+  return "etsy-seo"
+}
+
+// 🔥 INTERNAL LINK ENGINE (stable + silo-aware)
 function getRelated(slug:string){
 
   const baseUrl="/seo"
-
-  // stable selection based on slug hash
-  const seed = slug.length
+  const keyword = decodeSlug(slug)
+  const silo = getSilo(keyword)
 
   return baseKeywords
-    .slice(seed % baseKeywords.length, (seed % baseKeywords.length) + 6)
-    .map(keyword=>{
+    .filter(k => getSilo(k) === silo && k !== keyword)
+    .slice(0,8)
+    .map(k=>({
 
-      const newSlug = keyword.replaceAll(" ","-")
+      title:k,
+      url:`${baseUrl}/${k.replaceAll(" ","-")}`
 
-      return{
-        title: keyword,
-        url:`${baseUrl}/${newSlug}`
-      }
-
-    })
+    }))
 }
 
 export async function generateMetadata({params}:Props):Promise<Metadata>{
@@ -56,7 +64,6 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
 export default async function Page({params}:Props){
 
   const keyword = decodeSlug(params.slug)
-
   const related = getRelated(params.slug)
 
   return(
@@ -112,7 +119,7 @@ export default async function Page({params}:Props){
 
       </div>
 
-      {/* 🔥 ULTRA INTERNAL LINK ENGINE */}
+      {/* 🔥 ULTRA SILO RELATED LINKS */}
 
       <aside>
 
