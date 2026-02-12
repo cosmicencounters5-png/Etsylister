@@ -14,37 +14,58 @@ export async function POST(req: Request) {
       )
     }
 
-    // ✅ Extract Etsy listing ID
+    // Extract listing id
     const match = url.match(/listing\/(\d+)/)
 
     if (!match) {
       return NextResponse.json(
-        { error: "Invalid Etsy listing URL" },
+        { error: "Invalid Etsy URL" },
         { status: 400 }
       )
     }
 
     const listingId = match[1]
 
-    // 🔥 Force Gemini to analyze EXACT listing
-    const prompt = `
-Analyze THIS Etsy listing ONLY:
+    // 🔥 fetch OPEN meta endpoint
+    const pageRes = await fetch(
+      `https://www.etsy.com/listing/${listingId}`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+      }
+    )
 
-https://www.etsy.com/listing/${listingId}
+    const html = await pageRes.text()
 
-Return ONLY valid JSON:
+    if (!html) {
+      return NextResponse.json(
+        { error: "Missing HTML" },
+        { status: 500 }
+      )
+    }
 
-{
-  "originalTitle":"...",
-  "description":"...",
-  "optimizedTitle":"..."
-}
+    // extract OG title + description (no cheerio needed)
+    const titleMatch = html.match(
+      /property="og:title"\s*content="([^"]+)"/
+    )
 
-DO NOT include markdown.
-DO NOT include explanations.
-ONLY JSON.
-`
+    const descMatch = html.match(
+      /name="description"\s*content="([^"]+)"/
+    )
 
+    const title = titleMatch?.[1] || ""
+    const description = descMatch?.[1] || ""
+
+    if (!title) {
+      return NextResponse.json(
+        { error: "Could not parse listing" },
+        { status: 400 }
+      )
+    }
+
+    // send REAL data to Gemini
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -55,19 +76,32 @@ ONLY JSON.
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: prompt }]
+              parts: [
+                {
+                  text: `
+Optimize this Etsy title:
+
+${title}
+
+Return ONLY JSON:
+
+{
+ "optimizedTitle":"..."
+}
+`
+                }
+              ]
             }
           ]
         })
       }
     )
 
-    const data = await geminiRes.json()
+    const geminiData = await geminiRes.json()
 
     let text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || ""
 
-    // remove markdown if Gemini adds it
     text = text
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -77,17 +111,15 @@ ONLY JSON.
 
     return NextResponse.json({
       original: {
-        title: parsed.originalTitle,
-        description: parsed.description
+        title,
+        description
       },
-      optimized: {
-        title: parsed.optimizedTitle
-      }
+      optimized: parsed
     })
 
   } catch (e) {
 
-    console.log("OPTIMIZER ERROR:", e)
+    console.log(e)
 
     return NextResponse.json(
       { error: "Optimizer failed" },
