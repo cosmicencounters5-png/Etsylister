@@ -1,5 +1,3 @@
-import cheerio from "cheerio"
-
 export async function parseEtsyListing(url:string){
 
   const match =
@@ -15,35 +13,41 @@ export async function parseEtsyListing(url:string){
   const proxyUrl =
     `https://app.scrapingbee.com/api/v1/?api_key=${apiKey}`+
     `&url=${encodeURIComponent(listingUrl)}`+
-    `&render_js=true`+
-    `&premium_proxy=true`+
-    `&wait=2000`
+    `&premium_proxy=true`
 
   const res = await fetch(proxyUrl)
 
   const html = await res.text()
 
-  console.log("HTML LENGTH:", html.length)
-
-  // Detect anti-bot
-  if(html.length < 20000){
-    console.log("Got anti-bot HTML")
+  if(!html || html.length < 10000){
+    console.log("Missing html")
     return null
   }
 
-  const $ = cheerio.load(html)
+  function extractMeta(property:string){
 
-  const title =
-    $('meta[property="og:title"]').attr("content") ||
-    $("h1").first().text()
+    const regex = new RegExp(
+      `<meta[^>]+property=["']${property}["'][^>]+content=["']([^"]+)["']`,
+      "i"
+    )
 
-  const description =
-    $('meta[name="description"]').attr("content") || ""
+    const match = html.match(regex)
 
-  const image =
-    $('meta[property="og:image"]').attr("content")
+    return match ? match[1] : ""
+  }
 
-  if(!title) return null
+  const title = extractMeta("og:title")
+  const description = extractMeta("og:description")
+  const image = extractMeta("og:image")
 
-  return { title, description, image }
+  if(!title){
+    console.log("Missing og:title")
+    return null
+  }
+
+  return {
+    title,
+    description,
+    image
+  }
 }
