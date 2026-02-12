@@ -1,42 +1,3 @@
-import * as cheerio from "cheerio"
-
-async function fetchHtml(url:string){
-
-  // TRY DIRECT FIRST (FREE)
-  try{
-
-    const res = await fetch(url,{
-      headers:{
-        "User-Agent":"Mozilla/5.0"
-      }
-    })
-
-    if(res.ok){
-
-      const html = await res.text()
-
-      if(html.includes("listing") && html.length > 5000){
-        return html
-      }
-
-    }
-
-  }catch(e){}
-
-  // FALLBACK → SCRAPINGBEE
-
-  const proxyUrl =
-    `https://app.scrapingbee.com/api/v1/?api_key=${process.env.SCRAPINGBEE_API_KEY}` +
-    `&url=${encodeURIComponent(url)}` +
-    `&render_js=true&stealth_proxy=true`
-
-  const proxyRes = await fetch(proxyUrl)
-
-  if(!proxyRes.ok) return null
-
-  return await proxyRes.text()
-}
-
 export async function parseEtsyListing(rawUrl:string){
 
   const match =
@@ -47,26 +8,49 @@ export async function parseEtsyListing(rawUrl:string){
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-  const html = await fetchHtml(listingUrl)
+  try{
 
-  if(!html){
-    console.log("Missing html")
+    const res = await fetch(listingUrl,{
+      headers:{
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Accept-Language":"en-US,en;q=0.9"
+      },
+      cache:"no-store"
+    })
+
+    const html = await res.text()
+
+    if(!html || html.length < 1000){
+      console.log("Blocked by Etsy")
+      return null
+    }
+
+    // OG TAGS (most reliable)
+    const titleMatch = html.match(
+      /<meta property="og:title" content="([^"]+)"/
+    )
+
+    const descMatch = html.match(
+      /<meta name="description" content="([^"]+)"/
+    )
+
+    const imageMatch = html.match(
+      /<meta property="og:image" content="([^"]+)"/
+    )
+
+    if(!titleMatch) return null
+
+    return {
+      title: titleMatch[1],
+      description: descMatch?.[1] || "",
+      image: imageMatch?.[1] || ""
+    }
+
+  }catch(e){
+
+    console.log("Parser error",e)
     return null
+
   }
-
-  const $ = cheerio.load(html)
-
-  const title =
-    $("h1").first().text().trim() ||
-    $('meta[property="og:title"]').attr("content")
-
-  const description =
-    $('meta[name="description"]').attr("content") || ""
-
-  const image =
-    $('meta[property="og:image"]').attr("content") || ""
-
-  if(!title) return null
-
-  return { title, description, image }
 }
