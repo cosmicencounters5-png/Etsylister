@@ -13,55 +13,42 @@ export async function parseEtsyListing(rawUrl: string) {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate, br",
         "DNT": "1",
         "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1",
-        "Cache-Control": "max-age=0"
+        "Upgrade-Insecure-Requests": "1"
       },
-      // Viktigt för Vercel Edge
       next: { revalidate: 3600 }
     });
 
     console.log("STATUS:", res.status);
     
     if (!res.ok) {
-      // 2. Om blockad, försök med alternativ metod
       if (res.status === 403 || res.status === 429) {
-        console.log("Etsy blockerade request, försöker med proxy...");
-        return await fetchWithProxy(listingId);
+        console.log("Etsy blockerade request, använder fallback...");
+        return await fetchWithFallback(listingId);
       }
       throw new Error(`HTTP ${res.status}`);
     }
 
     const html = await res.text();
     
-    // 3. Extrahera data med flera patterns
     const titleMatch = 
       html.match(/property="og:title"\s*content="([^"]+)"/) ||
       html.match(/<meta property="og:title" content="([^"]+)"/) ||
-      html.match(/<title[^>]*>([^<]+)Etsy<\/title>/) ||
-      html.match(/"title"\s*:\s*"([^"]+)"/);
+      html.match(/<title[^>]*>([^<]+)Etsy<\/title>/);
     
     const descMatch = 
       html.match(/name="description"\s*content="([^"]+)"/) ||
-      html.match(/property="og:description"\s*content="([^"]+)"/) ||
-      html.match(/"description"\s*:\s*"([^"]+)"/);
+      html.match(/property="og:description"\s*content="([^"]+)"/);
     
     const imageMatch = 
-      html.match(/property="og:image"\s*content="([^"]+)"/) ||
-      html.match(/"url"\s*:\s*"([^"]+\.(jpg|jpeg|png|webp))"/);
+      html.match(/property="og:image"\s*content="([^"]+)"/);
 
     if (!titleMatch) {
-      console.log("NO TITLE FOUND, försöker med fallback...");
+      console.log("NO TITLE FOUND, använder fallback...");
       return await fetchWithFallback(listingId);
     }
 
-    // Rensa titeln från " - Etsy" om den finns
     let title = titleMatch[1];
     if (title.includes(" - Etsy")) {
       title = title.split(" - Etsy")[0];
@@ -73,67 +60,27 @@ export async function parseEtsyListing(rawUrl: string) {
       description: descMatch?.[1] || "",
       image: imageMatch?.[1] || "",
       url: listingUrl,
-      fetchedAt: new Date().toISOString()
+      fetchedAt: new Date().toISOString(),
+      fallback: false  // <-- LÄGG TILL DENNA
     };
 
   } catch (e) {
     console.error("Parser error:", e);
-    // 4. Sista fallback
     return await fetchWithFallback(match[1]);
   }
-}
-
-// Alternativ metod: Använd vår egen proxy
-async function fetchWithProxy(listingId: string) {
-  try {
-    // Använd en publik CORS-proxy (tillfällig lösning)
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-      `https://www.etsy.com/listing/${listingId}`
-    )}`;
-    
-    const res = await fetch(proxyUrl);
-    const html = await res.text();
-    
-    const titleMatch = html.match(/<title[^>]*>([^<]+)Etsy<\/title>/);
-    
-    if (titleMatch) {
-      return {
-        id: listingId,
-        title: titleMatch[1].replace(" - Etsy", "").trim(),
-        description: "Description från proxy",
-        image: "",
-        url: `https://www.etsy.com/listing/${listingId}`,
-        fetchedAt: new Date().toISOString()
-      };
-    }
-  } catch (e) {
-    console.error("Proxy error:", e);
-  }
-  return null;
 }
 
 // Sista fallback: Generera ett titelförslag baserat på listing ID
 async function fetchWithFallback(listingId: string) {
   console.log("Använder fallback för listing:", listingId);
   
-  // Försök gissa produkttyp från URL om möjligt
   return {
     id: listingId,
-    title: `Etsy Listing #${listingId}`,  // Temporär titel
+    title: `Etsy Listing #${listingId}`,
     description: "Product description could not be fetched at this time.",
     image: "",
     url: `https://www.etsy.com/listing/${listingId}`,
     fetchedAt: new Date().toISOString(),
-    fallback: true
+    fallback: true  // <-- LÄGG TILL DENNA
   };
-}
-
-// Batch-parser för flera URLs
-export async function batchParseEtsyListings(urls: string[]) {
-  const promises = urls.map(url => parseEtsyListing(url));
-  const results = await Promise.allSettled(promises);
-  
-  return results
-    .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled" && r.value !== null)
-    .map(r => r.value);
 }
