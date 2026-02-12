@@ -1,46 +1,69 @@
-import { NextResponse } from "next/server"
-import { parseEtsyListing } from "@/lib/etsyParser"
-import { runOptimizerBrain } from "@/lib/optimizerBrain"
+import cheerio from "cheerio"
 
-export async function POST(req: Request){
+export async function parseEtsyListing(rawUrl: string) {
 
-  try{
+  const match =
+    rawUrl.match(/listing\/(\d+)/) ||
+    rawUrl.match(/(\d{6,})/)
 
-    const body = await req.json()
+  if (!match) return null
 
-    // 🔥 HER MANGLER DU DENNE
-    const url = body.url
+  const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-    if(!url){
-      return NextResponse.json(
-        { error:"Missing URL" },
-        { status:400 }
-      )
-    }
+  const apiKey = process.env.SCRAPINGBEE_API_KEY
 
-    const listing = await parseEtsyListing(url)
+  const proxyUrl =
+    `https://app.scrapingbee.com/api/v1/` +
+    `?api_key=${apiKey}` +
+    `&url=${encodeURIComponent(listingUrl)}` +
+    `&render_js=true` +          // ⭐ CRITICAL
+    `&stealth_proxy=true` +      // ⭐ bypass anti-bot
+    `&wait_browser=networkidle0` // ⭐ wait for page load
 
-    if(!listing){
-      return NextResponse.json(
-        { error:"Could not parse listing" },
-        { status:400 }
-      )
-    }
+  const res = await fetch(proxyUrl)
 
-    const result = await runOptimizerBrain(listing)
+  if (!res.ok) {
 
-    return NextResponse.json({
-      original: listing,
-      optimized: result
-    })
+    console.log("STATUS:", res.status)
 
-  }catch(e){
+    return null
+  }
 
-    console.error(e)
+  const html = await res.text()
 
-    return NextResponse.json(
-      { error:"Server error" },
-      { status:500 }
-    )
+  console.log("HTML LENGTH:", html.length)
+
+  // detect anti-bot
+  if (
+    html.includes("captcha") ||
+    html.includes("Access denied") ||
+    html.length < 5000
+  ) {
+    console.log("Got anti-bot HTML")
+    return null
+  }
+
+  const $ = cheerio.load(html)
+
+  const title =
+    $("h1").first().text().trim() ||
+    $('meta[property="og:title"]').attr("content")
+
+  const description =
+    $("#description").text().trim() ||
+    $('meta[name="description"]').attr("content")
+
+  const image =
+    $('meta[property="og:image"]').attr("content")
+
+  if (!title) {
+    console.log("No parser matched")
+    return null
+  }
+
+  return {
+    title,
+    description,
+    image
   }
 }
