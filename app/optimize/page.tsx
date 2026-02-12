@@ -8,7 +8,7 @@ export default function OptimizePage(){
   const [loading,setLoading]=useState(false)
   const [result,setResult]=useState<any>(null)
 
-  async function clientParser(rawUrl:string){
+  function extractListingId(rawUrl:string){
 
     const match =
       rawUrl.match(/listing\/(\d+)/) ||
@@ -16,37 +16,7 @@ export default function OptimizePage(){
 
     if(!match) return null
 
-    const listingUrl = `https://www.etsy.com/listing/${match[1]}`
-
-    // 🔥 browser fetch (NOT server)
-    const res = await fetch(listingUrl)
-
-    const html = await res.text()
-
-    const scripts = [...html.matchAll(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-    )]
-
-    for(const s of scripts){
-
-      try{
-
-        const data = JSON.parse(s[1])
-
-        if(data["@type"]==="Product"){
-
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: data.image || ""
-          }
-
-        }
-
-      }catch(e){}
-    }
-
-    return null
+    return match[1]
   }
 
   async function optimize(){
@@ -55,23 +25,53 @@ export default function OptimizePage(){
 
     setLoading(true)
 
-    const listing = await clientParser(url)
+    const id = extractListingId(url)
 
-    if(!listing){
-      alert("Could not parse listing")
+    if(!id){
+      alert("Invalid Etsy link")
       setLoading(false)
       return
     }
 
-    const res = await fetch("/api/optimize",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ listing })
-    })
+    // 🔥 ZERO COST METHOD
+    // We only use oEmbed metadata (NOT scraping HTML)
 
-    const data = await res.json()
+    const embedUrl =
+      `https://www.etsy.com/oembed?url=https://www.etsy.com/listing/${id}`
 
-    setResult(data)
+    try{
+
+      const res = await fetch(embedUrl)
+
+      const data = await res.json()
+
+      if(!data.title){
+        alert("Could not parse listing")
+        setLoading(false)
+        return
+      }
+
+      const listing = {
+        title: data.title,
+        description: "",
+        image: data.thumbnail_url
+      }
+
+      const aiRes = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ listing })
+      })
+
+      const aiData = await aiRes.json()
+
+      setResult(aiData)
+
+    }catch(e){
+
+      alert("Could not parse listing")
+
+    }
 
     setLoading(false)
   }
