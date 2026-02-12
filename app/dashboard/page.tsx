@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { supabase } from "../../lib/supabaseClient"
 import AuthGuard from "../../components/AuthGuard"
+import Link from "next/link"
 
 export default function Home(){
 
@@ -72,7 +73,6 @@ ${window.location.origin}`
     setLiveDomination(calculateLiveDomination(input))
   },[input])
 
-  // AI THINKING TEXT
   useEffect(()=>{
 
     if(!loading) return
@@ -97,7 +97,6 @@ ${window.location.origin}`
 
   },[loading])
 
-  // TYPE EFFECT
   useEffect(()=>{
 
     if(!parsed) return
@@ -143,8 +142,6 @@ ${window.location.origin}`
 
       const data=await res.json()
 
-      // 🔥 IMPORTANT
-      // DO NOT expose internal seoPage to UI
       delete data.seoPage
 
       setParsed(data)
@@ -175,7 +172,25 @@ ${window.location.origin}`
 
             <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
 
-            <button onClick={logout}>Logout</button>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+
+              <Link href="/optimize">
+                <button style={{
+                  padding:"10px 16px",
+                  borderRadius:10,
+                  background:"linear-gradient(90deg,#00ffa3,#00c3ff)",
+                  border:"none",
+                  fontWeight:600,
+                  color:"black",
+                  cursor:"pointer"
+                }}>
+                  Optimize 🚀
+                </button>
+              </Link>
+
+              <button onClick={logout}>Logout</button>
+
+            </div>
 
           </div>
 
@@ -271,8 +286,6 @@ ${window.location.origin}`
                 </button>
 
               </div>
-
-              {/* STRATEGIST PANEL */}
 
               <div style={{...card,marginTop:20}}>
 
