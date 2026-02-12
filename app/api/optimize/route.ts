@@ -1,35 +1,45 @@
 import { NextResponse } from "next/server"
 import { parseEtsyListing } from "@/lib/etsyParser"
+import { runOptimizerBrain } from "@/lib/optimizerBrain"
 
-export async function POST(req:Request){
+export async function POST(req: Request){
 
   try{
 
     const body = await req.json()
 
-const listing = await parseEtsyListing(url)
+    // 🔥 HER MANGLER DU DENNE
+    const url = body.url
+
+    if(!url){
+      return NextResponse.json(
+        { error:"Missing URL" },
+        { status:400 }
+      )
+    }
+
+    const listing = await parseEtsyListing(url)
 
     if(!listing){
-
       return NextResponse.json(
         { error:"Could not parse listing" },
         { status:400 }
       )
     }
 
+    const result = await runOptimizerBrain(listing)
+
     return NextResponse.json({
       original: listing,
-      optimized:{
-        title: listing.title + " | AI Optimized",
-        description: listing.description,
-        tags:"AI generated tags"
-      }
+      optimized: result
     })
 
   }catch(e){
 
+    console.error(e)
+
     return NextResponse.json(
-      { error:"Something went wrong"},
+      { error:"Server error" },
       { status:500 }
     )
   }
