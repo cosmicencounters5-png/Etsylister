@@ -20,8 +20,10 @@ export async function parseEtsyListing(rawUrl:string){
   }
 
   const proxyUrl =
-    `https://app.scrapingbee.com/api/v1/?api_key=${apiKey}` +
-    `&url=${encodeURIComponent(listingUrl)}` +
+    `https://app.scrapingbee.com/api/v1/`+
+    `?api_key=${apiKey}`+
+    `&url=${encodeURIComponent(listingUrl)}`+
+    `&premium_proxy=true`+
     `&render_js=false`
 
   try{
@@ -29,7 +31,7 @@ export async function parseEtsyListing(rawUrl:string){
     const res = await fetch(proxyUrl)
 
     if(!res.ok){
-      console.log("Proxy failed", res.status)
+      console.log("Proxy fetch failed:", res.status)
       return null
     }
 
@@ -40,34 +42,67 @@ export async function parseEtsyListing(rawUrl:string){
       return null
     }
 
+    console.log("HTML received length:", html.length)
+
     const $ = cheerio.load(html)
 
-    // 🔥 Title
-    let title =
-      $('h1').first().text().trim() ||
-      $('meta[property="og:title"]').attr("content") ||
-      ""
+    // ✅ GOD MODE parsing order
 
-    // 🔥 Description
-    let description =
-      $('meta[name="description"]').attr("content") ||
-      ""
+    // 1️⃣ JSON-LD (BEST)
+    const scripts = $('script[type="application/ld+json"]')
 
-    // 🔥 Image
-    let image =
-      $('meta[property="og:image"]').attr("content") ||
-      ""
+    for(let i=0;i<scripts.length;i++){
 
-    if(!title) return null
+      try{
 
-    return {
-      title,
-      description,
-      image
+        const data = JSON.parse($(scripts[i]).html() || "")
+
+        if(data["@type"]==="Product"){
+
+          return {
+            title: data.name || "",
+            description: data.description || "",
+            image: Array.isArray(data.image)
+              ? data.image[0]
+              : data.image || ""
+          }
+
+        }
+
+      }catch(e){}
     }
 
-  }catch(e){
-    console.log("Parser error", e)
+    // 2️⃣ OG meta fallback
+
+    const title =
+      $('meta[property="og:title"]').attr("content") ||
+      $('title').text().replace(" - Etsy","")
+
+    const description =
+      $('meta[property="og:description"]').attr("content") || ""
+
+    const image =
+      $('meta[property="og:image"]').attr("content") || ""
+
+    if(title){
+
+      console.log("Fallback parser used")
+
+      return {
+        title,
+        description,
+        image
+      }
+
+    }
+
+    console.log("Parser failed — no title found")
     return null
+
+  }catch(e){
+
+    console.log("Parser error:", e)
+    return null
+
   }
 }
