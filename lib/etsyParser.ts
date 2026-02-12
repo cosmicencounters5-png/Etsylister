@@ -4,13 +4,16 @@ export async function parseEtsyListing(rawUrl:string){
 
   if(!rawUrl) return null
 
+  // 🔥 extract listing id from ANY Etsy URL
   const match =
     rawUrl.match(/listing\/(\d+)/) ||
     rawUrl.match(/(\d{6,})/)
 
   if(!match) return null
 
-  const listingUrl = `https://www.etsy.com/listing/${match[1]}`
+  const listingId = match[1]
+
+  const listingUrl = `https://www.etsy.com/listing/${listingId}`
 
   const apiKey = process.env.SCRAPINGBEE_API_KEY
 
@@ -20,8 +23,8 @@ export async function parseEtsyListing(rawUrl:string){
   }
 
   const proxyUrl =
-    `https://app.scrapingbee.com/api/v1/`+
-    `?api_key=${apiKey}`+
+    `https://app.scrapingbee.com/api/v1/?`+
+    `api_key=${apiKey}`+
     `&url=${encodeURIComponent(listingUrl)}`+
     `&premium_proxy=true`+
     `&render_js=false`
@@ -31,40 +34,36 @@ export async function parseEtsyListing(rawUrl:string){
     const res = await fetch(proxyUrl)
 
     if(!res.ok){
-      console.log("Proxy fetch failed:", res.status)
+      console.log("Proxy failed:", res.status)
       return null
     }
 
     const html = await res.text()
 
     if(!html){
-      console.log("Missing HTML")
+      console.log("Missing html")
       return null
     }
 
-    console.log("HTML received length:", html.length)
-
     const $ = cheerio.load(html)
 
-    // ✅ GOD MODE parsing order
-
-    // 1️⃣ JSON-LD (BEST)
+    // 🔥 parse JSON-LD (stable Etsy method)
     const scripts = $('script[type="application/ld+json"]')
 
     for(let i=0;i<scripts.length;i++){
 
       try{
 
-        const data = JSON.parse($(scripts[i]).html() || "")
+        const json = JSON.parse($(scripts[i]).html() || "")
 
-        if(data["@type"]==="Product"){
+        if(json["@type"] === "Product"){
 
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: Array.isArray(data.image)
-              ? data.image[0]
-              : data.image || ""
+          return{
+            title: json.name || "",
+            description: json.description || "",
+            image: Array.isArray(json.image)
+              ? json.image[0]
+              : json.image || ""
           }
 
         }
@@ -72,31 +71,8 @@ export async function parseEtsyListing(rawUrl:string){
       }catch(e){}
     }
 
-    // 2️⃣ OG meta fallback
+    console.log("No product JSON found")
 
-    const title =
-      $('meta[property="og:title"]').attr("content") ||
-      $('title').text().replace(" - Etsy","")
-
-    const description =
-      $('meta[property="og:description"]').attr("content") || ""
-
-    const image =
-      $('meta[property="og:image"]').attr("content") || ""
-
-    if(title){
-
-      console.log("Fallback parser used")
-
-      return {
-        title,
-        description,
-        image
-      }
-
-    }
-
-    console.log("Parser failed — no title found")
     return null
 
   }catch(e){
@@ -105,4 +81,5 @@ export async function parseEtsyListing(rawUrl:string){
     return null
 
   }
+
 }
