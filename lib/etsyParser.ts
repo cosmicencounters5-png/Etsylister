@@ -12,10 +12,12 @@ export async function parseEtsyListing(rawUrl:string){
 
   const listingUrl = `https://www.etsy.com/listing/${listingId}`
 
+  // 🔥 LOW COST MODE
   const proxyUrl =
     `https://app.scrapingbee.com/api/v1/?api_key=${process.env.SCRAPINGBEE_API_KEY}` +
     `&url=${encodeURIComponent(listingUrl)}` +
-    `&render_js=true&stealth_proxy=true`
+    `&stealth_proxy=true` +
+    `&render_js=false`   // 👈 HUGE credit savings
 
   try{
 
@@ -35,8 +37,7 @@ export async function parseEtsyListing(rawUrl:string){
 
     const $ = cheerio.load(html)
 
-    // 🔥 ULTRA STABLE METHOD — JSON-LD parsing
-
+    // 🔥 PRIMARY METHOD — JSON-LD
     const scripts = $('script[type="application/ld+json"]')
 
     for(let i=0;i<scripts.length;i++){
@@ -60,20 +61,8 @@ export async function parseEtsyListing(rawUrl:string){
       }catch(e){}
     }
 
-    // fallback (din metode hvis JSON-LD ikke finnes)
-    const title =
-      $("h1").first().text().trim() ||
-      $('meta[property="og:title"]').attr("content")
-
-    const description =
-      $('meta[name="description"]').attr("content") || ""
-
-    const image =
-      $('meta[property="og:image"]').attr("content") || ""
-
-    if(!title) return null
-
-    return { title, description, image }
+    console.log("JSON-LD not found")
+    return null
 
   }catch(e){
 
