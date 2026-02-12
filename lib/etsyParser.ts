@@ -1,3 +1,4 @@
+console.log("SCRAPINGBEE KEY:", process.env.SCRAPINGBEE_API_KEY)
 import cheerio from "cheerio"
 
 export async function parseEtsyListing(rawUrl:string){
