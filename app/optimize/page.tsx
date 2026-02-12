@@ -14,18 +14,60 @@ export default function OptimizePage(){
 
     setLoading(true)
 
-    const res = await fetch("/api/optimize",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ url })
-    })
+    try{
 
-    const data = await res.json()
+      // 🔥 fetch directly from browser
+      const res = await fetch(url)
 
-    if(data.error){
-      alert(data.error)
-    } else {
+      const html = await res.text()
+
+      const scripts = [...html.matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+      )]
+
+      let listing:any=null
+
+      for(const s of scripts){
+
+        try{
+          const data = JSON.parse(s[1])
+
+          if(data["@type"]==="Product"){
+            listing=data
+            break
+          }
+
+          if(data["@graph"]){
+            listing=data["@graph"].find((d:any)=>d["@type"]==="Product")
+          }
+
+        }catch{}
+      }
+
+      if(!listing){
+        alert("Could not parse listing")
+        setLoading(false)
+        return
+      }
+
+      const api = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({
+          listing:{
+            title: listing.name,
+            description: listing.description,
+            image: listing.image
+          }
+        })
+      })
+
+      const data = await api.json()
+
       setResult(data)
+
+    }catch(e){
+      console.log(e)
     }
 
     setLoading(false)
@@ -33,32 +75,24 @@ export default function OptimizePage(){
 
   return(
 
-    <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px"}}>
+    <main>
 
       <h1>Etsy Listing Optimizer</h1>
 
       <input
         value={url}
         onChange={(e)=>setUrl(e.target.value)}
-        placeholder="Paste Etsy listing URL..."
       />
 
       <button onClick={optimize}>
-        {loading ? "Loading..." : "Optimize"}
+        {loading?"Loading":"Optimize"}
       </button>
 
       {result && (
-
-        <div>
-
-          <h3>Original Title</h3>
-          <p>{result.original?.title}</p>
-
-          <h3>Optimized Title</h3>
-          <p>{result.optimized?.title}</p>
-
-        </div>
-
+        <>
+          <p>{result.original.title}</p>
+          <p>{result.optimized.title}</p>
+        </>
       )}
 
     </main>
