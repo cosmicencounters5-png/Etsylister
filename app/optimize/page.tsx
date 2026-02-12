@@ -78,10 +78,11 @@ export default function OptimizePage() {
           doc.querySelector('.wt-text-body-01')?.textContent ||
           "Ingen beskrivelse funnet";
         
-        // BILDE
+        // BILDE - FIKSET: bruk getAttribute for src
         let image = 
           doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
-          doc.querySelector('img[data-buy-box-listing-image]')?.src ||
+          (doc.querySelector('img[data-buy-box-listing-image]') as HTMLImageElement)?.src ||
+          (doc.querySelector('img.wt-max-width-full') as HTMLImageElement)?.src ||
           "";
 
         // PRIS
@@ -170,7 +171,7 @@ export default function OptimizePage() {
     
     // Legg til kategori hvis mangler
     if (!optimized.toLowerCase().includes('pattern') && !optimized.toLowerCase().includes('mønster')) {
-      if (optimized.toLowerCase().includes('elefant')) {
+      if (optimized.toLowerCase().includes('elefant') || optimized.toLowerCase().includes('elephant')) {
         optimized = `${optimized} Crochet Pattern`;
       }
     }
