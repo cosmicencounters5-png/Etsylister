@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseEtsyListing } from "@/lib/etsyParser";
+import { parseEtsyListing } from "../../../lib/etsyParser";
 
-export const runtime = 'edge'; // Vercel Edge Runtime
+export const runtime = 'edge';
 export const preferredRegion = 'auto';
-export const maxDuration = 30; // 30 sekunder max
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   try {
@@ -88,15 +88,13 @@ Return ONLY valid JSON:
       };
     }
 
-    // 3. Returnera komplett data
+    // 3. Returnera komplett data - utan price/currency
     return NextResponse.json({
       success: true,
       original: {
         title: listingData.title,
         description: listingData.description,
-        price: listingData.price,
-        currency: listingData.currency,
-        image: listingData.image
+        image: listingData.image || ""
       },
       optimized: {
         title: optimized.optimizedTitle || listingData.title,
@@ -107,7 +105,8 @@ Return ONLY valid JSON:
       meta: {
         listingId: listingData.id,
         fetchedAt: listingData.fetchedAt,
-        model: "gemini-1.5-flash"
+        model: "gemini-1.5-flash",
+        fallback: listingData.fallback || false
       }
     });
 
