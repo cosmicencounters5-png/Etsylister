@@ -1,5 +1,3 @@
-import * as cheerio from "cheerio"
-
 export async function parseEtsyListing(rawUrl:string){
 
   const match =
@@ -8,52 +6,43 @@ export async function parseEtsyListing(rawUrl:string){
 
   if(!match) return null
 
-  const listingId = match[1]
-
-  const listingUrl = `https://www.etsy.com/listing/${listingId}`
-
-  // 🔥 LOW COST MODE
-  const proxyUrl =
-    `https://app.scrapingbee.com/api/v1/?api_key=${process.env.SCRAPINGBEE_API_KEY}` +
-    `&url=${encodeURIComponent(listingUrl)}` +
-    `&stealth_proxy=true` +
-    `&render_js=false`   // 👈 HUGE credit savings
+  const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
   try{
 
-    const res = await fetch(proxyUrl)
+    const res = await fetch(listingUrl,{
+      headers:{
+        "User-Agent":"Mozilla/5.0",
+        "Accept-Language":"en-US,en;q=0.9"
+      }
+    })
 
     if(!res.ok){
-      console.log("Proxy failed:",res.status)
+      console.log("Fetch failed:",res.status)
       return null
     }
 
     const html = await res.text()
 
-    if(!html){
-      console.log("Missing html")
-      return null
-    }
+    // find JSON-LD blocks
+    const scripts = [...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+    )]
 
-    const $ = cheerio.load(html)
-
-    // 🔥 PRIMARY METHOD — JSON-LD
-    const scripts = $('script[type="application/ld+json"]')
-
-    for(let i=0;i<scripts.length;i++){
+    for(const s of scripts){
 
       try{
 
-        const json = JSON.parse($(scripts[i]).html() || "")
+        const data = JSON.parse(s[1])
 
-        if(json["@type"] === "Product"){
+        if(data["@type"]==="Product"){
 
           return {
-            title: json.name || "",
-            description: json.description || "",
-            image: Array.isArray(json.image)
-              ? json.image[0]
-              : json.image || ""
+            title: data.name || "",
+            description: data.description || "",
+            image: Array.isArray(data.image)
+              ? data.image[0]
+              : data.image
           }
 
         }
@@ -61,7 +50,6 @@ export async function parseEtsyListing(rawUrl:string){
       }catch(e){}
     }
 
-    console.log("JSON-LD not found")
     return null
 
   }catch(e){
@@ -70,4 +58,5 @@ export async function parseEtsyListing(rawUrl:string){
     return null
 
   }
+
 }
