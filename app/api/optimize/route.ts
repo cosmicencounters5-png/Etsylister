@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server"
 
+function extractKeyword(url:string){
+
+  const parts = url.split("/")
+
+  const last = parts[parts.length-1] || ""
+
+  return last.replace(/-/g," ")
+}
+
 export async function POST(req:Request){
 
   try{
@@ -7,29 +16,37 @@ export async function POST(req:Request){
     const { url } = await req.json()
 
     if(!url){
-      return NextResponse.json({ error:"Missing URL" },{ status:400 })
+
+      return NextResponse.json(
+        { error:"Missing URL" },
+        { status:400 }
+      )
+
     }
 
-    const keyword = url
-      .replace(/-/g," ")
-      .split("/")
-      .pop()
+    const keyword = extractKeyword(url)
 
     const prompt = `
-Act as Etsy SEO expert.
 
-Search only using:
+You are an Etsy SEO AI strategist.
+
+Analyze Etsy search results ONLY using:
+
 site:etsy.com ${keyword}
 
-Analyze top ranking listings.
+DO NOT hallucinate.
 
-Return JSON:
+Return STRICT JSON:
 
 {
-  title:"",
-  description:"",
-  tags:""
+"title":"",
+"description":"",
+"tags":"",
+"strategyInsights":"",
+"seoAdvantage":"",
+"competitionInsights":""
 }
+
 `
 
     const res = await fetch(
@@ -39,20 +56,28 @@ Return JSON:
         headers:{ "Content-Type":"application/json"},
         body: JSON.stringify({
           contents:[{ parts:[{ text:prompt }]}],
-          generationConfig:{ temperature:0.1 }
+          generationConfig:{
+            temperature:0.1
+          }
         })
       }
     )
 
     const data = await res.json()
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    const text =
+      data.candidates?.[0]?.content?.parts?.[0]?.text
 
     const parsed = JSON.parse(text)
 
     return NextResponse.json({
-      original:{ title: keyword },
+
+      original:{
+        title: keyword
+      },
+
       optimized: parsed
+
     })
 
   }catch(e){
