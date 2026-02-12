@@ -1,5 +1,5 @@
-// lib/etsyParser.ts
 import cheerio from 'cheerio';
+import fetch from 'node-fetch'; // Hvis ikke allerede, import fra 'node-fetch'
 
 export async function parseEtsyListing(url: string) {
   const match = url.match(/listing\/(\d+)/) || url.match(/(\d{6,})/);
@@ -7,40 +7,44 @@ export async function parseEtsyListing(url: string) {
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`;
 
+  const apiKey = process.env.SCRAPINGBEE_API_KEY;
+  if (!apiKey) {
+    console.error('Missing ScrapingBee API key');
+    return null;
+  }
+
+  const proxyUrl = `https://app.scrapingbee.com/api/v1/?api_key=${apiKey}&url=${encodeURIComponent(listingUrl)}&render_js=false`; // render_js=false for raskere, bare HTML
+
   try {
-    const res = await fetch(listingUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-      },
-    });
+    const res = await fetch(proxyUrl);
 
     if (!res.ok) {
-      console.error(`Fetch failed: ${res.status} - ${res.statusText}`);
+      console.error(`Proxy fetch failed: ${res.status} - ${res.statusText}`);
       return null;
     }
 
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    // Title
-    const title = $('h1[data-buy-box-listing-title="true"]').text().trim() || 
+    // Updated selectors basert på aktuell Etsy-struktur (2026)
+    const title = $('h1').first().text().trim() || 
                   $('title').text().trim().replace(/ - Etsy$/, '');
 
-    // Description - full text from the description section
+    // Description: Samle fra description-div (oppdatert til vanligere id/class)
     let description = '';
-    $('div[data-component="listing-page-description"] p').each((i, el) => {
-      description += $(el).text().trim() + '\n\n';
+    const descSection = $('#description') || $('div.wt-text-body-01'); // Tilpass hvis id="description" eller class
+    descSection.find('p, li, h2').each((i, el) => {
+      const text = $(el).text().trim();
+      if (text) description += text + '\n\n';
     });
     if (!description) {
       description = $('meta[name="description"]').attr('content') || '';
     }
 
-    // Image
+    // Image: Fortsatt og:image
     const image = $('meta[property="og:image"]').attr('content') || 
-                  $('img[data-listing-card-listing-image]').first().attr('src') || 
-                  $('img.carousel-image').first().attr('src');
+                  $('img.wt-max-width-full').first().attr('src') || // Alternativ for carousel-bilder
+                  $('img[data-listing-image]').first().attr('src');
 
     if (!title) {
       console.error('Could not find title');
