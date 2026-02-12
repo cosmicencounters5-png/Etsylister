@@ -1,49 +1,107 @@
 "use client"
 
 import { useState } from "react"
-import { parseEtsyListing } from "@/lib/etsyParserClient"
 
-export default function OptimizePage(){
+export default function OptimizePage() {
 
-  const [url,setUrl]=useState("")
-  const [loading,setLoading]=useState(false)
-  const [result,setResult]=useState<any>(null)
+  const [url,setUrl] = useState("")
+  const [loading,setLoading] = useState(false)
+  const [result,setResult] = useState<any>(null)
 
   async function optimize(){
 
+    if(!url) return
+
     setLoading(true)
+    setResult(null)
 
-    const listing = await parseEtsyListing(url)
+    try{
 
-    if(!listing){
-      alert("Could not parse listing")
-      setLoading(false)
-      return
+      const res = await fetch("/api/optimize",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ url })
+      })
+
+      const data = await res.json()
+
+      if(data.error){
+        alert(data.error)
+      }else{
+        setResult(data)
+      }
+
+    }catch(e){
+      console.log(e)
+      alert("Something went wrong")
     }
 
-    const res = await fetch("/api/optimize",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body: JSON.stringify({ listing })
-    })
-
-    const data = await res.json()
-
-    setResult(data)
     setLoading(false)
   }
 
   return(
-    <main>
-      <h1>Etsy Listing Optimizer</h1>
 
-      <input value={url} onChange={(e)=>setUrl(e.target.value)} />
+    <main style={{
+      maxWidth:800,
+      margin:"0 auto",
+      padding:"80px 20px"
+    }}>
 
-      <button onClick={optimize}>
-        {loading ? "Loading..." : "Optimize"}
-      </button>
+      <h1 style={{fontSize:36,fontWeight:700}}>
+        Etsy Listing Optimizer
+      </h1>
 
-      {result && <p>{result.original.title}</p>}
+      {/* INPUT */}
+
+      <div style={{marginTop:30}}>
+
+        <input
+          value={url}
+          onChange={(e)=>setUrl(e.target.value)}
+          placeholder="Paste Etsy listing URL..."
+          style={{
+            width:"100%",
+            padding:16,
+            borderRadius:12,
+            background:"#111",
+            color:"white",
+            border:"1px solid #222"
+          }}
+        />
+
+        <button
+          onClick={optimize}
+          style={{
+            marginTop:12,
+            padding:16,
+            borderRadius:12,
+            width:"100%"
+          }}
+        >
+          {loading ? "Loading..." : "Optimize"}
+        </button>
+
+      </div>
+
+      {/* RESULT */}
+
+      {result && (
+
+        <div style={{marginTop:30}}>
+
+          <h3>Original Title</h3>
+          <p>{result.original?.title}</p>
+
+          <h3>Optimized Title</h3>
+          <p>{result.optimized?.title}</p>
+
+          <h3>Description</h3>
+          <p>{result.optimized?.description}</p>
+
+        </div>
+
+      )}
+
     </main>
   )
 }
