@@ -4,9 +4,9 @@ import { useState } from "react"
 
 export default function OptimizePage(){
 
-  const [url,setUrl] = useState("")
-  const [loading,setLoading] = useState(false)
-  const [result,setResult] = useState<any>(null)
+  const [url,setUrl]=useState("")
+  const [loading,setLoading]=useState(false)
+  const [result,setResult]=useState<any>(null)
 
   async function optimize(){
 
@@ -33,9 +33,9 @@ export default function OptimizePage(){
 
   return(
 
-    <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px"}}>
+    <main style={{maxWidth:800,margin:"0 auto",padding:40}}>
 
-      <h1>Etsy Listing Optimizer</h1>
+      <h1>Etsy Lister AI</h1>
 
       <input
         value={url}
@@ -49,15 +49,13 @@ export default function OptimizePage(){
 
       {result && (
 
-        <div>
-
+        <>
           <h3>Original Title</h3>
-          <p>{result.original?.title}</p>
+          <p>{result.original.title}</p>
 
           <h3>Optimized Title</h3>
           <p>{result.optimized?.title}</p>
-
-        </div>
+        </>
 
       )}
 
