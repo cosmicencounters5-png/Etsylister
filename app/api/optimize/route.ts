@@ -4,35 +4,64 @@ export async function POST(req:Request){
 
   try{
 
-    const body = await req.json()
-    const url = body.url
+    const { url } = await req.json()
 
     if(!url){
-
-      return NextResponse.json(
-        { error:"Missing URL"},
-        { status:400}
-      )
+      return NextResponse.json({ error:"Missing URL" },{ status:400 })
     }
 
-    const res = await fetch(url,{
-      headers:{
-        "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    const keyword = url
+      .replace(/-/g," ")
+      .split("/")
+      .pop()
+
+    const prompt = `
+Act as Etsy SEO expert.
+
+Search only using:
+site:etsy.com ${keyword}
+
+Analyze top ranking listings.
+
+Return JSON:
+
+{
+  title:"",
+  description:"",
+  tags:""
+}
+`
+
+    const res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+process.env.GEMINI_API_KEY,
+      {
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({
+          contents:[{ parts:[{ text:prompt }]}],
+          generationConfig:{ temperature:0.1 }
+        })
       }
+    )
+
+    const data = await res.json()
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+
+    const parsed = JSON.parse(text)
+
+    return NextResponse.json({
+      original:{ title: keyword },
+      optimized: parsed
     })
-
-    const html = await res.text()
-
-    return NextResponse.json({ html })
 
   }catch(e){
 
     console.log(e)
 
     return NextResponse.json(
-      { error:"Proxy failed"},
-      { status:500}
+      { error:"Optimizer failed" },
+      { status:500 }
     )
 
   }
