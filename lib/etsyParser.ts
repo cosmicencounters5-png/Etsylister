@@ -1,3 +1,6 @@
+// Längst upp i etsyParser.ts
+console.log("Etsy Parser loaded, Node env:", process.env.NODE_ENV);
+console.log("Vercel env:", process.env.VERCEL_ENV);
 export async function parseEtsyListing(rawUrl: string) {
   const match = rawUrl.match(/listing\/(\d+)/) || rawUrl.match(/(\d{6,})/);
   
