@@ -8,39 +8,55 @@ export default function OptimizePage(){
   const [loading,setLoading]=useState(false)
   const [result,setResult]=useState<any>(null)
 
-  async function clientParse(url:string){
+  async function parseFromIframe(listingUrl:string){
 
-    const match =
-      url.match(/listing\/(\d+)/) ||
-      url.match(/(\d{6,})/)
+    return new Promise((resolve)=>{
 
-    if(!match) return null
+      const iframe = document.createElement("iframe")
 
-    const listingUrl = `https://www.etsy.com/listing/${match[1]}`
+      iframe.style.display="none"
+      iframe.src = listingUrl
 
-    // 🔥 fetch via browser (not server)
-    const res = await fetch(
-      `https://corsproxy.io/?${encodeURIComponent(listingUrl)}`
-    )
+      iframe.onload = ()=>{
 
-    const html = await res.text()
+        try{
 
-    const titleMatch =
-      html.match(/<meta property="og:title" content="([^"]+)"/)
+          const doc = iframe.contentDocument
 
-    const descMatch =
-      html.match(/<meta name="description" content="([^"]+)"/)
+          const title =
+            doc?.querySelector('meta[property="og:title"]')?.getAttribute("content")
 
-    const imageMatch =
-      html.match(/<meta property="og:image" content="([^"]+)"/)
+          const description =
+            doc?.querySelector('meta[name="description"]')?.getAttribute("content")
 
-    if(!titleMatch) return null
+          const image =
+            doc?.querySelector('meta[property="og:image"]')?.getAttribute("content")
 
-    return{
-      title:titleMatch[1],
-      description:descMatch?.[1] || "",
-      image:imageMatch?.[1] || ""
-    }
+          iframe.remove()
+
+          if(!title){
+            resolve(null)
+            return
+          }
+
+          resolve({
+            title,
+            description,
+            image
+          })
+
+        }catch(e){
+
+          iframe.remove()
+          resolve(null)
+        }
+
+      }
+
+      document.body.appendChild(iframe)
+
+    })
+
   }
 
   async function optimize(){
@@ -49,31 +65,35 @@ export default function OptimizePage(){
 
     setLoading(true)
 
-    try{
+    const match =
+      url.match(/listing\/(\d+)/) ||
+      url.match(/(\d{6,})/)
 
-      // 🔥 STEP 1 — CLIENT PARSE (FREE)
-      const listing = await clientParse(url)
-
-      if(!listing){
-        alert("Could not parse listing")
-        setLoading(false)
-        return
-      }
-
-      // 🔥 STEP 2 — send to AI API
-      const res = await fetch("/api/optimize",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body:JSON.stringify({ listing })
-      })
-
-      const data = await res.json()
-
-      setResult(data)
-
-    }catch(e){
-      console.log(e)
+    if(!match){
+      alert("Invalid Etsy link")
+      setLoading(false)
+      return
     }
+
+    const listingUrl = `https://www.etsy.com/listing/${match[1]}`
+
+    const listing = await parseFromIframe(listingUrl)
+
+    if(!listing){
+      alert("Could not parse listing")
+      setLoading(false)
+      return
+    }
+
+    const res = await fetch("/api/optimize",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body: JSON.stringify({ listing })
+    })
+
+    const data = await res.json()
+
+    setResult(data)
 
     setLoading(false)
   }
