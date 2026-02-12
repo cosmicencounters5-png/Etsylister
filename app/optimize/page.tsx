@@ -1,6 +1,7 @@
 "use client"
 
 import { useState,useEffect } from "react"
+import Link from "next/link"
 
 export default function OptimizePage(){
 
@@ -92,15 +93,37 @@ export default function OptimizePage(){
       color:"white"
     }}>
 
-      {/* HEADER */}
+      {/* HEADER ROW */}
 
-      <h1 style={{
-        fontSize:44,
-        fontWeight:800,
-        letterSpacing:-1
+      <div style={{
+        display:"flex",
+        justifyContent:"space-between",
+        alignItems:"center"
       }}>
-        Etsy Lister AI 🚀
-      </h1>
+
+        <h1 style={{
+          fontSize:44,
+          fontWeight:800,
+          letterSpacing:-1
+        }}>
+          Etsy Lister AI 🚀
+        </h1>
+
+        {/* ✅ BACK BUTTON */}
+        <Link href="/dashboard">
+          <button style={{
+            padding:"10px 16px",
+            borderRadius:12,
+            background:"#111",
+            border:"1px solid #222",
+            color:"white",
+            cursor:"pointer"
+          }}>
+            ← Back
+          </button>
+        </Link>
+
+      </div>
 
       <p style={{opacity:.6}}>
         Activate AI listing domination.
@@ -150,7 +173,7 @@ export default function OptimizePage(){
           background: loading
             ? "linear-gradient(90deg,#00ffd5,#00aaff)"
             : "white",
-          color: loading ? "black":"black",
+          color:"black",
           fontWeight:800,
           width:"100%",
           boxShadow: loading
@@ -181,8 +204,6 @@ export default function OptimizePage(){
 
         <div style={{marginTop:40}}>
 
-          {/* SCORE */}
-
           <div style={card}>
 
             <strong>SEO Score Upgrade</strong>
@@ -210,15 +231,11 @@ export default function OptimizePage(){
 
           </div>
 
-          {/* TITLE */}
-
           <div style={card}>
 
             <strong>Optimized Title</strong>
 
-            <button
-              onClick={()=>copy(result.optimized.title,"Title")}
-            >
+            <button onClick={()=>copy(result.optimized.title,"Title")}>
               Copy
             </button>
 
@@ -228,15 +245,11 @@ export default function OptimizePage(){
 
           </div>
 
-          {/* DESCRIPTION */}
-
           <div style={card}>
 
             <strong>Optimized Description</strong>
 
-            <button
-              onClick={()=>copy(result.optimized.description,"Description")}
-            >
+            <button onClick={()=>copy(result.optimized.description,"Description")}>
               Copy
             </button>
 
@@ -246,15 +259,11 @@ export default function OptimizePage(){
 
           </div>
 
-          {/* TAGS */}
-
           <div style={card}>
 
             <strong>SEO Tags</strong>
 
-            <button
-              onClick={()=>copy(result.optimized.tags.join(", "),"Tags")}
-            >
+            <button onClick={()=>copy(result.optimized.tags.join(", "),"Tags")}>
               Copy Tags
             </button>
 
