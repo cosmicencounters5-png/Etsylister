@@ -8,7 +8,7 @@ export default function OptimizePage(){
   const [loading,setLoading]=useState(false)
   const [result,setResult]=useState<any>(null)
 
-  function extractListingId(rawUrl:string){
+  function getListingId(rawUrl:string){
 
     const match =
       rawUrl.match(/listing\/(\d+)/) ||
@@ -25,7 +25,7 @@ export default function OptimizePage(){
 
     setLoading(true)
 
-    const id = extractListingId(url)
+    const id = getListingId(url)
 
     if(!id){
       alert("Invalid Etsy link")
@@ -33,28 +33,31 @@ export default function OptimizePage(){
       return
     }
 
-    // 🔥 ZERO COST METHOD
-    // We only use oEmbed metadata (NOT scraping HTML)
+    // 🔥 ZERO COST METADATA PARSER
 
-    const embedUrl =
-      `https://www.etsy.com/oembed?url=https://www.etsy.com/listing/${id}`
+    const target =
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(
+        `https://www.etsy.com/listing/${id}`
+      )}`
 
     try{
 
-      const res = await fetch(embedUrl)
+      const res = await fetch(target)
 
-      const data = await res.json()
+      const html = await res.text()
 
-      if(!data.title){
+      const titleMatch = html.match(/<title>(.*?)<\/title>/)
+
+      if(!titleMatch){
         alert("Could not parse listing")
         setLoading(false)
         return
       }
 
       const listing = {
-        title: data.title,
-        description: "",
-        image: data.thumbnail_url
+        title: titleMatch[1].replace(" - Etsy",""),
+        description:"",
+        image:""
       }
 
       const aiRes = await fetch("/api/optimize",{
@@ -63,13 +66,13 @@ export default function OptimizePage(){
         body: JSON.stringify({ listing })
       })
 
-      const aiData = await aiRes.json()
+      const data = await aiRes.json()
 
-      setResult(aiData)
+      setResult(data)
 
     }catch(e){
 
-      alert("Could not parse listing")
+      alert("Parse failed")
 
     }
 
