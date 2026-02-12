@@ -8,12 +8,42 @@ export async function POST(req: Request) {
     const url = body.url
 
     if (!url) {
-      return NextResponse.json({ error: "Missing URL" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Missing URL" },
+        { status: 400 }
+      )
     }
 
-    // extract keyword from URL
-    const keyword =
-      url.split("/").pop()?.replace(/-/g, " ") || url
+    // ✅ Extract Etsy listing ID
+    const match = url.match(/listing\/(\d+)/)
+
+    if (!match) {
+      return NextResponse.json(
+        { error: "Invalid Etsy listing URL" },
+        { status: 400 }
+      )
+    }
+
+    const listingId = match[1]
+
+    // 🔥 Force Gemini to analyze EXACT listing
+    const prompt = `
+Analyze THIS Etsy listing ONLY:
+
+https://www.etsy.com/listing/${listingId}
+
+Return ONLY valid JSON:
+
+{
+  "originalTitle":"...",
+  "description":"...",
+  "optimizedTitle":"..."
+}
+
+DO NOT include markdown.
+DO NOT include explanations.
+ONLY JSON.
+`
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -25,25 +55,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                {
-                  text: `
-Search Google for:
-
-site:etsy.com ${keyword}
-
-Find top ranking Etsy listings.
-
-Return ONLY valid JSON:
-
-{
-  "originalTitle":"...",
-  "description":"...",
-  "optimizedTitle":"..."
-}
-`
-                }
-              ]
+              parts: [{ text: prompt }]
             }
           ]
         })
@@ -55,8 +67,11 @@ Return ONLY valid JSON:
     let text =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
 
-    // 🔥 remove markdown json wrapper
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim()
+    // remove markdown if Gemini adds it
+    text = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim()
 
     const parsed = JSON.parse(text)
 
