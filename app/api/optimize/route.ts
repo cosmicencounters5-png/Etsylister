@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseEtsyListing } from "@/liv/etsyParser";
+import { parseEtsyListing } from "@/lib/etsyParser";
 
 export const runtime = 'edge'; // Vercel Edge Runtime
 export const preferredRegion = 'auto';
