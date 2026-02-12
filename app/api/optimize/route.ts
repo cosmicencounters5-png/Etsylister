@@ -7,7 +7,7 @@ export async function POST(req:Request){
   try{
 
     const body = await req.json()
-    const { url } = body
+    const url = body.url
 
     if(!url){
       return NextResponse.json(
@@ -15,6 +15,8 @@ export async function POST(req:Request){
         { status:400 }
       )
     }
+
+    console.log("Parsing:", url)
 
     const listing = await parseEtsyListing(url)
 
@@ -34,7 +36,7 @@ export async function POST(req:Request){
 
   }catch(e){
 
-    console.log("Optimize error", e)
+    console.log("API ERROR:", e)
 
     return NextResponse.json(
       { error:"Server error" },
