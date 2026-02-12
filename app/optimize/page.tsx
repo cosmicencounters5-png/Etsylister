@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { parseEtsyListing } from "@/lib/etsyParserClient"
 
 export default function OptimizePage(){
 
@@ -10,67 +11,39 @@ export default function OptimizePage(){
 
   async function optimize(){
 
-    if(!url) return
-
     setLoading(true)
 
-    try{
+    const listing = await parseEtsyListing(url)
 
-      const res = await fetch("/api/optimize",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({ url })
-      })
-
-      const data = await res.json()
-
-      if(data.error){
-        alert(data.error)
-      }else{
-        setResult(data)
-      }
-
-    }catch(e){
-      console.log(e)
-      alert("Something went wrong")
+    if(!listing){
+      alert("Could not parse listing")
+      setLoading(false)
+      return
     }
 
+    const res = await fetch("/api/optimize",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body: JSON.stringify({ listing })
+    })
+
+    const data = await res.json()
+
+    setResult(data)
     setLoading(false)
   }
 
   return(
-
-    <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px"}}>
-
+    <main>
       <h1>Etsy Listing Optimizer</h1>
 
-      <input
-        value={url}
-        onChange={(e)=>setUrl(e.target.value)}
-        placeholder="Paste Etsy listing URL..."
-        style={{width:"100%",padding:12,marginTop:20}}
-      />
+      <input value={url} onChange={(e)=>setUrl(e.target.value)} />
 
-      <button onClick={optimize} style={{marginTop:10}}>
+      <button onClick={optimize}>
         {loading ? "Loading..." : "Optimize"}
       </button>
 
-      {result && (
-
-        <div style={{marginTop:30}}>
-
-          <h3>Original Title</h3>
-          <p>{result.original?.title}</p>
-
-          <h3>Optimized Title</h3>
-          <p>{result.optimized?.title}</p>
-
-        </div>
-
-      )}
-
+      {result && <p>{result.original.title}</p>}
     </main>
-
   )
-
 }
