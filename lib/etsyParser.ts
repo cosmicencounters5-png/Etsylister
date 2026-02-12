@@ -16,23 +16,24 @@ export async function parseEtsyListing(rawUrl:string){
       }
     })
 
+    console.log("STATUS:",res.status)
+
     const html = await res.text()
 
-    if(!html) return null
-
-    // 🔥 parse meta tags (ALWAYS EXISTS)
+    console.log("HTML START:", html.substring(0,500))
 
     const titleMatch = html.match(/<meta property="og:title" content="([^"]+)"/)
-    const descMatch = html.match(/<meta name="description" content="([^"]+)"/)
-    const imageMatch = html.match(/<meta property="og:image" content="([^"]+)"/)
 
-    const title = titleMatch?.[1]
-    const description = descMatch?.[1] || ""
-    const image = imageMatch?.[1] || ""
+    if(!titleMatch){
+      console.log("NO OG TITLE FOUND")
+      return null
+    }
 
-    if(!title) return null
-
-    return { title, description, image }
+    return {
+      title:titleMatch[1],
+      description:"",
+      image:""
+    }
 
   }catch(e){
 
