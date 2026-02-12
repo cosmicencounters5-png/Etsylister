@@ -7,7 +7,7 @@ export async function POST(req:Request){
 
     const body = await req.json()
 
-    const listing = await parseEtsyListing(body.url)
+const listing = await parseEtsyListing(url)
 
     if(!listing){
 
