@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server"
-import { parseEtsyListing } from "@/lib/etsyParser"
-import { GoogleGenerativeAI } from "@google/generative-ai"
 
 export async function POST(req: Request) {
 
@@ -13,51 +11,63 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing URL" }, { status: 400 })
     }
 
-    // STEP 1 — parse listing
-    const listing = await parseEtsyListing(url)
+    // extract keyword from URL
+    const keyword =
+      url.split("/").pop()?.replace(/-/g, " ") || url
 
-    if (!listing) {
-      return NextResponse.json({ error: "Could not parse listing" }, { status: 400 })
-    }
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `
+Search Google for:
 
-    // STEP 2 — Gemini AI
+site:etsy.com ${keyword}
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
+Find top ranking Etsy listings.
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash"
-    })
-
-    const prompt = `
-You are an Etsy SEO expert.
-
-Original title:
-${listing.title}
-
-Generate:
-
-1. Optimized Etsy SEO title
-2. SEO optimized description
-3. Suggested tags
-
-Return JSON:
+Return ONLY valid JSON:
 
 {
-"title":"",
-"description":"",
-"tags":""
+  "originalTitle":"...",
+  "description":"...",
+  "optimizedTitle":"..."
 }
 `
+                }
+              ]
+            }
+          ]
+        })
+      }
+    )
 
-    const result = await model.generateContent(prompt)
+    const data = await geminiRes.json()
 
-    const text = result.response.text()
+    let text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
 
-    const optimized = JSON.parse(text)
+    // 🔥 remove markdown json wrapper
+    text = text.replace(/```json/g, "").replace(/```/g, "").trim()
+
+    const parsed = JSON.parse(text)
 
     return NextResponse.json({
-      original: listing,
-      optimized
+      original: {
+        title: parsed.originalTitle,
+        description: parsed.description
+      },
+      optimized: {
+        title: parsed.optimizedTitle
+      }
     })
 
   } catch (e) {
@@ -68,6 +78,5 @@ Return JSON:
       { error: "Optimizer failed" },
       { status: 500 }
     )
-
   }
 }
