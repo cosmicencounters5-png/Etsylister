@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 
 export default function OptimizePage(){
 
@@ -9,10 +9,14 @@ export default function OptimizePage(){
   const [loading,setLoading]=useState(false)
   const [step,setStep]=useState("")
   const [result,setResult]=useState<any>(null)
+  const [copied,setCopied]=useState("")
 
-  function copy(text:string){
+  function copy(text:string,label:string){
 
     navigator.clipboard.writeText(text)
+    setCopied(label)
+
+    setTimeout(()=>setCopied(""),1200)
 
   }
 
@@ -24,11 +28,11 @@ export default function OptimizePage(){
     setResult(null)
 
     const brainSteps=[
-      "Scanning Etsy SEO signals...",
-      "Detecting buyer intent...",
-      "Analyzing ranking structure...",
-      "Injecting conversion psychology...",
-      "Building ranking-ready listing..."
+      "Scanning Etsy algorithm...",
+      "Reading buyer psychology...",
+      "Analyzing competitors...",
+      "Injecting ranking signals...",
+      "Finalizing AI upgrade..."
     ]
 
     let i=0
@@ -37,7 +41,7 @@ export default function OptimizePage(){
       setStep(brainSteps[i])
       i++
       if(i>=brainSteps.length) clearInterval(interval)
-    },650)
+    },600)
 
     try{
 
@@ -72,10 +76,10 @@ export default function OptimizePage(){
 
     background:"#0f0f0f",
     padding:24,
-    borderRadius:16,
+    borderRadius:18,
     marginTop:24,
     border:"1px solid #1a1a1a",
-    boxShadow:"0 0 20px rgba(255,255,255,0.03)"
+    boxShadow:"0 0 30px rgba(0,255,200,0.05)"
 
   }
 
@@ -88,6 +92,8 @@ export default function OptimizePage(){
       color:"white"
     }}>
 
+      {/* HEADER */}
+
       <h1 style={{
         fontSize:44,
         fontWeight:800,
@@ -97,7 +103,7 @@ export default function OptimizePage(){
       </h1>
 
       <p style={{opacity:.6}}>
-        Paste your listing and activate AI optimization.
+        Activate AI listing domination.
       </p>
 
       {/* INPUT */}
@@ -133,18 +139,23 @@ export default function OptimizePage(){
         }}
       />
 
-      {/* BUTTON */}
+      {/* GOD BUTTON */}
 
       <button
         onClick={optimize}
         style={{
           marginTop:20,
           padding:"18px 24px",
-          borderRadius:14,
-          background:"white",
-          color:"black",
-          fontWeight:700,
+          borderRadius:16,
+          background: loading
+            ? "linear-gradient(90deg,#00ffd5,#00aaff)"
+            : "white",
+          color: loading ? "black":"black",
+          fontWeight:800,
           width:"100%",
+          boxShadow: loading
+            ? "0 0 25px rgba(0,255,200,0.6)"
+            : "none",
           transition:"0.2s"
         }}
       >
@@ -152,6 +163,17 @@ export default function OptimizePage(){
         {loading ? `🤖 ${step}` : "Optimize Listing 🔥"}
 
       </button>
+
+      {copied &&(
+
+        <p style={{
+          color:"#00ffae",
+          marginTop:10
+        }}>
+          Copied {copied} ✅
+        </p>
+
+      )}
 
       {/* RESULTS */}
 
@@ -167,20 +189,21 @@ export default function OptimizePage(){
 
             <div style={{
               marginTop:10,
-              fontSize:20,
+              fontSize:22,
               display:"flex",
               gap:20
             }}>
 
-              <span style={{opacity:.6}}>
-                Before: {result.beforeScore}
+              <span style={{opacity:.5}}>
+                {result.beforeScore}
               </span>
 
               <span style={{
                 color:"#00ffae",
-                fontWeight:700
+                fontWeight:800,
+                textShadow:"0 0 10px #00ffae"
               }}>
-                After: {result.afterScore} 🚀
+                → {result.afterScore}
               </span>
 
             </div>
@@ -194,8 +217,7 @@ export default function OptimizePage(){
             <strong>Optimized Title</strong>
 
             <button
-              style={{marginLeft:10}}
-              onClick={()=>copy(result.optimized.title)}
+              onClick={()=>copy(result.optimized.title,"Title")}
             >
               Copy
             </button>
@@ -213,8 +235,7 @@ export default function OptimizePage(){
             <strong>Optimized Description</strong>
 
             <button
-              style={{marginLeft:10}}
-              onClick={()=>copy(result.optimized.description)}
+              onClick={()=>copy(result.optimized.description,"Description")}
             >
               Copy
             </button>
@@ -232,8 +253,7 @@ export default function OptimizePage(){
             <strong>SEO Tags</strong>
 
             <button
-              style={{marginLeft:10}}
-              onClick={()=>copy(result.optimized.tags.join(", "))}
+              onClick={()=>copy(result.optimized.tags.join(", "),"Tags")}
             >
               Copy Tags
             </button>
