@@ -16,10 +16,21 @@ export default function OptimizePage(){
 
     try{
 
-      // 🔥 fetch directly from browser
-      const res = await fetch(url)
+      const proxy = await fetch("/api/proxy",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ url })
+      })
 
-      const html = await res.text()
+      const proxyData = await proxy.json()
+
+      const html = proxyData.html
+
+      if(!html){
+        alert("Missing HTML")
+        setLoading(false)
+        return
+      }
 
       const scripts = [...html.matchAll(
         /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
@@ -90,8 +101,8 @@ export default function OptimizePage(){
 
       {result && (
         <>
-          <p>{result.original.title}</p>
-          <p>{result.optimized.title}</p>
+          <h3>{result.original.title}</h3>
+          <h3>{result.optimized.title}</h3>
         </>
       )}
 
