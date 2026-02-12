@@ -7,26 +7,22 @@ export async function POST(req:Request){
   try{
 
     const body = await req.json()
-    const url = body.url
+    const { url } = body
 
     if(!url){
-
       return NextResponse.json(
         { error:"Missing URL" },
         { status:400 }
       )
-
     }
 
     const listing = await parseEtsyListing(url)
 
     if(!listing){
-
       return NextResponse.json(
         { error:"Could not parse listing" },
         { status:400 }
       )
-
     }
 
     const result = await runOptimizerBrain(listing)
@@ -38,13 +34,11 @@ export async function POST(req:Request){
 
   }catch(e){
 
-    console.log(e)
+    console.log("Optimize error", e)
 
     return NextResponse.json(
       { error:"Server error" },
       { status:500 }
     )
-
   }
-
 }
