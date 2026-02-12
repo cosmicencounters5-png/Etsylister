@@ -1,5 +1,4 @@
-console.log("SCRAPINGBEE KEY:", process.env.SCRAPINGBEE_API_KEY)
-import cheerio from "cheerio"
+import * as cheerio from "cheerio"
 
 export async function parseEtsyListing(rawUrl:string){
 
@@ -14,63 +13,95 @@ export async function parseEtsyListing(rawUrl:string){
   const apiKey = process.env.SCRAPINGBEE_API_KEY
 
   if(!apiKey){
-    console.log("Missing ScrapingBee API key")
+    console.log("Missing scrapingbee key")
     return null
   }
 
-  const proxyUrl = `https://app.scrapingbee.com/api/v1/?api_key=${apiKey}&url=${encodeURIComponent(listingUrl)}&render_js=true&premium_proxy=true`
-
   try{
 
-    const res = await fetch(proxyUrl,{
-      method:"GET",
-      headers:{
-        "Accept":"text/html",
-        "User-Agent":"Mozilla/5.0"
-      }
-    })
+    // 🔥 ScrapingBee proxy with anti-block setup
+    const proxyUrl =
+      `https://app.scrapingbee.com/api/v1/`+
+      `?api_key=${apiKey}`+
+      `&url=${encodeURIComponent(listingUrl)}`+
+      `&render_js=true`+
+      `&premium_proxy=true`+
+      `&country_code=us`
 
-    if(!res.ok){
-      console.log("ScrapingBee status:", res.status)
-      return null
-    }
+    const res = await fetch(proxyUrl)
 
     const html = await res.text()
 
-    console.log("HTML length:", html.length)
+    console.log("STATUS:", res.status)
+    console.log("HTML LENGTH:", html.length)
 
     if(!html || html.length < 500){
-      console.log("Missing html or blocked")
+      console.log("Missing HTML")
       return null
     }
 
     const $ = cheerio.load(html)
 
+    // ======================================
+    // 🔥 METHOD 1 — JSON-LD (BEST)
+    // ======================================
+
+    const scripts = $("script[type='application/ld+json']")
+
+    for(let i=0;i<scripts.length;i++){
+
+      try{
+
+        const json = JSON.parse($(scripts[i]).html() || "")
+
+        if(json["@type"] === "Product"){
+
+          return {
+            title: json.name || "",
+            description: json.description || "",
+            image: Array.isArray(json.image)
+              ? json.image[0]
+              : json.image || ""
+          }
+
+        }
+
+      }catch(e){}
+    }
+
+    // ======================================
+    // 🔥 METHOD 2 — OG META FALLBACK
+    // ======================================
+
     const title =
       $("meta[property='og:title']").attr("content") ||
-      $("h1").first().text().trim()
+      $("title").text().replace(" - Etsy","")
 
     const description =
-      $("meta[name='description']").attr("content") || ""
+      $("meta[property='og:description']").attr("content") || ""
 
     const image =
       $("meta[property='og:image']").attr("content") || ""
 
-    if(!title){
-      console.log("Could not extract title")
-      return null
+    if(title){
+
+      return {
+        title,
+        description,
+        image
+      }
+
     }
 
-    return {
-      title,
-      description,
-      image
-    }
+    console.log("No parser matched")
+
+    return null
 
   }catch(e){
 
-    console.log("Parser failed",e)
-
+    console.log("Parser failed", e)
     return null
+
   }
+
 }
