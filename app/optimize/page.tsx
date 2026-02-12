@@ -96,6 +96,19 @@ export default function OptimizePage() {
           borderRadius: 12,
           border: "1px solid #eee"
         }}>
+          {result.meta?.fallback && (
+            <div style={{
+              padding: 12,
+              background: "#fff3cd",
+              border: "1px solid #ffeeba",
+              borderRadius: 6,
+              marginBottom: 16,
+              color: "#856404"
+            }}>
+              ⚠️ Could not fetch live data. Showing fallback title.
+            </div>
+          )}
+
           <div style={{ marginBottom: 24 }}>
             <h3 style={{ marginBottom: 8 }}>📦 Original Title</h3>
             <p style={{ 
@@ -106,12 +119,6 @@ export default function OptimizePage() {
             }}>
               {result.original?.title}
             </p>
-            
-            {result.original?.price && (
-              <p style={{ color: "#666", marginTop: 8 }}>
-                Price: {result.original?.currency} {result.original?.price}
-              </p>
-            )}
           </div>
 
           <div style={{ marginBottom: 24 }}>
@@ -124,7 +131,7 @@ export default function OptimizePage() {
               maxHeight: 200,
               overflow: "auto"
             }}>
-              {result.original?.description || "No description found"}
+              {result.original?.description || "No description available"}
             </p>
           </div>
 
@@ -183,7 +190,8 @@ export default function OptimizePage() {
             marginTop: 16
           }}>
             Listing ID: {result.meta?.listingId} • 
-            Fetched: {new Date(result.meta?.fetchedAt).toLocaleString()}
+            Fetched: {new Date(result.meta?.fetchedAt).toLocaleString()} • 
+            Model: {result.meta?.model}
           </div>
         </div>
       )}
