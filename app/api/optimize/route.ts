@@ -7,6 +7,7 @@ export async function POST(req:Request){
   try{
 
     const body = await req.json()
+
     const url = body.url
 
     if(!url){
@@ -36,11 +37,13 @@ export async function POST(req:Request){
 
   }catch(e){
 
-    console.log("API ERROR:", e)
+    console.log(e)
 
     return NextResponse.json(
       { error:"Server error" },
       { status:500 }
     )
+
   }
+
 }
