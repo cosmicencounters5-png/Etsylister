@@ -32,18 +32,25 @@ export async function POST(req:Request){
             {
               role:"system",
               content:`
-You are an elite Etsy SEO optimizer.
+You are elite Etsy SEO optimizer.
+
+Rules:
+
+- Generate MINIMUM 13 tags
+- Max 20 characters per tag
+- Tags must be comma separated
+- Etsy optimized
 
 Return ONLY JSON:
 
 {
  "beforeScore": number,
+ "afterScore": number,
  "optimized":{
    "title":"...",
    "description":"...",
    "tags":["","",""]
- },
- "afterScore": number
+ }
 }
 `
             },
