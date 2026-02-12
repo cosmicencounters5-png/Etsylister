@@ -2,60 +2,58 @@
 
 import { useState } from "react"
 
-export default function OptimizePage(){
+export default function OptimizePage() {
 
-  const [url,setUrl]=useState("")
-  const [result,setResult]=useState<any>(null)
-  const [loading,setLoading]=useState(false)
+  const [url, setUrl] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
 
-  async function optimize(){
+  async function optimize() {
+
+    if (!url) return
 
     setLoading(true)
 
-    try{
+    try {
 
-      // FREE proxy (zero cost)
-      const proxy =
-        "https://api.allorigins.win/raw?url=" +
-        encodeURIComponent(url)
-
-      const res = await fetch(proxy)
-
-      const html = await res.text()
-
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html,"text/html")
-
-      const title =
-        doc.querySelector("meta[property='og:title']")?.getAttribute("content")
-
-      const description =
-        doc.querySelector("meta[name='description']")?.getAttribute("content")
-
-      setResult({
-        title,
-        description
+      const res = await fetch("/api/optimize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url })
       })
 
-    }catch(e){
+      const data = await res.json()
 
-      alert("Parser failed")
+      if (data.error) {
+        alert(data.error)
+      } else {
+        setResult(data)
+      }
 
+    } catch (e) {
+      console.log(e)
+      alert("Something went wrong")
     }
 
     setLoading(false)
   }
 
-  return(
+  return (
 
-    <main style={{maxWidth:700,margin:"auto",padding:40}}>
+    <main style={{
+      maxWidth: 800,
+      margin: "0 auto",
+      padding: "80px 20px"
+    }}>
 
       <h1>Etsy Listing Optimizer</h1>
 
       <input
         value={url}
-        onChange={(e)=>setUrl(e.target.value)}
-        placeholder="Paste Etsy listing"
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="Paste Etsy listing URL..."
       />
 
       <button onClick={optimize}>
@@ -67,10 +65,13 @@ export default function OptimizePage(){
         <div>
 
           <h3>Original Title</h3>
-          <p>{result.title}</p>
+          <p>{result.original?.title}</p>
 
           <h3>Description</h3>
-          <p>{result.description}</p>
+          <p>{result.original?.description}</p>
+
+          <h3>Optimized Title</h3>
+          <p>{result.optimized?.title}</p>
 
         </div>
 
@@ -79,5 +80,4 @@ export default function OptimizePage(){
     </main>
 
   )
-
 }
