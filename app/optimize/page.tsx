@@ -10,6 +10,12 @@ export default function OptimizePage(){
   const [step,setStep]=useState("")
   const [result,setResult]=useState<any>(null)
 
+  function copy(text:string){
+
+    navigator.clipboard.writeText(text)
+
+  }
+
   async function optimize(){
 
     if(!title || !description) return
@@ -30,7 +36,7 @@ export default function OptimizePage(){
       setStep(brainSteps[i])
       i++
       if(i>=brainSteps.length) clearInterval(interval)
-    },800)
+    },700)
 
     try{
 
@@ -55,12 +61,19 @@ export default function OptimizePage(){
     setLoading(false)
   }
 
+  const card={
+    background:"#111",
+    padding:20,
+    borderRadius:12,
+    marginTop:20
+  }
+
   return(
 
     <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px",color:"white"}}>
 
-      <h1 style={{fontSize:40,fontWeight:700}}>
-        Etsy Lister AI 🔥
+      <h1 style={{fontSize:42,fontWeight:700}}>
+        Etsy Lister AI 🚀
       </h1>
 
       <textarea
@@ -78,41 +91,62 @@ export default function OptimizePage(){
       />
 
       <button onClick={optimize} style={{marginTop:20,padding:14}}>
-        {loading ? step : "Optimize Listing 🚀"}
+        {loading ? step : "Optimize Listing 🔥"}
       </button>
 
       {result && (
 
         <div style={{marginTop:40}}>
 
-          <h2>SEO Score</h2>
+          {/* SCORE */}
 
-          <div style={{
-            background:"#222",
-            padding:20,
-            borderRadius:10
-          }}>
+          <div style={card}>
+            <strong>SEO Score</strong>
             <p>Before: {result.beforeScore}</p>
-            <p>After: {result.afterScore} 🔥</p>
+            <p>After: {result.afterScore} 🚀</p>
           </div>
 
-          <h3 style={{marginTop:20}}>Optimized Title</h3>
-          <p>{result.optimized.title}</p>
+          {/* TITLE */}
 
-          <h3>Optimized Description</h3>
-          <p>{result.optimized.description}</p>
+          <div style={card}>
+            <strong>Optimized Title</strong>
+            <button onClick={()=>copy(result.optimized.title)}>Copy</button>
+            <p>{result.optimized.title}</p>
+          </div>
 
-          <h3>Suggested Tags</h3>
-          <p>{result.optimized.tags.join(", ")}</p>
+          {/* DESCRIPTION */}
 
-          <button onClick={optimize} style={{marginTop:20}}>
-            Improve Again 🔥
-          </button>
+          <div style={card}>
+            <strong>Optimized Description</strong>
+            <button onClick={()=>copy(result.optimized.description)}>Copy</button>
+            <p>{result.optimized.description}</p>
+          </div>
+
+          {/* TAGS */}
+
+          <div style={card}>
+            <strong>SEO Tags</strong>
+
+            <button
+              onClick={()=>
+                copy(result.optimized.tags.join(", "))
+              }
+            >
+              Copy Tags
+            </button>
+
+            <p>
+              {result.optimized.tags.join(", ")}
+            </p>
+
+          </div>
 
         </div>
 
       )}
 
     </main>
+
   )
+
 }
