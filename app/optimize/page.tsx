@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 
-export default function OptimizePage() {
+export default function OptimizePage(){
 
-  const [url,setUrl] = useState("")
-  const [loading,setLoading] = useState(false)
-  const [result,setResult] = useState<any>(null)
+  const [url,setUrl]=useState("")
+  const [loading,setLoading]=useState(false)
+  const [brainStep,setBrainStep]=useState("")
+  const [result,setResult]=useState<any>(null)
 
   async function optimize(){
 
@@ -14,6 +15,22 @@ export default function OptimizePage() {
 
     setLoading(true)
     setResult(null)
+
+    const steps=[
+      "Connecting to Etsy...",
+      "Proxy bypass activated...",
+      "Extracting listing data...",
+      "Analyzing SEO signals...",
+      "Generating optimized listing..."
+    ]
+
+    let i=0
+
+    const interval=setInterval(()=>{
+      setBrainStep(steps[i])
+      i++
+      if(i>=steps.length) clearInterval(interval)
+    },600)
 
     try{
 
@@ -33,27 +50,27 @@ export default function OptimizePage() {
 
     }catch(e){
       console.log(e)
-      alert("Something went wrong")
     }
 
     setLoading(false)
   }
 
+  const card={
+    background:"#0f0f0f",
+    padding:20,
+    borderRadius:16,
+    border:"1px solid #1f1f1f"
+  }
+
   return(
 
-    <main style={{
-      maxWidth:800,
-      margin:"0 auto",
-      padding:"80px 20px"
-    }}>
+    <main style={{maxWidth:800,margin:"0 auto",padding:"80px 20px"}}>
 
       <h1 style={{fontSize:36,fontWeight:700}}>
         Etsy Listing Optimizer
       </h1>
 
-      {/* INPUT */}
-
-      <div style={{marginTop:30}}>
+      <div style={{...card,marginTop:30}}>
 
         <input
           value={url}
@@ -61,47 +78,61 @@ export default function OptimizePage() {
           placeholder="Paste Etsy listing URL..."
           style={{
             width:"100%",
-            padding:16,
+            padding:18,
             borderRadius:12,
+            border:"1px solid #222",
             background:"#111",
-            color:"white",
-            border:"1px solid #222"
+            color:"white"
           }}
         />
 
         <button
           onClick={optimize}
           style={{
-            marginTop:12,
-            padding:16,
+            width:"100%",
+            marginTop:14,
+            padding:18,
             borderRadius:12,
-            width:"100%"
+            background:"white",
+            color:"black",
+            fontWeight:600
           }}
         >
-          {loading ? "Loading..." : "Optimize"}
+          {loading ? brainStep : "Optimize Listing"}
         </button>
 
       </div>
-
-      {/* RESULT */}
 
       {result && (
 
         <div style={{marginTop:30}}>
 
-          <h3>Original Title</h3>
-          <p>{result.original?.title}</p>
+          <div style={card}>
+            <strong>Original Title</strong>
+            <p>{result.original?.title}</p>
+          </div>
 
-          <h3>Optimized Title</h3>
-          <p>{result.optimized?.title}</p>
+          <div style={{...card,marginTop:20}}>
+            <strong>Optimized Title</strong>
+            <p>{result.optimized?.title}</p>
+          </div>
 
-          <h3>Description</h3>
-          <p>{result.optimized?.description}</p>
+          <div style={{...card,marginTop:20}}>
+            <strong>Optimized Description</strong>
+            <p>{result.optimized?.description}</p>
+          </div>
+
+          <div style={{...card,marginTop:20}}>
+            <strong>Suggested Tags</strong>
+            <p>{result.optimized?.tags}</p>
+          </div>
 
         </div>
 
       )}
 
     </main>
+
   )
+
 }
