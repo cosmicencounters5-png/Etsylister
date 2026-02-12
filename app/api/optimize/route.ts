@@ -1,92 +1,72 @@
 import { NextResponse } from "next/server"
+import { parseEtsyListing } from "@/lib/etsyParser"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-function extractKeyword(url:string){
+export async function POST(req: Request) {
 
-  const parts = url.split("/")
+  try {
 
-  const last = parts[parts.length-1] || ""
+    const body = await req.json()
+    const url = body.url
 
-  return last.replace(/-/g," ")
-}
-
-export async function POST(req:Request){
-
-  try{
-
-    const { url } = await req.json()
-
-    if(!url){
-
-      return NextResponse.json(
-        { error:"Missing URL" },
-        { status:400 }
-      )
-
+    if (!url) {
+      return NextResponse.json({ error: "Missing URL" }, { status: 400 })
     }
 
-    const keyword = extractKeyword(url)
+    // STEP 1 — parse listing
+    const listing = await parseEtsyListing(url)
+
+    if (!listing) {
+      return NextResponse.json({ error: "Could not parse listing" }, { status: 400 })
+    }
+
+    // STEP 2 — Gemini AI
+
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash"
+    })
 
     const prompt = `
+You are an Etsy SEO expert.
 
-You are an Etsy SEO AI strategist.
+Original title:
+${listing.title}
 
-Analyze Etsy search results ONLY using:
+Generate:
 
-site:etsy.com ${keyword}
+1. Optimized Etsy SEO title
+2. SEO optimized description
+3. Suggested tags
 
-DO NOT hallucinate.
-
-Return STRICT JSON:
+Return JSON:
 
 {
 "title":"",
 "description":"",
-"tags":"",
-"strategyInsights":"",
-"seoAdvantage":"",
-"competitionInsights":""
+"tags":""
 }
-
 `
 
-    const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+process.env.GEMINI_API_KEY,
-      {
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify({
-          contents:[{ parts:[{ text:prompt }]}],
-          generationConfig:{
-            temperature:0.1
-          }
-        })
-      }
-    )
+    const result = await model.generateContent(prompt)
 
-    const data = await res.json()
+    const text = result.response.text()
 
-    const text =
-      data.candidates?.[0]?.content?.parts?.[0]?.text
-
-    const parsed = JSON.parse(text)
+    const optimized = JSON.parse(text)
 
     return NextResponse.json({
-
-      original:{
-        title: keyword
-      },
-
-      optimized: parsed
-
+      original: listing,
+      optimized
     })
 
-  }catch(e){
+  } catch (e) {
 
-    console.log(e)
+    console.log("OPTIMIZER ERROR:", e)
 
     return NextResponse.json(
-      { error:"Optimizer failed" },
-      { status:500 }
+      { error: "Optimizer failed" },
+      { status: 500 }
     )
 
   }
