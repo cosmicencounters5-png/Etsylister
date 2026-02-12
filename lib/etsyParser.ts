@@ -21,20 +21,33 @@ export async function parseEtsyListing(rawUrl:string){
 
   try{
 
-    const res = await fetch(proxyUrl)
+    const res = await fetch(proxyUrl,{
+      method:"GET",
+      headers:{
+        "Accept":"text/html",
+        "User-Agent":"Mozilla/5.0"
+      }
+    })
+
+    if(!res.ok){
+      console.log("ScrapingBee status:", res.status)
+      return null
+    }
 
     const html = await res.text()
 
-    if(!html){
-      console.log("Missing html")
+    console.log("HTML length:", html.length)
+
+    if(!html || html.length < 500){
+      console.log("Missing html or blocked")
       return null
     }
 
     const $ = cheerio.load(html)
 
     const title =
-      $("h1").first().text().trim() ||
-      $("meta[property='og:title']").attr("content")
+      $("meta[property='og:title']").attr("content") ||
+      $("h1").first().text().trim()
 
     const description =
       $("meta[name='description']").attr("content") || ""
