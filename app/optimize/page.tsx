@@ -33,8 +33,10 @@ export default function OptimizePage() {
       }
 
     } catch (e) {
+
       console.log(e)
-      alert("Something went wrong")
+      alert("Optimizer failed")
+
     }
 
     setLoading(false)
@@ -42,11 +44,7 @@ export default function OptimizePage() {
 
   return (
 
-    <main style={{
-      maxWidth: 800,
-      margin: "0 auto",
-      padding: "80px 20px"
-    }}>
+    <main style={{ maxWidth: 800, margin: "0 auto", padding: 40 }}>
 
       <h1>Etsy Listing Optimizer</h1>
 
@@ -54,6 +52,7 @@ export default function OptimizePage() {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="Paste Etsy listing URL..."
+        style={{ width: "100%", padding: 10 }}
       />
 
       <button onClick={optimize}>
@@ -78,6 +77,5 @@ export default function OptimizePage() {
       )}
 
     </main>
-
   )
 }
