@@ -1,3 +1,42 @@
+import * as cheerio from "cheerio"
+
+async function fetchHtml(url:string){
+
+  // TRY DIRECT FIRST (FREE)
+  try{
+
+    const res = await fetch(url,{
+      headers:{
+        "User-Agent":"Mozilla/5.0"
+      }
+    })
+
+    if(res.ok){
+
+      const html = await res.text()
+
+      if(html.includes("listing") && html.length > 5000){
+        return html
+      }
+
+    }
+
+  }catch(e){}
+
+  // FALLBACK → SCRAPINGBEE
+
+  const proxyUrl =
+    `https://app.scrapingbee.com/api/v1/?api_key=${process.env.SCRAPINGBEE_API_KEY}` +
+    `&url=${encodeURIComponent(url)}` +
+    `&render_js=true&stealth_proxy=true`
+
+  const proxyRes = await fetch(proxyUrl)
+
+  if(!proxyRes.ok) return null
+
+  return await proxyRes.text()
+}
+
 export async function parseEtsyListing(rawUrl:string){
 
   const match =
@@ -8,55 +47,26 @@ export async function parseEtsyListing(rawUrl:string){
 
   const listingUrl = `https://www.etsy.com/listing/${match[1]}`
 
-  try{
+  const html = await fetchHtml(listingUrl)
 
-    const res = await fetch(listingUrl,{
-      headers:{
-        "User-Agent":"Mozilla/5.0",
-        "Accept-Language":"en-US,en;q=0.9"
-      }
-    })
-
-    if(!res.ok){
-      console.log("Fetch failed:",res.status)
-      return null
-    }
-
-    const html = await res.text()
-
-    // find JSON-LD blocks
-    const scripts = [...html.matchAll(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-    )]
-
-    for(const s of scripts){
-
-      try{
-
-        const data = JSON.parse(s[1])
-
-        if(data["@type"]==="Product"){
-
-          return {
-            title: data.name || "",
-            description: data.description || "",
-            image: Array.isArray(data.image)
-              ? data.image[0]
-              : data.image
-          }
-
-        }
-
-      }catch(e){}
-    }
-
+  if(!html){
+    console.log("Missing html")
     return null
-
-  }catch(e){
-
-    console.log("Parser error",e)
-    return null
-
   }
 
+  const $ = cheerio.load(html)
+
+  const title =
+    $("h1").first().text().trim() ||
+    $('meta[property="og:title"]').attr("content")
+
+  const description =
+    $('meta[name="description"]').attr("content") || ""
+
+  const image =
+    $('meta[property="og:image"]').attr("content") || ""
+
+  if(!title) return null
+
+  return { title, description, image }
 }
