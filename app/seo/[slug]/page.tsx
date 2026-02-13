@@ -64,17 +64,16 @@ export default async function Page({params}:Props){
       padding:"80px 20px"
     }}>
 
+      {/* MAIN ARTICLE */}
+
       <h1 style={{fontSize:42,fontWeight:700}}>
         {keyword}
       </h1>
 
       <p style={{marginTop:20,fontSize:18,lineHeight:1.6}}>
-
         This Etsy listing strategy was generated using AI market analysis.
-
         EtsyLister scans competitors, identifies profitable keywords,
         and builds optimized listing structures designed to rank.
-
       </p>
 
       <h2 style={{marginTop:30}}>
@@ -86,10 +85,27 @@ export default async function Page({params}:Props){
         helping sellers discover profitable niches instantly.
       </p>
 
-      {/* HUB AUTHORITY */}
+      {/* 🔥 AUTHORITY BLOCK (SEO BOOST) */}
 
       <div style={{
         marginTop:40,
+        padding:18,
+        background:"#0f0f0f",
+        borderRadius:12
+      }}>
+        <strong>AI Etsy SEO Strategy Engine</strong>
+
+        <p style={{marginTop:10,opacity:.8}}>
+          EtsyLister AI combines keyword research, competitor analysis,
+          and AI ranking signals to build listings designed for visibility
+          and conversion.
+        </p>
+      </div>
+
+      {/* HUB AUTHORITY */}
+
+      <div style={{
+        marginTop:30,
         padding:16,
         background:"#0f0f0f",
         borderRadius:12
@@ -138,30 +154,53 @@ export default async function Page({params}:Props){
 
       </div>
 
-      {/* CTA ZONE */}
+      {/* 🔥 INTERNAL TOOL MATRIX (TRAFFIC FLYWHEEL) */}
 
-      <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+      <div style={{
+        marginTop:50,
+        display:"flex",
+        flexWrap:"wrap",
+        gap:14
+      }}>
+
+        {/* LOGIN / GENERATOR */}
 
         <a href="/login">
 
           <button style={{
-            marginTop:40,
             padding:"18px 26px",
             borderRadius:12,
             background:"black",
-            color:"white"
+            color:"white",
+            fontWeight:600
           }}>
-            Generate Your Own Listing →
+            Generate Listing →
           </button>
 
         </a>
 
-        {/* 🔥 VIRAL TRAFFIC ENGINE */}
+        {/* OPTIMIZE TOOL */}
+
+        <a href="/optimize">
+
+          <button style={{
+            padding:"18px 26px",
+            borderRadius:12,
+            background:"#111",
+            border:"1px solid #222",
+            color:"white",
+            fontWeight:600
+          }}>
+            Optimize Existing Listing ⚡
+          </button>
+
+        </a>
+
+        {/* IDEA SCANNER */}
 
         <a href="/idea">
 
           <button style={{
-            marginTop:40,
             padding:"18px 26px",
             borderRadius:12,
             background:"#00ffae",
