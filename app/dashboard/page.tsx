@@ -171,13 +171,62 @@ ${window.location.origin}`
 
           {/* HEADER */}
 
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<div style={{
+  display:"flex",
+  justifyContent:"space-between",
+  alignItems:"center",
+  flexWrap:"wrap", // 🔥 mobile safe
+  gap:10
+}}>
 
-            <h1 style={{fontSize:36,fontWeight:600}}>ETSY LISTER</h1>
+  <h1 style={{fontSize:36,fontWeight:600}}>
+    ETSY LISTER
+  </h1>
 
-            <button onClick={logout}>Logout</button>
+  <div style={{
+    display:"flex",
+    gap:8,
+    flexWrap:"wrap" // 🔥 prevents stretching mobile
+  }}>
 
-          </div>
+    {/* IDEA SCANNER */}
+    <a href="/idea-scanner">
+      <button style={{
+        padding:"8px 14px",
+        borderRadius:10,
+        background:"#111",
+        border:"1px solid #222",
+        color:"white",
+        cursor:"pointer",
+        whiteSpace:"nowrap"
+      }}>
+        Idea 💡
+      </button>
+    </a>
+
+    {/* OPTIMIZE */}
+    <a href="/optimize">
+      <button style={{
+        padding:"8px 14px",
+        borderRadius:10,
+        background:"linear-gradient(90deg,#00ffa3,#00c3ff)",
+        border:"none",
+        color:"black",
+        fontWeight:600,
+        cursor:"pointer",
+        whiteSpace:"nowrap"
+      }}>
+        Optimize 🚀
+      </button>
+    </a>
+
+    <button onClick={logout}>
+      Logout
+    </button>
+
+  </div>
+
+</div>
 
           {/* INPUT */}
 
