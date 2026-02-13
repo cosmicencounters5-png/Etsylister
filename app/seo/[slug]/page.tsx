@@ -11,7 +11,6 @@ function decodeSlug(slug:string){
   return slug.replaceAll("-"," ")
 }
 
-// 🔥 detect hub automatically
 function detectHub(keyword:string){
 
   const k = keyword.toLowerCase()
@@ -24,7 +23,6 @@ function detectHub(keyword:string){
   return "etsy-seo"
 }
 
-// 🔥 related cluster pages (internal linking loop)
 function getRelated(keyword:string){
 
   return baseKeywords
@@ -66,8 +64,6 @@ export default async function Page({params}:Props){
       padding:"80px 20px"
     }}>
 
-      {/* MAIN ARTICLE */}
-
       <h1 style={{fontSize:42,fontWeight:700}}>
         {keyword}
       </h1>
@@ -90,7 +86,7 @@ export default async function Page({params}:Props){
         helping sellers discover profitable niches instantly.
       </p>
 
-      {/* 🔥 HUB AUTHORITY LINK (VERY IMPORTANT) */}
+      {/* HUB AUTHORITY */}
 
       <div style={{
         marginTop:40,
@@ -107,7 +103,7 @@ export default async function Page({params}:Props){
         </a>
       </div>
 
-      {/* 🔥 RELATED INTERNAL LINKS */}
+      {/* RELATED LINKS */}
 
       <div style={{marginTop:40}}>
 
@@ -142,21 +138,42 @@ export default async function Page({params}:Props){
 
       </div>
 
-      {/* CTA */}
+      {/* CTA ZONE */}
 
-      <a href="/login">
+      <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
 
-        <button style={{
-          marginTop:40,
-          padding:"18px 26px",
-          borderRadius:12,
-          background:"black",
-          color:"white"
-        }}>
-          Generate Your Own Listing →
-        </button>
+        <a href="/login">
 
-      </a>
+          <button style={{
+            marginTop:40,
+            padding:"18px 26px",
+            borderRadius:12,
+            background:"black",
+            color:"white"
+          }}>
+            Generate Your Own Listing →
+          </button>
+
+        </a>
+
+        {/* 🔥 VIRAL TRAFFIC ENGINE */}
+
+        <a href="/idea">
+
+          <button style={{
+            marginTop:40,
+            padding:"18px 26px",
+            borderRadius:12,
+            background:"#00ffae",
+            color:"black",
+            fontWeight:700
+          }}>
+            Scan Market Opportunity 🔥
+          </button>
+
+        </a>
+
+      </div>
 
     </main>
 
