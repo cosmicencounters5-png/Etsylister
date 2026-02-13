@@ -207,3 +207,7 @@ ${window.location.origin}`
             </div>
 
           </div>
+    </AuthGuard>
+
+  )
+}
