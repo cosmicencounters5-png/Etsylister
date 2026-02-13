@@ -70,7 +70,24 @@ ${window.location.origin}`
         padding:"80px 20px",
         color:"white"
       }}>
+{/* BACK TO DASHBOARD */}
 
+<a href="/dashboard">
+
+  <button style={{
+    marginBottom:20,
+    padding:"10px 14px",
+    borderRadius:10,
+    background:"#111",
+    border:"1px solid #222",
+    color:"white",
+    cursor:"pointer",
+    whiteSpace:"nowrap"
+  }}>
+    ← Back to Dashboard
+  </button>
+
+</a>
         <h1 style={{
           fontSize:44,
           fontWeight:800
