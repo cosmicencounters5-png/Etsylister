@@ -87,21 +87,21 @@ export default function LandingClient(){
           {typed}
         </p>
 
-        {/* CTA */}
+        {/* 🔥 PRIMARY TRAFFIC CTA STACK */}
 
         <div style={{display:"flex",gap:14,marginTop:34,flexWrap:"wrap"}}>
 
-          <Link href="/login">
+          <Link href="/idea">
             <button style={{
               padding:"18px 26px",
               borderRadius:14,
-              background:"white",
+              background:"#00ffae",
               color:"black",
               fontWeight:800,
               border:"none",
               fontSize:16
             }}>
-              Start Free 🚀
+              Scan Product Idea 🔥
             </button>
           </Link>
 
@@ -115,6 +115,19 @@ export default function LandingClient(){
               fontWeight:600
             }}>
               Optimize Existing Listing ⚡
+            </button>
+          </Link>
+
+          <Link href="/login">
+            <button style={{
+              padding:"18px 26px",
+              borderRadius:14,
+              background:"white",
+              color:"black",
+              fontWeight:800,
+              border:"none"
+            }}>
+              Full AI Generator 🚀
             </button>
           </Link>
 
@@ -159,6 +172,20 @@ export default function LandingClient(){
           <div style={card}>
             🚀 Listing Optimizer — upgrade existing listings instantly
           </div>
+
+        </div>
+
+        {/* 🔥 AUTHORITY SEO BLOCK */}
+
+        <div style={{...card,marginTop:40}}>
+
+          <h3>AI Etsy SEO Engine</h3>
+
+          <p style={{opacity:.7}}>
+            EtsyLister analyzes ranking patterns, buyer intent,
+            and marketplace competition to build listings designed
+            to rank higher and convert faster.
+          </p>
 
         </div>
 
