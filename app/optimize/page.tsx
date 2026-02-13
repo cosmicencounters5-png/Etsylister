@@ -1,7 +1,7 @@
 "use client"
 
-import { useState,useEffect } from "react"
-import Link from "next/link"
+import { useState } from "react"
+import AuthGuard from "../../components/AuthGuard"
 
 export default function OptimizePage(){
 
@@ -18,7 +18,6 @@ export default function OptimizePage(){
     setCopied(label)
 
     setTimeout(()=>setCopied(""),1200)
-
   }
 
   async function optimize(){
@@ -79,206 +78,78 @@ export default function OptimizePage(){
     padding:24,
     borderRadius:18,
     marginTop:24,
-    border:"1px solid #1a1a1a",
-    boxShadow:"0 0 30px rgba(0,255,200,0.05)"
-
+    border:"1px solid #1a1a1a"
   }
 
   return(
 
-    <main style={{
-      maxWidth:820,
-      margin:"0 auto",
-      padding:"80px 20px",
-      color:"white"
-    }}>
+    <AuthGuard>
 
-      {/* HEADER ROW */}
-
-      <div style={{
-        display:"flex",
-        justifyContent:"space-between",
-        alignItems:"center"
+      <main style={{
+        maxWidth:820,
+        margin:"0 auto",
+        padding:"80px 20px",
+        color:"white"
       }}>
 
         <h1 style={{
           fontSize:44,
-          fontWeight:800,
-          letterSpacing:-1
+          fontWeight:800
         }}>
           Etsy Lister AI 🚀
         </h1>
 
-        {/* ✅ BACK BUTTON */}
-        <Link href="/dashboard">
-          <button style={{
-            padding:"10px 16px",
-            borderRadius:12,
-            background:"#111",
-            border:"1px solid #222",
-            color:"white",
-            cursor:"pointer"
-          }}>
-            ← Back
-          </button>
-        </Link>
+        <textarea
+          placeholder="Original title..."
+          value={title}
+          onChange={(e)=>setTitle(e.target.value)}
+        />
 
-      </div>
+        <textarea
+          placeholder="Description..."
+          value={description}
+          onChange={(e)=>setDescription(e.target.value)}
+        />
 
-      <p style={{opacity:.6}}>
-        Activate AI listing domination.
-      </p>
+        <button onClick={optimize}>
+          {loading ? `🤖 ${step}` : "Optimize Listing 🔥"}
+        </button>
 
-      {/* INPUT */}
+        {result && (
 
-      <textarea
-        placeholder="Original title..."
-        value={title}
-        onChange={(e)=>setTitle(e.target.value)}
-        style={{
-          width:"100%",
-          marginTop:20,
-          padding:16,
-          borderRadius:12,
-          background:"#111",
-          border:"1px solid #222",
-          color:"white"
-        }}
-      />
+          <div style={{marginTop:40}}>
 
-      <textarea
-        placeholder="Description..."
-        value={description}
-        onChange={(e)=>setDescription(e.target.value)}
-        style={{
-          width:"100%",
-          marginTop:14,
-          padding:16,
-          borderRadius:12,
-          background:"#111",
-          border:"1px solid #222",
-          color:"white",
-          minHeight:140
-        }}
-      />
+            <div style={card}>
+              SEO Score: {result.beforeScore} → {result.afterScore}
+            </div>
 
-      {/* GOD BUTTON */}
+            <div style={card}>
+              <strong>Title</strong>
+              <button onClick={()=>copy(result.optimized.title,"title")}>Copy</button>
+              <p>{result.optimized.title}</p>
+            </div>
 
-      <button
-        onClick={optimize}
-        style={{
-          marginTop:20,
-          padding:"18px 24px",
-          borderRadius:16,
-          background: loading
-            ? "linear-gradient(90deg,#00ffd5,#00aaff)"
-            : "white",
-          color:"black",
-          fontWeight:800,
-          width:"100%",
-          boxShadow: loading
-            ? "0 0 25px rgba(0,255,200,0.6)"
-            : "none",
-          transition:"0.2s"
-        }}
-      >
+            <div style={card}>
+              <strong>Description</strong>
+              <button onClick={()=>copy(result.optimized.description,"desc")}>Copy</button>
+              <p>{result.optimized.description}</p>
+            </div>
 
-        {loading ? `🤖 ${step}` : "Optimize Listing 🔥"}
-
-      </button>
-
-      {copied &&(
-
-        <p style={{
-          color:"#00ffae",
-          marginTop:10
-        }}>
-          Copied {copied} ✅
-        </p>
-
-      )}
-
-      {/* RESULTS */}
-
-      {result &&(
-
-        <div style={{marginTop:40}}>
-
-          <div style={card}>
-
-            <strong>SEO Score Upgrade</strong>
-
-            <div style={{
-              marginTop:10,
-              fontSize:22,
-              display:"flex",
-              gap:20
-            }}>
-
-              <span style={{opacity:.5}}>
-                {result.beforeScore}
-              </span>
-
-              <span style={{
-                color:"#00ffae",
-                fontWeight:800,
-                textShadow:"0 0 10px #00ffae"
-              }}>
-                → {result.afterScore}
-              </span>
-
+            <div style={card}>
+              <strong>Tags</strong>
+              <button onClick={()=>copy(result.optimized.tags.join(", "),"tags")}>
+                Copy Tags
+              </button>
+              <p>{result.optimized.tags.join(", ")}</p>
             </div>
 
           </div>
 
-          <div style={card}>
+        )}
 
-            <strong>Optimized Title</strong>
+      </main>
 
-            <button onClick={()=>copy(result.optimized.title,"Title")}>
-              Copy
-            </button>
-
-            <p style={{marginTop:10}}>
-              {result.optimized.title}
-            </p>
-
-          </div>
-
-          <div style={card}>
-
-            <strong>Optimized Description</strong>
-
-            <button onClick={()=>copy(result.optimized.description,"Description")}>
-              Copy
-            </button>
-
-            <p style={{marginTop:10,whiteSpace:"pre-line"}}>
-              {result.optimized.description}
-            </p>
-
-          </div>
-
-          <div style={card}>
-
-            <strong>SEO Tags</strong>
-
-            <button onClick={()=>copy(result.optimized.tags.join(", "),"Tags")}>
-              Copy Tags
-            </button>
-
-            <p style={{marginTop:10}}>
-              {result.optimized.tags.join(", ")}
-            </p>
-
-          </div>
-
-        </div>
-
-      )}
-
-    </main>
+    </AuthGuard>
 
   )
-
 }
