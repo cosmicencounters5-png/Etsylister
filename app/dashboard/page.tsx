@@ -174,6 +174,21 @@ ${window.location.origin}`
 
             <div style={{display:"flex",gap:10,alignItems:"center"}}>
 
+              {/* 🔥 IDEA SCANNER BUTTON */}
+              <Link href="/idea-scanner">
+                <button style={{
+                  padding:"10px 16px",
+                  borderRadius:10,
+                  background:"#111",
+                  border:"1px solid #222",
+                  color:"white",
+                  cursor:"pointer"
+                }}>
+                  Idea Scanner 💡
+                </button>
+              </Link>
+
+              {/* OPTIMIZE BUTTON */}
               <Link href="/optimize">
                 <button style={{
                   padding:"10px 16px",
@@ -193,128 +208,3 @@ ${window.location.origin}`
             </div>
 
           </div>
-
-          {/* INPUT */}
-
-          <div style={{...card,marginTop:20}}>
-
-            <input
-              value={input}
-              onChange={(e)=>setInput(e.target.value)}
-              placeholder="Describe your product..."
-              style={{
-                width:"100%",
-                padding:20,
-                fontSize:18,
-                borderRadius:12,
-                border:"1px solid #222",
-                background:"#111",
-                color:"white"
-              }}
-            />
-
-            <button
-              onClick={generate}
-              style={{
-                width:"100%",
-                padding:18,
-                marginTop:16,
-                borderRadius:12,
-                background:"white",
-                color:"black",
-                fontWeight:600,
-                boxShadow: loading ? "0 0 20px rgba(255,255,255,0.4)" : "none",
-                transition:"all 0.3s"
-              }}
-            >
-              {loading ? brainStep : "Generate Listing"}
-            </button>
-
-          </div>
-
-          {/* DOMINATION */}
-
-          <div style={{...card,marginTop:20}}>
-            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
-          </div>
-
-          {/* RESULTS */}
-
-          {parsed && (
-
-            <div style={{marginTop:30}}>
-
-              <div style={card}>
-                🔥 Profitability Score: {parsed.dominationScore}
-              </div>
-
-              <div style={{...card,marginTop:20}}>
-                <strong>TITLE</strong>
-                <p>{typed.title}</p>
-                <button onClick={()=>copy(typed.title,"title")}>
-                  {copied==="title"?"Copied ✓":"Copy"}
-                </button>
-              </div>
-
-              <div style={{...card,marginTop:20}}>
-                <strong>DESCRIPTION</strong>
-                <p>{typed.description}</p>
-                <button onClick={()=>copy(typed.description,"desc")}>
-                  {copied==="desc"?"Copied ✓":"Copy"}
-                </button>
-              </div>
-
-              <div style={{...card,marginTop:20}}>
-                <strong>TAGS</strong>
-
-                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-
-                  {typed.tags.split(",").map((t:string,i:number)=>(
-                    <span key={i} style={{
-                      background:"#1a1a1a",
-                      padding:"6px 10px",
-                      borderRadius:999
-                    }}>
-                      {t.trim()}
-                    </span>
-                  ))}
-
-                </div>
-
-                <button style={{marginTop:12}} onClick={()=>copy(typed.tags,"tags")}>
-                  {copied==="tags"?"Copied ✓":"Copy Tags"}
-                </button>
-
-              </div>
-
-              <div style={{...card,marginTop:20}}>
-
-                <strong>🧠 Strategy Insights</strong>
-                <p>{parsed.strategyInsights}</p>
-
-                <strong>⚡ SEO Advantage</strong>
-                <p>{parsed.seoAdvantage}</p>
-
-                <strong>🔥 Competitor Insights</strong>
-                <p>{parsed.competitorInsights}</p>
-
-                <strong>👑 Title Formula</strong>
-                <p>{parsed.titleFormula}</p>
-
-                <button style={{marginTop:16}} onClick={shareResult}>
-                  {copied==="share"?"Copied ✓":"Share Result"}
-                </button>
-
-              </div>
-
-            </div>
-
-          )}
-
-        </div>
-
-      </main>
-
-    </AuthGuard>
-  )
-}
