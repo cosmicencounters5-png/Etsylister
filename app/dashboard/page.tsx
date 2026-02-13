@@ -19,7 +19,6 @@ export default function Home(){
   })
 
   const [liveDomination,setLiveDomination]=useState({score:0,level:"LOW"})
-  const [aiThoughts,setAiThoughts]=useState<string[]>([])
   const [copied,setCopied]=useState("")
 
   async function logout(){
@@ -30,20 +29,6 @@ export default function Home(){
   function copy(text:string,label:string){
     navigator.clipboard.writeText(text)
     setCopied(label)
-    setTimeout(()=>setCopied(""),1200)
-  }
-
-  function shareResult(){
-
-    const text = `🔥 I just generated an Etsy listing with AI using EtsyLister.
-
-Domination score: ${parsed?.dominationScore}
-
-Try it here:
-${window.location.origin}`
-
-    navigator.clipboard.writeText(text)
-    setCopied("share")
     setTimeout(()=>setCopied(""),1200)
   }
 
@@ -174,21 +159,18 @@ ${window.location.origin}`
 
             <div style={{display:"flex",gap:10,alignItems:"center"}}>
 
-              {/* 🔥 IDEA SCANNER BUTTON */}
               <Link href="/idea-scanner">
                 <button style={{
                   padding:"10px 16px",
                   borderRadius:10,
                   background:"#111",
                   border:"1px solid #222",
-                  color:"white",
-                  cursor:"pointer"
+                  color:"white"
                 }}>
                   Idea Scanner 💡
                 </button>
               </Link>
 
-              {/* OPTIMIZE BUTTON */}
               <Link href="/optimize">
                 <button style={{
                   padding:"10px 16px",
@@ -196,8 +178,7 @@ ${window.location.origin}`
                   background:"linear-gradient(90deg,#00ffa3,#00c3ff)",
                   border:"none",
                   fontWeight:600,
-                  color:"black",
-                  cursor:"pointer"
+                  color:"black"
                 }}>
                   Optimize 🚀
                 </button>
@@ -208,3 +189,53 @@ ${window.location.origin}`
             </div>
 
           </div>
+
+          {/* INPUT */}
+
+          <div style={{...card,marginTop:20}}>
+
+            <input
+              value={input}
+              onChange={(e)=>setInput(e.target.value)}
+              placeholder="Describe your product..."
+              style={{
+                width:"100%",
+                padding:20,
+                fontSize:18,
+                borderRadius:12,
+                border:"1px solid #222",
+                background:"#111",
+                color:"white"
+              }}
+            />
+
+            <button
+              onClick={generate}
+              style={{
+                width:"100%",
+                padding:18,
+                marginTop:16,
+                borderRadius:12,
+                background:"white",
+                color:"black",
+                fontWeight:600
+              }}
+            >
+              {loading ? brainStep : "Generate Listing"}
+            </button>
+
+          </div>
+
+          {/* DOMINATION */}
+
+          <div style={{...card,marginTop:20}}>
+            👑 Score: {liveDomination.score}/100 — {liveDomination.level}
+          </div>
+
+        </div>
+
+      </main>
+
+    </AuthGuard>
+  )
+}
