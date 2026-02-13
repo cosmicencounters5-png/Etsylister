@@ -91,7 +91,7 @@ export default function LandingClient(){
 
         <div style={{display:"flex",gap:14,marginTop:34,flexWrap:"wrap"}}>
 
-          <Link href="/idea">
+          <Link href="/idea-scanner">
             <button style={{
               padding:"18px 26px",
               borderRadius:14,
