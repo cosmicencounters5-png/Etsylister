@@ -70,24 +70,24 @@ ${window.location.origin}`
         padding:"80px 20px",
         color:"white"
       }}>
-{/* BACK TO DASHBOARD */}
 
-<a href="/dashboard">
+        {/* BACK BUTTON */}
 
-  <button style={{
-    marginBottom:20,
-    padding:"10px 14px",
-    borderRadius:10,
-    background:"#111",
-    border:"1px solid #222",
-    color:"white",
-    cursor:"pointer",
-    whiteSpace:"nowrap"
-  }}>
-    ← Back to Dashboard
-  </button>
+        <div style={{marginBottom:20}}>
+          <a href="/dashboard">
+            <button style={{
+              padding:"10px 14px",
+              borderRadius:10,
+              background:"#111",
+              border:"1px solid #222",
+              color:"white",
+              cursor:"pointer"
+            }}>
+              ← Back to Dashboard
+            </button>
+          </a>
+        </div>
 
-</a>
         <h1 style={{
           fontSize:44,
           fontWeight:800
@@ -98,6 +98,8 @@ ${window.location.origin}`
         <p style={{opacity:.6}}>
           Validate Etsy ideas before wasting time building listings.
         </p>
+
+        {/* INPUT */}
 
         <input
           value={idea}
@@ -113,6 +115,8 @@ ${window.location.origin}`
             color:"white"
           }}
         />
+
+        {/* BUTTON */}
 
         <button
           onClick={scan}
@@ -134,11 +138,13 @@ ${window.location.origin}`
           {loading ? "Scanning Etsy market..." : "Scan Idea 🔥"}
         </button>
 
+        {/* RESULT */}
+
         {result &&(
 
           <>
 
-            {/* SCORE VISUAL */}
+            {/* SCORE */}
 
             <div style={card}>
 
