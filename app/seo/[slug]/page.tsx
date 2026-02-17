@@ -196,9 +196,9 @@ export default async function Page({params}:Props){
 
         </a>
 
-        {/* IDEA SCANNER */}
+        {/* 🔥 IDEA SCANNER AUTO KEYWORD */}
 
-        <a href="/idea">
+        <a href={`/idea-scanner?idea=${keyword}`}>
 
           <button style={{
             padding:"18px 26px",
@@ -207,7 +207,7 @@ export default async function Page({params}:Props){
             color:"black",
             fontWeight:700
           }}>
-            Scan Market Opportunity 🔥
+            🔥 Test this keyword instantly →
           </button>
 
         </a>
