@@ -87,6 +87,16 @@ export default function LandingClient(){
           {typed}
         </p>
 
+        {/* 🔥 FREE SIGNAL (NEW — CONVERSION BOOST) */}
+
+        <p style={{
+          marginTop:10,
+          fontSize:16,
+          opacity:0.7
+        }}>
+          ✅ Free during beta — no credit card required.
+        </p>
+
         {/* 🔥 PRIMARY TRAFFIC CTA STACK */}
 
         <div style={{display:"flex",gap:14,marginTop:34,flexWrap:"wrap"}}>
@@ -127,7 +137,7 @@ export default function LandingClient(){
               fontWeight:800,
               border:"none"
             }}>
-              Full AI Generator 🚀
+              Generate Listing Free 🚀
             </button>
           </Link>
 
@@ -239,5 +249,6 @@ export default function LandingClient(){
       </div>
 
     </main>
+
   )
 }
