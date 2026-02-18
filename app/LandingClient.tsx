@@ -67,7 +67,7 @@ export default function LandingClient(){
 
       <div style={{maxWidth:820,width:"100%"}}>
 
-        {/* HERO */}
+        {/* 🔥 CONVERSION HERO */}
 
         <h1 style={{
           fontSize:52,
@@ -75,8 +75,26 @@ export default function LandingClient(){
           lineHeight:1.05,
           letterSpacing:-1
         }}>
-          Etsy listings that actually rank.
+          FREE AI Etsy SEO Tool 🚀
         </h1>
+
+        <p style={{
+          marginTop:14,
+          fontSize:22,
+          opacity:0.9
+        }}>
+          Test product ideas, optimize listings, and find profitable niches instantly.
+        </p>
+
+        {/* TRUST REDUCER */}
+
+        <p style={{
+          marginTop:10,
+          opacity:.6,
+          fontSize:16
+        }}>
+          No signup required to try. Built for real Etsy sellers.
+        </p>
 
         <p style={{
           marginTop:20,
@@ -87,17 +105,7 @@ export default function LandingClient(){
           {typed}
         </p>
 
-        {/* 🔥 FREE SIGNAL (NEW — CONVERSION BOOST) */}
-
-        <p style={{
-          marginTop:10,
-          fontSize:16,
-          opacity:0.7
-        }}>
-          ✅ Free during beta — no credit card required.
-        </p>
-
-        {/* 🔥 PRIMARY TRAFFIC CTA STACK */}
+        {/* PRIMARY CTA STACK */}
 
         <div style={{display:"flex",gap:14,marginTop:34,flexWrap:"wrap"}}>
 
@@ -137,7 +145,7 @@ export default function LandingClient(){
               fontWeight:800,
               border:"none"
             }}>
-              Generate Listing Free 🚀
+              Full AI Generator 🚀
             </button>
           </Link>
 
@@ -185,7 +193,7 @@ export default function LandingClient(){
 
         </div>
 
-        {/* 🔥 AUTHORITY SEO BLOCK */}
+        {/* AUTHORITY */}
 
         <div style={{...card,marginTop:40}}>
 
@@ -198,30 +206,6 @@ export default function LandingClient(){
           </p>
 
         </div>
-
-        {/* SOCIAL PROOF */}
-
-        <a
-          href="https://www.facebook.com/share/187nfcCc65/?mibextid=wwXIfr"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{textDecoration:"none"}}
-        >
-
-          <div style={{...card,marginTop:40,cursor:"pointer"}}>
-
-            <h3 style={{fontSize:22,fontWeight:700}}>
-              🔥 Real Etsy Seller Results
-            </h3>
-
-            <p style={{opacity:.7,marginTop:8}}>
-              See how sellers use EtsyLister AI to generate optimized listings
-              and dominate Etsy SEO.
-            </p>
-
-          </div>
-
-        </a>
 
         {/* FINAL CTA */}
 
@@ -240,7 +224,7 @@ export default function LandingClient(){
               fontSize:18,
               boxShadow:"0 0 30px rgba(0,255,200,0.4)"
             }}>
-              Activate Etsy Domination 🚀
+              Start FREE Now 🚀
             </button>
           </Link>
 
